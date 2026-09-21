@@ -1,0 +1,168 @@
+import * as z from "zod";
+
+export const LoginSchema = z.object({
+  email: z.string().email({ message: "Email is required" }),
+  password: z.string().min(1, { message: "Password is required" }),
+  code: z.optional(z.string()),
+});
+
+export const RegisterSchema = z.object({
+  email: z.string().email({ message: "Email is required" }),
+  password: z.string().min(6, { message: "Minimum 6 characters required" }),
+  name: z.string().min(1, { message: "Name is required" }),
+});
+
+export const ResetSchema = z.object({
+  email: z.string().email({ message: "Email is required" }),
+});
+
+export const NewPasswordSchema = z.object({
+  password: z.string().min(6, { message: "Minimum 6 characters required" }),
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+// PORTAL ADMIN
+// ─────────────────────────────────────────────────────────────────────────
+
+export const FieldTypeValues = [
+  "TEXT",
+  "TEXTAREA",
+  "EMAIL",
+  "PHONE",
+  "NUMBER",
+  "DATE",
+  "SELECT",
+  "MULTI_SELECT",
+  "CHECKBOX",
+  "IMAGE",
+  "FILE",
+] as const;
+
+export const SubmissionStatusValues = [
+  "DRAFT",
+  "IN_PROGRESS",
+  "SUBMITTED",
+  "UNDER_REVIEW",
+  "APPROVED",
+  "REJECTED",
+  "COMPLETED",
+] as const;
+
+export const PortalTerminalSchema = z.object({
+  name: z.string().min(1, "Terminal name is required"),
+  icon: z.string().optional(),
+  isActive: z.boolean().default(true),
+  order: z.coerce.number().int().default(0),
+});
+
+export const FieldCategoryValues = [
+  "Personal Details",
+  "Passport & Travel",
+  "Academic Background",
+  "English Proficiency",
+  "Standardized Tests",
+  "Study Preferences",
+  "Essays & Documents",
+  "Financial",
+  "References",
+  "Visa & Compliance",
+  "Contact & Other",
+  "General",
+] as const;
+
+export const FieldDefinitionSchema = z.object({
+  key: z
+    .string()
+    .min(1, "Key is required")
+    .regex(/^[a-z0-9_]+$/, "Use lowercase letters, numbers and underscores only"),
+  label: z.string().min(1, "Label is required"),
+  type: z.enum(FieldTypeValues),
+  category: z.string().optional(),
+  placeholder: z.string().optional(),
+  helpText: z.string().optional(),
+  // Comma-separated on the form, e.g. "Mr, Mrs, Ms, Dr" — split into an array on save.
+  options: z.string().optional(),
+  minLength: z.coerce.number().int().optional(),
+  maxLength: z.coerce.number().int().optional(),
+  pattern: z.string().optional(),
+});
+
+export const ApplicationSchema = z.object({
+  terminalId: z.string().min(1, "Terminal is required"),
+  name: z.string().min(1, "Application name is required"),
+  subtitle: z.string().optional(),
+  icon: z.string().optional(),
+  badge: z.string().optional(),
+  isLive: z.boolean().default(false),
+  isActive: z.boolean().default(true),
+  order: z.coerce.number().int().default(0),
+});
+
+export const ApplicationTagSchema = z.object({
+  label: z.string().min(1, "Tag label is required"),
+  icon: z.string().optional(),
+  order: z.coerce.number().int().default(0),
+});
+
+export const ApplicationFieldAssignSchema = z.object({
+  fieldDefinitionId: z.string().min(1, "Choose a field"),
+  isRequired: z.boolean().default(false),
+  stepNumber: z.coerce.number().int().min(1).default(1),
+  order: z.coerce.number().int().default(0),
+});
+
+export const SubmissionStatusSchema = z.object({
+  status: z.enum(SubmissionStatusValues),
+});
+
+export const AssignCounselorSchema = z.object({
+  counselorId: z.string().nullable(),
+});
+
+// =========================================================================
+// PORTAL — APPLICANT-FACING WIZARD
+// =========================================================================
+
+export const SubmissionValueInputSchema = z.object({
+  applicationFieldId: z.string().min(1),
+  value: z.string().nullable().optional(),
+  fileUrl: z.string().nullable().optional(),
+});
+
+// One call per step: persists every answer on that step and records which
+// step the applicant should land on if they come back later. submissionId
+// is null on the very first save of a fresh application (the row gets
+// created right here, not before), which is why setCurrentStep is a
+// separate field from stepNumber — "save and stay" and "save and continue"
+// both go through this action, they just pass a different target step.
+export const SaveSubmissionStepSchema = z.object({
+  applicationId: z.string().min(1),
+  submissionId: z.string().nullable().optional(),
+  stepNumber: z.coerce.number().int().min(1),
+  setCurrentStep: z.coerce.number().int().min(1).optional(),
+  values: z.array(SubmissionValueInputSchema),
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+// BLOG
+// ─────────────────────────────────────────────────────────────────────────
+
+export const BlogPostStatusValues = ["DRAFT", "PUBLISHED"] as const;
+
+export const BlogPostSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  slug: z
+    .string()
+    .min(1, "Slug is required")
+    .regex(/^[a-z0-9-]+$/, "Use lowercase letters, numbers and hyphens only"),
+  excerpt: z.string().max(300, "Keep the excerpt under 300 characters").optional(),
+  content: z.string().min(1, "Content is required"),
+  coverImage: z.string().min(1, "Cover image is required"),
+  coverImageAlt: z.string().optional(),
+  // Comma-separated on the form, e.g. "study-abroad, uk, scholarships" —
+  // split into an array on save, same pattern FieldDefinitionSchema.options uses.
+  tags: z.string().optional(),
+  status: z.enum(BlogPostStatusValues).default("DRAFT"),
+  metaTitle: z.string().optional(),
+  metaDescription: z.string().max(300, "Keep the meta description under 300 characters").optional(),
+});

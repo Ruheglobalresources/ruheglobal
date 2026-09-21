@@ -1,0 +1,190 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  /* Ruhe / TravelContext-inspired palette */
+  --color-ink: #101b2d;
+  --color-sand: #efe6d8;
+  --color-cloud: #faf8f4; 
+  --color-ember: #c98a3b;
+  --color-teal: #1f5c55;
+  /* sampled from logo.png (android-chrome-192x192.png) */
+  --color-ruby: #AF0E13;
+  --color-violet: #42057f;
+  --color-marigold: #f87509;
+  --color-gold: #faea07;
+  --color-silver: #a9a9a9;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Brand palette */
+  --color-ink: var(--color-ink);
+  --color-sand: var(--color-sand);
+  --color-cloud: var(--color-cloud);
+  --color-ember: var(--color-ember);
+  --color-teal: var(--color-teal);
+  --color-ruby: var(--color-ruby);
+  --color-violet: var(--color-violet);
+  --color-marigold: var(--color-marigold);
+  --color-gold: var(--color-gold);
+  --color-silver: var(--color-silver);
+  --color-ruby-50:  #FFF1F1;
+--color-ruby-100: #FFE0E0;
+--color-ruby-200: #FFC2C2;
+--color-ruby-300: #FF9999;
+--color-ruby-400: #FF6666;
+--color-ruby-500: #E53935;
+--color-ruby-600: #C62828;
+--color-ruby-700: #B71C1C;
+--color-ruby-800: #8E0000;
+--color-ruby-900: #660000;
+
+  /* Fonts */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces), serif;
+  --font-body: var(--font-inter), sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* SectionBreaker — gentle drift for the floating blob layers */
+@keyframes breaker-drift-a {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-4%, -7%); }
+}
+@keyframes breaker-drift-b {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(5%, 6%); }
+}
+@keyframes breaker-drift-c {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-6%, 5%); }
+}
+
+
+/* Blog content — shared between the live rich text editor and the
+   published post so what an author sees while writing matches what a
+   reader gets. A heading (h2/h3) always gets the horizontal underline the
+   moment it's created, not just after the post is published. */
+.blog-content {
+  color: var(--color-ink);
+}
+.blog-content h2,
+.blog-content h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-ink);
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-ember);
+}
+.blog-content h2 { font-size: 1.5rem; }
+.blog-content h3 { font-size: 1.2rem; }
+.blog-content p {
+  margin-bottom: 1rem;
+  line-height: 1.75;
+  color: #3a3a3a;
+}
+.blog-content a {
+  color: var(--color-ember);
+  text-decoration: none;
+  font-weight: 500;
+}
+.blog-content a:hover {
+  text-decoration: underline;
+}
+.blog-content img {
+  margin: 1.5rem 0;
+  width: 100%;
+  border-radius: 0.75rem;
+}
+.blog-content strong { font-weight: 700; }
+.blog-content em { font-style: italic; }
