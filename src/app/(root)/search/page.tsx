@@ -9,6 +9,7 @@ export const metadata: Metadata = {
     "Search schools abroad by country, level and field. See the IELTS score and tuition fee for each one.",
 };
 
+
 export default function SchoolSearchPage() {
   return (
     <>
