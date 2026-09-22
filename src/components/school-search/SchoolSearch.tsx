@@ -30,11 +30,29 @@ export function SchoolSearch() {
   const [searched, setSearched] = useState<SearchFilters | null>(null);
   const [error, setError] = useState("");
 
+  const [featured, setFeatured] = useState<SearchResponse | null>(null);
+  const [featuredLoading, setFeaturedLoading] = useState(true);
+
   const abortRef = useRef<AbortController | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   // Stop any in-flight request if the page is left.
   useEffect(() => () => abortRef.current?.abort(), []);
+
+  // Our partner institutions, shown by default before the student searches.
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/schools/search", { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: SearchResponse | null) => {
+        if (data?.schools) setFeatured(data);
+      })
+      .catch(() => {
+        // Quietly fall back to the plain empty state below.
+      })
+      .finally(() => setFeaturedLoading(false));
+    return () => controller.abort();
+  }, []);
 
   async function runSearch() {
     abortRef.current?.abort();
@@ -102,24 +120,38 @@ export function SchoolSearch() {
   return (
     <section className="bg-cloud text-ink">
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-8 lg:px-10 lg:py-12">
-        <aside className="lg:sticky lg:top-6 lg:self-start">
-          <SearchForm
-            value={filters}
-            onChange={setFilters}
-            onSubmit={runSearch}
-            loading={loading}
-          />
-        </aside>
+       <aside className="lg:sticky lg:top-6 lg:max-h-[calc(100vh-3rem)] lg:self-start lg:overflow-y-auto">
+  <SearchForm
+    value={filters}
+    onChange={setFilters}
+    onSubmit={runSearch}
+    loading={loading}
+  />
+</aside>
 
         <div ref={resultsRef} className="min-w-0 scroll-mt-4">
           {loading && <LoadingState onCancel={cancelSearch} />}
 
           {!loading && status === "idle" && (
-            <div className="rounded-2xl border border-dashed border-ink/20 px-6 py-16 text-center">
-              <h2 className="text-xl font-semibold text-ink">Your results will appear here</h2>
-              <p className="mx-auto mt-2 max-w-sm text-ink/70">
-                Choose your options and select Search schools.
-              </p>
+            <div>
+              <div className="rounded-2xl border border-dashed border-ink/20 px-6 py-8 text-center">
+                <h2 className="text-xl font-semibold text-ink">
+                  {featured?.schools.length ? "Our partner institutions" : "Your results will appear here"}
+                </h2>
+                <p className="mx-auto mt-2 max-w-sm text-ink/70">
+                  {featured?.schools.length
+                    ? "Choose your options and select Search schools to narrow this down."
+                    : "Choose your options and select Search schools."}
+                </p>
+              </div>
+
+              {!featuredLoading && featured && featured.schools.length > 0 && (
+                <div className="mt-6 space-y-5">
+                  {featured.schools.map((school) => (
+                    <ResultCard key={school.id} school={school} />
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -140,31 +172,42 @@ export function SchoolSearch() {
           {!loading && status === "done" && result && searched && (
             <div>
               <h2 className="text-xl font-semibold text-ink">
-                {result.schools.length} {result.schools.length === 1 ? "school" : "schools"} in{" "}
-                {searched.country}
+                {searched.institution !== "Any institution"
+                  ? searched.institution
+                  : `${result.schools.length} ${result.schools.length === 1 ? "school" : "schools"} in ${searched.country}`}
               </h2>
               <p className="mt-1 text-sm text-ink/70">
                 {searched.level}
                 {searched.field !== "Any field" ? ` in ${searched.field}` : ""}
               </p>
 
-              {result.demo && (
+              {result.source === "demo" && (
                 <p className="mt-4 rounded-xl bg-gold/40 px-4 py-3 text-sm text-ink">
                   These are sample results. Add your ANTHROPIC_API_KEY to search live.
                 </p>
               )}
 
-              <p className="mb-5 mt-4 flex items-start gap-2 rounded-xl bg-ink/5 px-4 py-3 text-sm text-ink/75">
-                <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                <span>
-                  An AI gathered these fees and IELTS scores from the web. Confirm them on each
-                  school&apos;s website before you apply.
-                </span>
-              </p>
+              {result.source === "database" && (
+                <p className="mt-4 flex items-start gap-2 rounded-xl bg-teal/10 px-4 py-3 text-sm text-ink/80">
+                  <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>From our own partner network — checked and kept up to date by our team.</span>
+                </p>
+              )}
+
+              {result.source === "ai" && (
+                <p className="mb-5 mt-4 flex items-start gap-2 rounded-xl bg-ink/5 px-4 py-3 text-sm text-ink/75">
+                  <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                 <span>
+  Fees and IELTS requirements are subject to change at any time. Please confirm the latest information on each school&apos;s official website before applying.
+</span>
+                </p>
+              )}
 
               {result.schools.length === 0 ? (
                 <p className="rounded-2xl border border-ink/10 bg-white p-6 text-ink/70">
-                  No schools came back for this search. Try a different country, level or field.
+                  {searched.institution !== "Any institution"
+                    ? `We couldn't verify a matching programme at ${searched.institution} for this level and field.`
+                    : "No schools came back for this search. Try a different country, level or field."}
                 </p>
               ) : (
                 <div className="space-y-5">
@@ -174,26 +217,7 @@ export function SchoolSearch() {
                 </div>
               )}
 
-              {result.sources.length > 0 && (
-                <div className="mt-8">
-                  <h3 className="text-sm font-medium text-ink">Pages the AI checked</h3>
-                  <ul className="mt-2 flex flex-wrap gap-2">
-                    {result.sources.map((s) => (
-                      <li key={s.url}>
-                        <a
-                          href={s.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title={s.title}
-                          className="inline-block rounded-full border border-ink/15 bg-white px-3 py-1 text-xs text-ink/70 transition-colors hover:border-ruby/40 hover:text-ruby-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-ruby/40"
-                        >
-                          {hostOf(s.url)}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+             
             </div>
           )}
         </div>

@@ -428,3 +428,54 @@ model BlogPostImage {
 
   @@index([blogPostId])
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// INSTITUTIONS
+// The persisted, admin-managed catalog behind the course-search feature.
+// Fields intentionally mirror the flat `School`/`RawSchool` shape the
+// Claude-powered search route already returns (src/lib/school-search/*),
+// so a row here and a live AI-search result can be rendered by the same
+// ResultCard component. imageUrl/logoUrl are resolved the same way the
+// search route does it (Wikipedia page-image + Google favicon) rather
+// than trusted from free text, since models/admins hallucinate URLs.
+// ─────────────────────────────────────────────────────────────────────────
+
+model Institution {
+  id   String @id @default(uuid())
+  name String
+  slug String @unique
+
+  city            String?
+  country         String?
+  institutionType String? // e.g. "Public research university", "Pathway college (Navitas)"
+  summary         String  @db.Text
+  programs        String[] @default([]) // up to 3 real programme names
+
+  // English-proficiency requirements
+  ieltsOverall      Float?
+  ieltsMinBand      Float?
+  ieltsAlternatives String[] @default([]) // e.g. ["TOEFL iBT 90", "PTE 65"]
+  ieltsNote         String?
+
+  // Tuition
+  tuitionMin      Int?
+  tuitionMax      Int?
+  tuitionCurrency String? // ISO 4217, e.g. GBP, USD, CAD, AUD
+  tuitionPeriod   String? // e.g. "per year (2025/26)"
+  tuitionNote     String?
+
+  ranking  String? // short ranking string, e.g. "QS #142 (2026)"
+  website  String?
+  imageUrl String? // campus photo
+  logoUrl  String? // favicon/logo
+
+  isActive Boolean @default(true)
+  order    Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([country])
+  @@index([isActive])
+  @@index([order])
+}

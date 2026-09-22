@@ -1,5 +1,6 @@
 /** What the student picks in the sidebar. */
 export type SearchFilters = {
+  institution: string;
   country: string;
   institutionType: string;
   level: string;
@@ -40,7 +41,12 @@ export type SourceLink = { title: string; url: string };
 export type SearchResponse = {
   schools: School[];
   sources: SourceLink[];
-  /** true when ANTHROPIC_API_KEY is missing and sample data was returned */
-  demo: boolean;
+  /**
+   * Where these results came from:
+   * - "database": our own vetted institutions (checked first, always shown for free)
+   * - "ai": found live by the AI web-search fallback
+   * - "demo": sample data because ANTHROPIC_API_KEY is missing
+   */
+  source: "database" | "ai" | "demo";
   elapsedMs: number;
 };

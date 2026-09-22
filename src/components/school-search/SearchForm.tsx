@@ -6,6 +6,7 @@ import {
   BUDGETS,
   COUNTRIES,
   FIELDS,
+  INSTITUTIONS,
   INSTITUTION_TYPES,
   LEVELS,
   RESULT_COUNTS,
@@ -17,6 +18,7 @@ type Option = { value: string; label: string };
 const fromList = (list: readonly string[]): Option[] =>
   list.map((v) => ({ value: v, label: v }));
 
+const INSTITUTION_OPTIONS = fromList(INSTITUTIONS);
 const COUNTRY_OPTIONS = fromList(COUNTRIES);
 const TYPE_OPTIONS = fromList(INSTITUTION_TYPES);
 const LEVEL_OPTIONS = fromList(LEVELS);
@@ -71,6 +73,8 @@ export function SearchForm({ value, onChange, onSubmit, loading }: Props) {
   const set = <K extends keyof SearchFilters>(key: K, next: SearchFilters[K]) =>
     onChange({ ...value, [key]: next });
 
+  const singleInstitution = value.institution !== "Any institution";
+
   return (
     <form
       onSubmit={(e) => {
@@ -79,12 +83,19 @@ export function SearchForm({ value, onChange, onSubmit, loading }: Props) {
       }}
       className="space-y-4 rounded-2xl border border-ink/10 bg-white p-5"
     >
-      <Select label="Country" value={value.country} options={COUNTRY_OPTIONS} onChange={(v) => set("country", v)} />
-      <Select label="Institution type" value={value.institutionType} options={TYPE_OPTIONS} onChange={(v) => set("institutionType", v)} />
+      <Select label="Institution" value={value.institution} options={INSTITUTION_OPTIONS} onChange={(v) => set("institution", v)} />
+      {!singleInstitution && (
+        <>
+          <Select label="Country" value={value.country} options={COUNTRY_OPTIONS} onChange={(v) => set("country", v)} />
+          <Select label="Institution type" value={value.institutionType} options={TYPE_OPTIONS} onChange={(v) => set("institutionType", v)} />
+        </>
+      )}
       <Select label="Study level" value={value.level} options={LEVEL_OPTIONS} onChange={(v) => set("level", v)} />
       <Select label="Field of study" value={value.field} options={FIELD_OPTIONS} onChange={(v) => set("field", v)} />
       <Select label="Yearly budget" value={value.budget} options={BUDGET_OPTIONS} onChange={(v) => set("budget", v)} />
-      <Select label="Number of schools" value={String(value.count)} options={COUNT_OPTIONS} onChange={(v) => set("count", Number(v))} />
+      {!singleInstitution && (
+        <Select label="Number of schools" value={String(value.count)} options={COUNT_OPTIONS} onChange={(v) => set("count", Number(v))} />
+      )}
 
       <button
         type="submit"

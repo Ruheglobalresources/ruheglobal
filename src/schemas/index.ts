@@ -166,3 +166,32 @@ export const BlogPostSchema = z.object({
   metaTitle: z.string().optional(),
   metaDescription: z.string().max(300, "Keep the meta description under 300 characters").optional(),
 });
+
+// Append this block to the end of your existing src/schemas/index.ts
+// (it needs `import * as z from "zod"`, which that file already has).
+
+export const InstitutionSchema = z.object({
+  name: z.string().min(1, "Institution name is required"),
+  city: z.string().optional(),
+  country: z.string().optional(),
+  institutionType: z.string().optional(),
+  summary: z.string().min(1, "Summary is required").max(320, "Keep the summary under 320 characters"),
+  // Comma-separated on the form, e.g. "MSc Data Science, MSc AI" — split
+  // into an array on save, same pattern BlogPostSchema.tags uses.
+  programs: z.string().optional(),
+  ieltsOverall: z.coerce.number().min(0).max(9).optional(),
+  ieltsMinBand: z.coerce.number().min(0).max(9).optional(),
+  ieltsAlternatives: z.string().optional(), // comma-separated, e.g. "TOEFL iBT 90, PTE 65"
+  ieltsNote: z.string().max(160, "Keep this under 160 characters").optional(),
+  tuitionMin: z.coerce.number().min(0).optional(),
+  tuitionMax: z.coerce.number().min(0).optional(),
+  tuitionCurrency: z.string().max(8, "Use an ISO code, e.g. GBP").optional(),
+  tuitionPeriod: z.string().optional(),
+  tuitionNote: z.string().max(160, "Keep this under 160 characters").optional(),
+  ranking: z.string().max(60).optional(),
+  website: z.string().optional(),
+  imageUrl: z.string().optional(),
+  logoUrl: z.string().optional(),
+  isActive: z.boolean().default(true),
+  order: z.coerce.number().int().default(0),
+});

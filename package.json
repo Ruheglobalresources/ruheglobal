@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "postinstall": "prisma generate",
+    "seed:institutions": "tsx prisma/seed-institutions.ts",
     "seed:fields": "tsx prisma/seed-fields.ts"
   },
   "dependencies": {
