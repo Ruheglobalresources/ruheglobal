@@ -134,16 +134,7 @@ export function SchoolSearch() {
 
           {!loading && status === "idle" && (
             <div>
-              <div className="rounded-2xl border border-dashed border-ink/20 px-6 py-8 text-center">
-                <h2 className="text-xl font-semibold text-ink">
-                  {featured?.schools.length ? "Our partner institutions" : "Your results will appear here"}
-                </h2>
-                <p className="mx-auto mt-2 max-w-sm text-ink/70">
-                  {featured?.schools.length
-                    ? "Choose your options and select Search schools to narrow this down."
-                    : "Choose your options and select Search schools."}
-                </p>
-              </div>
+              
 
               {!featuredLoading && featured && featured.schools.length > 0 && (
                 <div className="mt-6 space-y-5">
