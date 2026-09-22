@@ -7,7 +7,7 @@ const page = () => {
   return (
     <>
       <PageHero
-        title="Study Abroad"
+        title="Study Abroad Visa Services"
         breadcrumbs={[{ label: "Home", href: "/" }, { label: "Study Abroad" }]}
       />
 

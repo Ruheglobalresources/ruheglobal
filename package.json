@@ -10,6 +10,7 @@
     "seed:fields": "tsx prisma/seed-fields.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.127.0",
     "@auth/prisma-adapter": "^2.11.3",
     "@hookform/resolvers": "^5.2.2",
     "@paystack/inline-js": "^2.24.0",
