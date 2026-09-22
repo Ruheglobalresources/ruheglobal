@@ -470,7 +470,11 @@ model Institution {
   logoUrl  String? // favicon/logo
 
   isActive Boolean @default(true)
-  order    Int     @default(0)
+  // Main partner institutions shown on the course-search page before the
+  // visitor runs a search at all (a fixed "our partners" set, not a search
+  // result). `order` decides their left-to-right/top-to-bottom position.
+  isFeatured Boolean @default(false)
+  order      Int     @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
