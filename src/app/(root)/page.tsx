@@ -7,7 +7,6 @@ import { TeamSection } from "@/components/teams/TeamSection";
 import { CompanyReviewsSection } from "@/components/reviews/CompanyReviewsSection";
 import { StudyAbroadReviewsSection } from "@/components/reviews/StudyAbroadReviewsSection";
 import { ReviewsSeparator } from "@/components/ReviewsSeparator";
-import Footer from "@/components/Footer";
 import GlobalJourneySection from "@/components/sections/Globaljourneysection";
 import CountriesSection from "@/components/sections/Countriessection";
 import { BlogSection } from "@/components/sections/BlogSection";
@@ -52,7 +51,7 @@ export default async function HomePage() {
       <CompanyReviewsSection />
       <ReviewsSeparator />
       <StudyAbroadReviewsSection />
-      <Footer />
+      
     </main>
   );
 }

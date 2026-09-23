@@ -55,17 +55,13 @@ export function InnerHero({
   image,
   breadcrumbs,
   bottomColor = "#ffffff",
-  heightClassName = "h-[65vh] min-h-[460px] sm:h-[72vh] lg:h-[90vh]",
+  heightClassName = "h-[60vh] min-h-[420px] sm:h-[65vh] lg:h-[75vh]",
   className,
 }: InnerHeroProps) {
   return (
     <section
       className={cn(
-        // pt-45 lg:pt-48 clears the fixed navbar — same classes, same
-        // placement (on the section, not an inner child) as PageHero.
-        // Image/scrim below are `absolute`, so they ignore this padding
-        // and stay full-bleed; only the normal-flow text div respects it.
-        "relative w-full overflow-hidden pt-45 lg:pt-48",
+        "relative w-full overflow-hidden",
         heightClassName,
         className,
       )}
@@ -82,7 +78,16 @@ export function InnerHero({
       {/* Subtle scrim so the heading stays legible over any photo. */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-black/40" />
 
-      <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center">
+      {/*
+        top-45 lg:top-48 matches PageHero's navbar clearance, but here it's
+        set on `top` instead of `padding-top`: this box is `justify-center`
+        inside a *fixed*-height section, so padding-top would only ever
+        show up as roughly half its value (padding shrinks the box being
+        centered within, and centering splits that shrinkage). Pinning
+        `top` instead constrains the box itself, so content can never
+        center above that line, however tall the hero or short the copy.
+      */}
+      <div className="absolute inset-x-0 bottom-0 top-45 z-10 flex flex-col items-center justify-center px-6 text-center lg:top-48">
         {eyebrow && (
           <p className="mb-3 text-sm font-medium text-white/80">{eyebrow}</p>
         )}
