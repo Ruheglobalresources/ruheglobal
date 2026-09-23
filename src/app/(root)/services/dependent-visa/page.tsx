@@ -1,4 +1,4 @@
-// src/app/(root)/dependent-visa/page.tsx
+// src/app/(root)/services/dependent-visa/page.tsx
 import type { Metadata } from "next";
 import Image from "next/image";
 import InnerHero from "@/components/Inner-hero";
