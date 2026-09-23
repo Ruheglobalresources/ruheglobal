@@ -1,3 +1,4 @@
+//prisma/seed-featured-institutions.ts
 // Seeds the 12 main partner institutions that should appear on the
 // course-search page by default — before a visitor has run any search —
 // as a fixed "our partners" set. Marked isFeatured: true with order 0-11
