@@ -1,3 +1,4 @@
+//src/components/Faq-accordion.tsx
 "use client";
 
 import { useState, type ReactNode } from "react";
