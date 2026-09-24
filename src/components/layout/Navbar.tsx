@@ -9,10 +9,10 @@ import  { LogoOrbit } from "./LogoRings";
 import { MessageBox } from "./MessageBox";
 
 const NAV_LINKS = [
-  { label: "Top Schools", href: "#top-schools" },
-  { label: "Services", href: "#services" },
-  { label: "Reviews", href: "#reviews" },
-  { label: "Contact", href: "#contact" },
+  { label: "Top Schools", href: "op-schools" },
+  { label: "Services", href: "/services" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export function Navbar() {
