@@ -199,7 +199,7 @@ const page = () => {
           <div className="container mx-auto grid px-8 md:px-10 lg:px-12 lg:grid-cols-2 lg:items-center">
             {/* Overlapping image pair */}
             <div className="relative w-full">
-              <div className="relative aspect-[3/4] w-[80%] overflow-hidden">
+              <div className="relative aspect-[3/4] w-[80%] ">
                 <Image
                   src="/pages/exams/ielt1.jpg"
                   alt="Student preparing for the IELTS exam"
