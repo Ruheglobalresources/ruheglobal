@@ -59,7 +59,7 @@ const page = () => {
         heading="Summer School Services"
         eyebrow="RGR Summer School Services"
         image={{
-          src: "/pages/summer-school-banner.jpg",
+          src: "/pages/summer-banner.jpg",
           alt: "Students attending a summer school programme abroad",
         }}
         bottomColor="#ffffff"
