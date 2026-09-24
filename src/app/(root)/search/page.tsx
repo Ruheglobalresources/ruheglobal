@@ -1,4 +1,4 @@
-// src/app/(root)/school-search/page.tsx
+// src/app/(root)/search/page.tsx
 import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 import { SchoolSearch } from "@/components/school-search/SchoolSearch";

@@ -87,7 +87,7 @@ const page = () => {
         heading="Destination Selection"
         eyebrow="Counselling Services"
         image={{
-          src: "/pages/destination-selection-banner.jpg",
+          src: "/pages/post-banner.jpg",
           alt: "Student weighing study destinations with Ruhe Global Resources",
         }}
         bottomColor="#ffffff"
