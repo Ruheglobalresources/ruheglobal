@@ -39,6 +39,27 @@ export function SchoolSearch() {
   // Stop any in-flight request if the page is left.
   useEffect(() => () => abortRef.current?.abort(), []);
 
+  // Landed here from the navbar's AI course/institution search box —
+  // ?institution= or ?field= means jump straight to results instead of
+  // making them re-pick what they just typed. Read window.location.search
+  // directly rather than useSearchParams() so this stays a plain client
+  // component with no Suspense boundary required on the page.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const institutionParam = params.get("institution");
+    const fieldParam = params.get("field");
+    if (!institutionParam && !fieldParam) return;
+
+    const next: SearchFilters = {
+      ...DEFAULT_FILTERS,
+      ...(institutionParam ? { institution: institutionParam } : {}),
+      ...(fieldParam ? { field: fieldParam } : {}),
+    };
+    setFilters(next);
+    void runSearch(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Our partner institutions, shown by default before the student searches.
   useEffect(() => {
     const controller = new AbortController();
@@ -54,7 +75,7 @@ export function SchoolSearch() {
     return () => controller.abort();
   }, []);
 
-  async function runSearch() {
+  async function runSearch(overrideFilters?: SearchFilters) {
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -65,7 +86,7 @@ export function SchoolSearch() {
       controller.abort();
     }, CLIENT_TIMEOUT_MS);
 
-    const submitted = { ...filters };
+    const submitted = overrideFilters ?? { ...filters };
     setSearched(submitted);
     setStatus("loading");
     setError("");
@@ -134,7 +155,16 @@ export function SchoolSearch() {
 
           {!loading && status === "idle" && (
             <div>
-              
+              <div className="rounded-2xl border border-dashed border-ink/20 px-6 py-8 text-center">
+                <h2 className="text-xl font-semibold text-ink">
+                  {featured?.schools.length ? "Our partner institutions" : "Your results will appear here"}
+                </h2>
+                <p className="mx-auto mt-2 max-w-sm text-ink/70">
+                  {featured?.schools.length
+                    ? "Choose your options and select Search schools to narrow this down."
+                    : "Choose your options and select Search schools."}
+                </p>
+              </div>
 
               {!featuredLoading && featured && featured.schools.length > 0 && (
                 <div className="mt-6 space-y-5">
@@ -152,7 +182,7 @@ export function SchoolSearch() {
               <p className="mt-1 text-ink/75">{error}</p>
               <button
                 type="button"
-                onClick={runSearch}
+                onClick={() => runSearch()}
                 className="mt-4 rounded-full bg-ruby px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ruby-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-ruby/50 focus-visible:ring-offset-2"
               >
                 Try again

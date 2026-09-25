@@ -13,7 +13,7 @@ interface MessageBoxProps {
 
 export function MessageBox({
   email = "info@ruheglobalresources.com",
-  label = "Email Us",
+  label = "",
   mobile = false,
 }: MessageBoxProps) {
   return (
