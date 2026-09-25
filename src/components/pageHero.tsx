@@ -1,3 +1,4 @@
+//src/components/pageHero.tsx
 "use client";
 
 import type { ComponentProps } from "react";

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X, Phone, ChevronDown } from "lucide-react";
+import { Phone } from "lucide-react";
 import Link from "next/link";
 import { LogoOrbit } from "./LogoRings";
 import { MessageBox } from "./MessageBox";
@@ -10,7 +10,8 @@ import { NavMenuTrigger } from "./nav/NavMenuTrigger";
 import { ServicesMegaPanel } from "./nav/ServicesMegaPanel";
 import { SchoolsMegaPanel } from "./nav/SchoolsMegaPanel";
 import { SimpleDropdownPanel } from "./nav/SimpleDropdownPanel";
-import { PROGRAM_LINKS, SERVICE_COLUMNS } from "@/data/site-nav";
+import { MobileNavSheet } from "./nav/MobileNavSheet";
+import { PROGRAM_LINKS } from "@/data/site-nav";
 
 const PHONE_DISPLAY = "+234 707 918 8996";
 const PHONE_HREF = "tel:+2347079188996";
@@ -18,12 +19,6 @@ const PHONE_HREF = "tel:+2347079188996";
 type MenuKey = "schools" | "programs" | "services";
 
 export function Navbar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileSection, setMobileSection] = useState<string | null>(null);
-
-  const toggleMobileSection = (key: string) =>
-    setMobileSection((current) => (current === key ? null : key));
-
   const [activeMenu, setActiveMenu] = useState<MenuKey | null>(null);
   const headerRef = useRef<HTMLElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -164,6 +159,8 @@ export function Navbar() {
 
         {/* mobile actions */}
         <div className="flex shrink-0 items-center gap-2 lg:hidden">
+          <MessageBox />
+
           <a
             href={PHONE_HREF}
             aria-label={`Call us at ${PHONE_DISPLAY}`}
@@ -172,162 +169,9 @@ export function Navbar() {
             <Phone size={19} />
           </a>
 
-          <button
-            type="button"
-            onClick={() => setMobileOpen((v) => !v)}
-            aria-expanded={mobileOpen}
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-cloud transition-colors hover:bg-cloud/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
-          >
-            {mobileOpen ? <X size={21} /> : <Menu size={21} />}
-          </button>
+          <MobileNavSheet />
         </div>
       </div>
-
-      {/* mobile dropdown */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-            className="overflow-hidden border-t border-cloud/10 bg-ink/60 backdrop-blur-2xl lg:hidden"
-          >
-            <nav className="flex max-h-[75vh] flex-col divide-y divide-cloud/10 overflow-y-auto px-5 py-2">
-              {/* Top schools — flat link */}
-              <Link
-                href="/school-search"
-                onClick={() => setMobileOpen(false)}
-                className="py-3 text-sm font-medium text-cloud/90 transition-colors hover:text-cloud"
-              >
-                Schools
-              </Link>
-
-              {/* Programs accordion */}
-              <div className="py-1">
-                <button
-                  type="button"
-                  onClick={() => toggleMobileSection("programs")}
-                  aria-expanded={mobileSection === "programs"}
-                  className="flex w-full items-center justify-between py-2 text-sm font-medium text-cloud/90"
-                >
-                  Programs
-                  <ChevronDown
-                    size={16}
-                    className={`transition-transform ${mobileSection === "programs" ? "rotate-180" : ""}`}
-                  />
-                </button>
-                <AnimatePresence>
-                  {mobileSection === "programs" && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden pl-3"
-                    >
-                      {PROGRAM_LINKS.map((link) => (
-                        <Link
-                          key={link.href}
-                          href={link.href}
-                          onClick={() => setMobileOpen(false)}
-                          className="block py-2 text-sm text-cloud/75 hover:text-cloud"
-                        >
-                          {link.label}
-                        </Link>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Services accordion — now includes Exams & Prep */}
-              <div className="py-1">
-                <button
-                  type="button"
-                  onClick={() => toggleMobileSection("services")}
-                  aria-expanded={mobileSection === "services"}
-                  className="flex w-full items-center justify-between py-2 text-sm font-medium text-cloud/90"
-                >
-                  Services
-                  <ChevronDown
-                    size={16}
-                    className={`transition-transform ${mobileSection === "services" ? "rotate-180" : ""}`}
-                  />
-                </button>
-                <AnimatePresence>
-                  {mobileSection === "services" && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden pl-3"
-                    >
-                      {SERVICE_COLUMNS.map((column) => (
-                        <div key={column.title} className="py-2">
-                          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-ember/90">
-                            {column.title}
-                          </p>
-                          {column.links.map((link) => (
-                            <Link
-                              key={link.href}
-                              href={link.href}
-                              onClick={() => setMobileOpen(false)}
-                              className="block py-1.5 text-sm text-cloud/75 hover:text-cloud"
-                            >
-                              {link.label}
-                            </Link>
-                          ))}
-                        </div>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <Link
-                href="/about"
-                onClick={() => setMobileOpen(false)}
-                className="py-3 text-sm font-medium text-cloud/90 transition-colors hover:text-cloud"
-              >
-                About
-              </Link>
-              <Link
-                href="/contact"
-                onClick={() => setMobileOpen(false)}
-                className="py-3 text-sm font-medium text-cloud/90 transition-colors hover:text-cloud"
-              >
-                Contact
-              </Link>
-
-              <div className="my-2 flex flex-col gap-2.5 pt-2">
-                <a
-                  href={PHONE_HREF}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-2 rounded-full border border-cloud/25 px-4 py-3 text-center text-sm font-medium text-cloud transition-colors hover:bg-cloud/5"
-                >
-                  <Phone size={16} className="text-ember" />
-                  Call us now
-                </a>
-                <Link
-                  href="/auth/login"
-                  onClick={() => setMobileOpen(false)}
-                  className="rounded-full border border-cloud/25 px-4 py-3 text-center text-sm font-medium text-cloud transition-colors hover:bg-cloud/5"
-                >
-                  Login to portal
-                </Link>
-                <Link
-                  href="/contact"
-                  onClick={() => setMobileOpen(false)}
-                  className="rounded-full bg-ruby px-4 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-ruby-600"
-                >
-                  Book free consultation
-                </Link>
-              </div>
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Desktop mega menu */}
       <AnimatePresence>
