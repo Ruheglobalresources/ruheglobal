@@ -13,7 +13,7 @@ export default function RootLayout({
       <Navbar />
 
       {/* Reserve space for the fixed navbar */}
-      <main className="pt-20 lg:pt-24">
+      <main className="pt-18 lg:pt-22">
         {children}
       </main>
 
