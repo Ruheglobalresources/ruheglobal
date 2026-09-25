@@ -80,7 +80,7 @@ export function Navbar() {
         {/* logo + brand */}
         <a
           href="/"
-          className="flex min-w-0 items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember lg:shrink-0"
+          className="flex min-w-0 items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember lg:shrink-0"
         >
           <LogoOrbit size={58} speed={2} className="h-14 w-14 shrink-0" />
 
@@ -88,7 +88,7 @@ export function Navbar() {
             <span className="font-display text-[27px] md:text-[35px] font-extrabold tracking-wide text-ruby">
               RUHE
             </span>
-            <span className="mt-1 text-[12px] md:text-[15px] font-medium uppercase tracking-[0.18em] text-ruby/90">
+            <span className="mt-1 text-[11px] md:text-[15px] font-medium uppercase tracking-[0.18em] text-ruby/90">
               Global Resources
             </span>
           </div>
