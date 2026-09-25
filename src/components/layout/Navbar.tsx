@@ -95,7 +95,7 @@ export function Navbar() {
         </a>
 
         {/* desktop nav links */}
-        <nav className="hidden flex-1 items-center justify-center gap-7 lg:flex">
+        <nav className="hidden flex-1 items-center justify-center gap-5 lg:flex">
           <NavMenuTrigger
             label="Schools"
             active={activeMenu === "schools"}
@@ -158,7 +158,7 @@ export function Navbar() {
         </div>
 
         {/* mobile actions */}
-        <div className="flex shrink-0 items-center gap-2 lg:hidden">
+        <div className="flex shrink-0 items-center gap-1 lg:hidden">
           <MessageBox />
 
           <a
