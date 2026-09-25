@@ -74,7 +74,7 @@ export function Navbar() {
     <header
       ref={headerRef}
       onMouseLeave={closeMenuSoon}
-      className="absolute inset-x-0 top-0 z-30 border-b border-cloud/10 bg-ink/40 shadow-lg shadow-black/20 backdrop-blur-xl"
+      className="absolute inset-x-0 top-0 z-30 border-b border-ink/10 bg-white shadow-lg shadow-black/5 backdrop-blur-xl"
     >
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 md:gap-4 px-2 md:px-5 py-2 md:py-4 lg:px-5">
         {/* logo + brand */}
@@ -117,13 +117,13 @@ export function Navbar() {
 
           <Link
             href="/about"
-            className="text-sm font-medium text-cloud/85 transition-colors hover:text-cloud focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
+            className="text-sm font-medium text-ink/80 transition-colors hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
           >
             About
           </Link>
           <Link
             href="/contact"
-            className="text-sm font-medium text-cloud/85 transition-colors hover:text-cloud focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
+            className="text-sm font-medium text-ink/80 transition-colors hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
           >
             Contact
           </Link>
@@ -135,7 +135,7 @@ export function Navbar() {
 
           <a
             href={PHONE_HREF}
-            className="hidden items-center gap-2 text-sm font-medium text-cloud/85 transition-colors hover:text-cloud focus:outline-none focus-visible:ring-2 focus-visible:ring-ember xl:flex"
+            className="hidden items-center gap-2 text-sm font-medium text-ink/80 transition-colors hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ember xl:flex"
           >
             <Phone size={16} className="text-ember" />
             {PHONE_DISPLAY}
@@ -144,7 +144,7 @@ export function Navbar() {
           <div className="flex items-center gap-2.5">
             <Link
               href="/auth/login"
-              className="rounded-full border border-cloud/25 px-5 py-2 text-sm font-medium text-cloud transition-colors hover:border-cloud/50 hover:bg-cloud/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
+              className="rounded-full border border-ink/20 px-5 py-2 text-sm font-medium text-ink transition-colors hover:border-ink/40 hover:bg-ink/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
             >
               Login to portal
             </Link>
@@ -164,7 +164,7 @@ export function Navbar() {
           <a
             href={PHONE_HREF}
             aria-label={`Call us at ${PHONE_DISPLAY}`}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-cloud transition-colors hover:bg-cloud/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
           >
             <Phone size={19} />
           </a>
@@ -182,7 +182,7 @@ export function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.16, ease: "easeOut" }}
-            className="absolute inset-x-0 top-full z-40 hidden border-b border-ink/15 border-t-[3px] border-t-ink bg-cloud lg:block"
+            className="absolute inset-x-0 top-full z-40 hidden border-b border-ink/15 border-t-[3px] border-t-ruby bg-white lg:block"
           >
             <div className="mx-auto flex w-full max-w-7xl justify-start px-2 md:px-5 lg:px-10">
               {activeMenu === "schools" && <SchoolsMegaPanel />}

@@ -21,7 +21,7 @@ export function NavMenuTrigger({ label, active, onOpen, onToggle }: NavMenuTrigg
       onFocus={onOpen}
       onClick={onToggle}
       aria-expanded={active}
-      className="flex items-center gap-1 text-sm font-medium text-cloud/85 transition-colors hover:text-cloud focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
+      className="flex items-center gap-1 text-sm font-medium text-ink/80 transition-colors hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
     >
       {label}
       <ChevronDown

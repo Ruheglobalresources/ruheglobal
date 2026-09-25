@@ -43,11 +43,11 @@ export function MobileNavSheet() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
+            <SheetTrigger asChild>
         <button
           type="button"
           aria-label={open ? "Close menu" : "Open menu"}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-cloud transition-colors hover:bg-cloud/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember lg:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember lg:hidden"
         >
           {open ? <X size={21} /> : <Menu size={21} />}
         </button>
