@@ -88,7 +88,7 @@ export function Navbar() {
             <span className="font-display text-[27px] md:text-[35px] font-extrabold tracking-wide text-ruby">
               RUHE
             </span>
-            <span className="mt-1 text-[11px] md:text-[15px] font-medium uppercase tracking-[0.18em] text-ruby/90">
+            <span className="mt-1 text-[11px] md:text-[15px] font-medium tracking-[0.18em] text-ruby/90">
               Global Resources
             </span>
           </div>
