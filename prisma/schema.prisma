@@ -494,6 +494,27 @@ model Institution {
 // needed without a schema change. `country` must match a name in
 // COUNTRIES (src/constants/schools.ts) so the country tabs keep working.
 // ─────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────
+// REPLACE the three School models in prisma/schema.prisma with this.
+//
+// What changed vs your current models:
+//   School:        + famousFor, tuitionTo, overview, services, accommodation,
+//                  locationInfo, highlights, scholarships relation
+//                  - paragraph1..4 (replaced by the named sections)
+//   SchoolCourse:  + degree
+//   SchoolScholarship: new child table
+//
+// Page sections this feeds (same order as the StudyIn page):
+//   stat strip  -> ranking, founded, famousFor, tuitionFrom..tuitionTo
+//   Overview    -> overview
+//   Services    -> services
+//   Rankings    -> highlights (bullet list)
+//   Accommodation -> accommodation
+//   Location    -> locationInfo
+//   Courses     -> courses rows
+//   Scholarships-> scholarships rows
+//   Photos between sections -> the existing gallery images
+// ─────────────────────────────────────────────────────────────────────────
 
 model School {
   id   String @id @default(uuid())
@@ -503,19 +524,25 @@ model School {
   country String // must match a COUNTRIES name, e.g. "United Kingdom"
   city    String
   founded Int?
-  ranking String? // e.g. "QS #29 (2026)"
 
+  // Stat strip
+  ranking    String? // e.g. "QS #29 (2026)"
+  famousFor  String? // e.g. "Business, Engineering, Physics"
   acceptanceRate  String? // e.g. "60%+"
   tuitionFrom     Int? // whole units of tuitionCurrency, per year
+  tuitionTo       Int? // top of the range; leave empty to show "from" only
   tuitionCurrency String  @default("USD") // ISO 4217: GBP, CAD, USD, EUR, AUD
   website         String?
 
   // Content
-  description String  @db.Text // short blurb: school card + meta fallback
-  paragraph1  String? @db.Text
-  paragraph2  String? @db.Text
-  paragraph3  String? @db.Text
-  paragraph4  String? @db.Text
+  description String @db.Text // short blurb: school card + meta fallback
+
+  // Detail page sections (each one optional; empty sections are hidden)
+  overview      String? @db.Text
+  services      String? @db.Text // international student services
+  accommodation String? @db.Text
+  locationInfo  String? @db.Text // the city / campus location section
+  highlights    String[] // "Rankings" bullet list, one item per entry
 
   // Images
   coverImage    String // card image + hero + og:image fallback
@@ -529,8 +556,9 @@ model School {
   isActive Boolean @default(true)
   order    Int     @default(0)
 
-  courses SchoolCourse[]
-  images  SchoolImage[]
+  courses      SchoolCourse[]
+  images       SchoolImage[]
+  scholarships SchoolScholarship[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -543,8 +571,9 @@ model School {
 model SchoolCourse {
   id          String  @id @default(uuid())
   schoolId    String
-  name        String // "MSc Data Science"
-  level       String? // "Undergraduate", "Postgraduate", "Foundation"...
+  name        String // "Advanced Computer Science"
+  degree      String? // "MSc", "BSc", "MBA", "Foundation"...
+  level       String? // "Undergraduate", "Postgraduate"...
   duration    String? // "1 year", "3 years"
   tuition     String? // free text, e.g. "£18,500 / year"
   intakes     String? // e.g. "September, January"
@@ -573,3 +602,30 @@ model SchoolImage {
 
   @@index([schoolId])
 }
+
+model SchoolScholarship {
+  id           String  @id @default(uuid())
+  schoolId     String
+  name         String // "Strathclyde Alumni Scholarship: Postgraduate Taught"
+  academicYear String? // "2026" or "2026/27"
+  description  String? @db.Text
+  url          String? // "Learn more" link
+  order        Int     @default(0)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([schoolId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// MIGRATING. If you have NO schools saved yet, just run:
+//     npx prisma db push      (or: npx prisma migrate dev --name school-detail-sections)
+// If you already saved schools, keep their write-ups:
+//     npx prisma migrate dev --create-only --name school-detail-sections
+// then, in the generated migration.sql, put this BEFORE the DROP COLUMN lines:
+//     UPDATE "School" SET "overview" = concat_ws(E'\n\n', "paragraph1", "paragraph2", "paragraph3", "paragraph4");
+// and run `npx prisma migrate dev`.
+// Finally: npx prisma generate
+// ─────────────────────────────────────────────────────────────────────────

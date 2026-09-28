@@ -63,7 +63,9 @@ const schoolCardSelect = {
   logoUrl: true,
   founded: true,
   ranking: true,
+  famousFor: true,
   tuitionFrom: true,
+  tuitionTo: true,
   tuitionCurrency: true,
   acceptanceRate: true,
   description: true,
@@ -106,6 +108,7 @@ async function querySchoolBySlug(slug: string) {
     include: {
       courses: { orderBy: { order: "asc" } },
       images: { orderBy: { order: "asc" } },
+      scholarships: { orderBy: { order: "asc" } },
     },
   });
 }
@@ -139,7 +142,9 @@ type SchoolCardRow = {
   logoUrl: Nullable<string>;
   founded: Nullable<number>;
   ranking: Nullable<string>;
+  famousFor: Nullable<string>;
   tuitionFrom: Nullable<number>;
+  tuitionTo: Nullable<number>;
   tuitionCurrency: string;
   acceptanceRate: Nullable<string>;
   description: string;
@@ -148,16 +153,18 @@ type SchoolCardRow = {
 
 type SchoolDetailRow = Omit<SchoolCardRow, "_count"> & {
   website: Nullable<string>;
-  paragraph1: Nullable<string>;
-  paragraph2: Nullable<string>;
-  paragraph3: Nullable<string>;
-  paragraph4: Nullable<string>;
+  overview: Nullable<string>;
+  services: Nullable<string>;
+  accommodation: Nullable<string>;
+  locationInfo: Nullable<string>;
+  highlights: string[];
   metaTitle: Nullable<string>;
   metaDescription: Nullable<string>;
   updatedAt: Date;
   courses: Array<{
     id: string;
     name: string;
+    degree: Nullable<string>;
     level: Nullable<string>;
     duration: Nullable<string>;
     tuition: Nullable<string>;
@@ -170,6 +177,13 @@ type SchoolDetailRow = Omit<SchoolCardRow, "_count"> & {
     url: string;
     altText: Nullable<string>;
     caption: Nullable<string>;
+  }>;
+  scholarships: Array<{
+    id: string;
+    name: string;
+    academicYear: Nullable<string>;
+    description: Nullable<string>;
+    url: Nullable<string>;
   }>;
 };
 
@@ -187,7 +201,9 @@ const cardFields = (s: Omit<SchoolCardRow, "_count">) => ({
   logoUrl: s.logoUrl,
   founded: s.founded,
   ranking: s.ranking,
+  famousFor: s.famousFor,
   tuitionFrom: s.tuitionFrom,
+  tuitionTo: s.tuitionTo,
   tuitionCurrency: s.tuitionCurrency,
   acceptanceRate: s.acceptanceRate,
   description: s.description,
@@ -199,26 +215,36 @@ function toSchoolCard(s: SchoolCardRow) {
 }
 
 function toSchoolDetail(s: SchoolDetailRow) {
-  const paragraphs = [s.paragraph1, s.paragraph2, s.paragraph3, s.paragraph4].filter(
-    (p): p is string => typeof p === "string" && p.trim().length > 0
-  );
-
   return {
     ...cardFields(s),
     courseCount: s.courses.length,
     website: s.website,
-    paragraphs,
+    sections: {
+      overview: s.overview,
+      services: s.services,
+      highlights: s.highlights,
+      accommodation: s.accommodation,
+      location: s.locationInfo,
+    },
     metaTitle: s.metaTitle,
     metaDescription: s.metaDescription,
     courses: s.courses.map((x) => ({
       id: x.id,
       name: x.name,
+      degree: x.degree,
       level: x.level,
       duration: x.duration,
       tuition: x.tuition,
       intakes: x.intakes,
       description: x.description,
       imageUrl: x.imageUrl,
+    })),
+    scholarships: s.scholarships.map((x) => ({
+      id: x.id,
+      name: x.name,
+      academicYear: x.academicYear,
+      description: x.description,
+      url: x.url,
     })),
     images: s.images.map((x) => ({
       id: x.id,
@@ -334,7 +360,7 @@ schoolsRoute.openapi(
     tags: ["Schools"],
     summary: "Get one school",
     description:
-      "Full details for one school by slug: overview article, courses with tuition and intakes, and gallery images. Get the slug from listSchools.",
+      "Full details for one school by slug: overview, international student services, rankings and highlights, accommodation, location, courses with degree, tuition and intakes, scholarships, and gallery images. Get the slug from listSchools.",
     request: {
       params: ApiSchoolSlugParamSchema,
     },

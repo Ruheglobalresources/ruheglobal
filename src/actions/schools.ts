@@ -1,3 +1,4 @@
+// src/actions/schools.ts  (full replacement)
 "use server";
 
 import * as z from "zod";
@@ -38,23 +39,36 @@ function safeUrl(value?: string): string | null {
 
 const clean = (v?: string) => v?.trim() || null;
 const positiveOrNull = (n?: number) => (typeof n === "number" && n > 0 ? n : null);
+// "one per line" textarea -> string[]
+const lines = (v?: string) =>
+  (v ?? "")
+    .split(/\r?\n/)
+    .map((s) => s.trim())
+    .filter(Boolean);
 
 function toData(v: SchoolInput) {
+  const from = positiveOrNull(v.tuitionFrom);
+  const to = positiveOrNull(v.tuitionTo);
+
   return {
     name: v.name.trim(),
     country: v.country.trim(),
     city: v.city.trim(),
     founded: positiveOrNull(v.founded),
     ranking: clean(v.ranking),
+    famousFor: clean(v.famousFor),
     acceptanceRate: clean(v.acceptanceRate),
-    tuitionFrom: positiveOrNull(v.tuitionFrom),
+    tuitionFrom: from,
+    // a range only makes sense when the top is above the bottom
+    tuitionTo: to && (!from || to > from) ? to : null,
     tuitionCurrency: v.tuitionCurrency.trim().toUpperCase(),
     website: safeUrl(v.website),
     description: v.description.trim(),
-    paragraph1: clean(v.paragraph1),
-    paragraph2: clean(v.paragraph2),
-    paragraph3: clean(v.paragraph3),
-    paragraph4: clean(v.paragraph4),
+    overview: clean(v.overview),
+    services: clean(v.services),
+    accommodation: clean(v.accommodation),
+    locationInfo: clean(v.locationInfo),
+    highlights: lines(v.highlights),
     coverImage: safeUrl(v.coverImage) ?? v.coverImage,
     coverImageAlt: clean(v.coverImageAlt),
     logoUrl: safeUrl(v.logoUrl),
@@ -68,6 +82,7 @@ function toData(v: SchoolInput) {
 const courseRows = (v: SchoolInput) =>
   v.courses.map((c, i) => ({
     name: c.name.trim(),
+    degree: clean(c.degree),
     level: clean(c.level),
     duration: clean(c.duration),
     tuition: clean(c.tuition),
@@ -86,6 +101,15 @@ const imageRows = (v: SchoolInput) =>
       caption: clean(img.caption),
       order: i,
     }));
+
+const scholarshipRows = (v: SchoolInput) =>
+  v.scholarships.map((s, i) => ({
+    name: s.name.trim(),
+    academicYear: clean(s.academicYear),
+    description: clean(s.description),
+    url: safeUrl(s.url),
+    order: i,
+  }));
 
 function revalidateSchool(slug: string) {
   revalidatePath("/");
@@ -108,6 +132,7 @@ export async function createSchool(values: SchoolInput) {
       slug,
       courses: { create: courseRows(validated.data) },
       images: { create: imageRows(validated.data) },
+      scholarships: { create: scholarshipRows(validated.data) },
     },
   });
 
@@ -127,11 +152,12 @@ export async function updateSchool(id: string, values: SchoolInput) {
   const slug =
     validated.data.slug === existing.slug ? existing.slug : await uniqueSlug(validated.data.slug, id);
 
-  // Courses and gallery images are edited as whole lists on the form, so
-  // they're replaced in one transaction together with the school itself.
+  // Courses, gallery images and scholarships are edited as whole lists on the
+  // form, so they're replaced in one transaction together with the school.
   await db.$transaction([
     db.schoolCourse.deleteMany({ where: { schoolId: id } }),
     db.schoolImage.deleteMany({ where: { schoolId: id } }),
+    db.schoolScholarship.deleteMany({ where: { schoolId: id } }),
     db.school.update({
       where: { id },
       data: {
@@ -139,6 +165,7 @@ export async function updateSchool(id: string, values: SchoolInput) {
         slug,
         courses: { create: courseRows(validated.data) },
         images: { create: imageRows(validated.data) },
+        scholarships: { create: scholarshipRows(validated.data) },
       },
     }),
   ]);

@@ -196,12 +196,16 @@ export const InstitutionSchema = z.object({
   order: z.coerce.number().int().default(0),
 });
 
-// ── Schools ────────────────────────────────────────────────────────────
-// Child rows (courses, gallery images) are edited inline on the school form
-// and replaced wholesale on save, so they travel inside the same payload.
+
+// ─────────────────────────────────────────────────────────────────────────
+// REPLACE the Schools block in src/schemas/index.ts with this.
+// (`z` is already imported there.) Also add at the bottom of the block:
+//   export type SchoolInput = z.infer<typeof SchoolSchema>;   // only if you use it elsewhere
+// ─────────────────────────────────────────────────────────────────────────
 
 export const SchoolCourseSchema = z.object({
   name: z.string().min(1, "Course name is required"),
+  degree: z.string().optional(),
   level: z.string().optional(),
   duration: z.string().optional(),
   tuition: z.string().optional(),
@@ -214,6 +218,13 @@ export const SchoolImageSchema = z.object({
   url: z.string().min(1, "Image is required"),
   altText: z.string().optional(),
   caption: z.string().optional(),
+});
+
+export const SchoolScholarshipSchema = z.object({
+  name: z.string().min(1, "Scholarship name is required"),
+  academicYear: z.string().max(20).optional(),
+  description: z.string().optional(),
+  url: z.string().optional(),
 });
 
 export const SchoolSchema = z.object({
@@ -230,8 +241,13 @@ export const SchoolSchema = z.object({
     z.coerce.number().int().min(1000, "Enter a 4-digit year").max(2100).optional()
   ),
   ranking: z.string().max(80).optional(),
+  famousFor: z.string().max(120).optional(),
   acceptanceRate: z.string().max(40).optional(),
   tuitionFrom: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    z.coerce.number().min(0).optional()
+  ),
+  tuitionTo: z.preprocess(
     (v) => (v === "" || v == null ? undefined : v),
     z.coerce.number().min(0).optional()
   ),
@@ -241,10 +257,15 @@ export const SchoolSchema = z.object({
     .string()
     .min(1, "Short description is required")
     .max(320, "Keep the short description under 320 characters"),
-  paragraph1: z.string().optional(),
-  paragraph2: z.string().optional(),
-  paragraph3: z.string().optional(),
-  paragraph4: z.string().optional(),
+
+  // Detail page sections
+  overview: z.string().optional(),
+  services: z.string().optional(),
+  accommodation: z.string().optional(),
+  locationInfo: z.string().optional(),
+  // One highlight per line in the form; split into a string[] on save.
+  highlights: z.string().optional(),
+
   coverImage: z.string().min(1, "Cover image is required"),
   coverImageAlt: z.string().optional(),
   logoUrl: z.string().optional(),
@@ -254,4 +275,5 @@ export const SchoolSchema = z.object({
   order: z.coerce.number().int().default(0),
   courses: z.array(SchoolCourseSchema).default([]),
   images: z.array(SchoolImageSchema).default([]),
+  scholarships: z.array(SchoolScholarshipSchema).default([]),
 });

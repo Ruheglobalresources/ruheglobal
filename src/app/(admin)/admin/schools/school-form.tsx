@@ -37,15 +37,18 @@ type ExistingSchool = {
   city: string;
   founded: number | null;
   ranking: string | null;
+  famousFor: string | null;
   acceptanceRate: string | null;
   tuitionFrom: number | null;
+  tuitionTo: number | null;
   tuitionCurrency: string;
   website: string | null;
   description: string;
-  paragraph1: string | null;
-  paragraph2: string | null;
-  paragraph3: string | null;
-  paragraph4: string | null;
+  overview: string | null;
+  services: string | null;
+  accommodation: string | null;
+  locationInfo: string | null;
+  highlights: string[];
   coverImage: string;
   coverImageAlt: string | null;
   logoUrl: string | null;
@@ -55,6 +58,7 @@ type ExistingSchool = {
   order: number;
   courses: {
     name: string;
+    degree: string | null;
     level: string | null;
     duration: string | null;
     tuition: string | null;
@@ -63,6 +67,12 @@ type ExistingSchool = {
     imageUrl: string | null;
   }[];
   images: { url: string; altText: string | null; caption: string | null }[];
+  scholarships: {
+    name: string;
+    academicYear: string | null;
+    description: string | null;
+    url: string | null;
+  }[];
 };
 
 const slugify = (v: string) =>
@@ -93,15 +103,19 @@ export function SchoolForm({ school }: { school?: ExistingSchool }) {
       city: school?.city ?? "",
       founded: school?.founded ?? undefined,
       ranking: school?.ranking ?? "",
+      famousFor: school?.famousFor ?? "",
       acceptanceRate: school?.acceptanceRate ?? "",
       tuitionFrom: school?.tuitionFrom ?? undefined,
+      tuitionTo: school?.tuitionTo ?? undefined,
       tuitionCurrency: school?.tuitionCurrency ?? "GBP",
       website: school?.website ?? "",
       description: school?.description ?? "",
-      paragraph1: school?.paragraph1 ?? "",
-      paragraph2: school?.paragraph2 ?? "",
-      paragraph3: school?.paragraph3 ?? "",
-      paragraph4: school?.paragraph4 ?? "",
+      overview: school?.overview ?? "",
+      services: school?.services ?? "",
+      accommodation: school?.accommodation ?? "",
+      locationInfo: school?.locationInfo ?? "",
+      // Textarea holds one bullet per line; the server action splits it back into String[]
+      highlights: (school?.highlights ?? []).join("\n"),
       coverImage: school?.coverImage ?? "",
       coverImageAlt: school?.coverImageAlt ?? "",
       logoUrl: school?.logoUrl ?? "",
@@ -112,6 +126,7 @@ export function SchoolForm({ school }: { school?: ExistingSchool }) {
       courses:
         school?.courses.map((c) => ({
           name: c.name,
+          degree: c.degree ?? "",
           level: c.level ?? "",
           duration: c.duration ?? "",
           tuition: c.tuition ?? "",
@@ -120,11 +135,19 @@ export function SchoolForm({ school }: { school?: ExistingSchool }) {
           imageUrl: c.imageUrl ?? "",
         })) ?? [],
       images: school?.images.map((i) => ({ url: i.url, altText: i.altText ?? "", caption: i.caption ?? "" })) ?? [],
+      scholarships:
+        school?.scholarships.map((s) => ({
+          name: s.name,
+          academicYear: s.academicYear ?? "",
+          description: s.description ?? "",
+          url: s.url ?? "",
+        })) ?? [],
     },
   });
 
   const courses = useFieldArray({ control: form.control, name: "courses" });
   const images = useFieldArray({ control: form.control, name: "images" });
+  const scholarships = useFieldArray({ control: form.control, name: "scholarships" });
 
   const countryOptions = COUNTRIES.map((c) => c.name);
   if (school && !countryOptions.includes(school.country)) countryOptions.push(school.country);
@@ -254,7 +277,8 @@ export function SchoolForm({ school }: { school?: ExistingSchool }) {
                 />
               </div>
 
-              <div className="mt-4 grid gap-4 sm:grid-cols-3">
+              {/* Founded / Tuition from / Tuition up to / Currency */}
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <FormField
                   control={form.control}
                   name="founded"
@@ -262,7 +286,7 @@ export function SchoolForm({ school }: { school?: ExistingSchool }) {
                     <FormItem>
                       <FormLabel>Founded</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value ?? ""} type="number" disabled={busy} placeholder="1992" />
+                        <Input {...field} value={field.value ?? ""} type="number" disabled={busy} placeholder="1796" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -273,10 +297,24 @@ export function SchoolForm({ school }: { school?: ExistingSchool }) {
                   name="tuitionFrom"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tuition from (per year)</FormLabel>
+                      <FormLabel>Tuition from</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value ?? ""} type="number" disabled={busy} placeholder="18500" />
+                        <Input {...field} value={field.value ?? ""} type="number" disabled={busy} placeholder="13500" />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tuitionTo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tuition up to</FormLabel>
+                      <FormControl>
+                        <Input {...field} value={field.value ?? ""} type="number" disabled={busy} placeholder="20900" />
+                      </FormControl>
+                      <FormDescription>Optional. Shows as a range.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -327,6 +365,25 @@ export function SchoolForm({ school }: { school?: ExistingSchool }) {
 
               <FormField
                 control={form.control}
+                name="famousFor"
+                render={({ field }) => (
+                  <FormItem className="mt-4">
+                    <FormLabel>Famous for (optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value ?? ""}
+                        disabled={busy}
+                        placeholder="Business, Engineering, Physics"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="website"
                 render={({ field }) => (
                   <FormItem className="mt-4">
@@ -340,11 +397,13 @@ export function SchoolForm({ school }: { school?: ExistingSchool }) {
               />
             </div>
 
+            {/* Write-up */}
             <div className="rounded-xl border bg-white p-5">
               <h2 className="mb-1 text-sm font-semibold text-ink">Write-up</h2>
               <p className="mb-4 text-xs text-neutral-500">
-                The short description shows on the school card. Paragraphs 1 to 4 form the short article on the
-                school&apos;s page. Leave any you don&apos;t need empty.
+                The short description shows on the school card. Each section below becomes a tab on the
+                school&apos;s page. Leave any you don&apos;t need empty and it won&apos;t show. Separate paragraphs
+                with a blank line.
               </p>
 
               <FormField
@@ -361,22 +420,51 @@ export function SchoolForm({ school }: { school?: ExistingSchool }) {
                 )}
               />
 
-              {(["paragraph1", "paragraph2", "paragraph3", "paragraph4"] as const).map((name, i) => (
+              {(
+                [
+                  ["overview", "Overview", 6, "Who they are, where they are, what they are known for."],
+                  ["services", "Services for international students", 5, "Support team, societies, English support, careers service."],
+                  ["accommodation", "Accommodation", 5, "Halls, campus village, off-campus help."],
+                  ["locationInfo", "Location", 5, "The city and the life around the campus."],
+                ] as const
+              ).map(([name, label, rows, hint]) => (
                 <FormField
                   key={name}
                   control={form.control}
                   name={name}
                   render={({ field }) => (
                     <FormItem className="mt-4">
-                      <FormLabel>Paragraph {i + 1}</FormLabel>
+                      <FormLabel>{label}</FormLabel>
                       <FormControl>
-                        <Textarea {...field} value={field.value ?? ""} disabled={busy} rows={5} />
+                        <Textarea {...field} value={field.value ?? ""} disabled={busy} rows={rows} />
                       </FormControl>
+                      <FormDescription>{hint}</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               ))}
+
+              <FormField
+                control={form.control}
+                name="highlights"
+                render={({ field }) => (
+                  <FormItem className="mt-4">
+                    <FormLabel>Rankings and highlights</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        value={field.value ?? ""}
+                        disabled={busy}
+                        rows={6}
+                        placeholder={"UK University of the Year (Daily Mail 2026)\n23 subjects in the UK top ten"}
+                      />
+                    </FormControl>
+                    <FormDescription>One per line. Each line becomes a bullet.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             {/* Courses */}
@@ -389,16 +477,23 @@ export function SchoolForm({ school }: { school?: ExistingSchool }) {
                   variant="outline"
                   disabled={busy}
                   onClick={() =>
-                    courses.append({ name: "", level: "", duration: "", tuition: "", intakes: "", description: "", imageUrl: "" })
+                    courses.append({
+                      name: "",
+                      degree: "",
+                      level: "",
+                      duration: "",
+                      tuition: "",
+                      intakes: "",
+                      description: "",
+                      imageUrl: "",
+                    })
                   }
                 >
                   <Plus size={14} className="mr-1" /> Add course
                 </Button>
               </div>
 
-              {courses.fields.length === 0 && (
-                <p className="text-sm text-neutral-400">No courses yet.</p>
-              )}
+              {courses.fields.length === 0 && <p className="text-sm text-neutral-400">No courses yet.</p>}
 
               <div className="space-y-4">
                 {courses.fields.map((item, i) => (
@@ -427,13 +522,25 @@ export function SchoolForm({ school }: { school?: ExistingSchool }) {
                             <FormItem>
                               <FormLabel>Name</FormLabel>
                               <FormControl>
-                                <Input {...field} disabled={busy} placeholder="MSc Data Science" />
+                                <Input {...field} disabled={busy} placeholder="Data Science" />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                         <div className="grid gap-3 sm:grid-cols-2">
+                          <FormField
+                            control={form.control}
+                            name={`courses.${i}.degree`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Degree</FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value ?? ""} disabled={busy} placeholder="MSc" />
+                                </FormControl>
+                              </FormItem>
+                            )}
+                          />
                           <FormField
                             control={form.control}
                             name={`courses.${i}.level`}
@@ -522,9 +629,102 @@ export function SchoolForm({ school }: { school?: ExistingSchool }) {
               </div>
             </div>
 
-            {/* Gallery */}
+            {/* Scholarships */}
             <div className="rounded-xl border bg-white p-5">
               <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-ink">Scholarships ({scholarships.fields.length})</h2>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={busy}
+                  onClick={() => scholarships.append({ name: "", academicYear: "", description: "", url: "" })}
+                >
+                  <Plus size={14} className="mr-1" /> Add scholarship
+                </Button>
+              </div>
+
+              {scholarships.fields.length === 0 && <p className="text-sm text-neutral-400">No scholarships yet.</p>}
+
+              <div className="space-y-4">
+                {scholarships.fields.map((item, i) => (
+                  <div key={item.id} className="rounded-lg border p-4">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-xs font-medium uppercase tracking-wide text-neutral-400">
+                        Scholarship {i + 1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => scholarships.remove(i)}
+                        disabled={busy}
+                        className="text-neutral-400 hover:text-red-600"
+                        aria-label={`Remove scholarship ${i + 1}`}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-[1fr_140px]">
+                      <FormField
+                        control={form.control}
+                        name={`scholarships.${i}.name`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                              <Input {...field} disabled={busy} placeholder="Alumni Scholarship: Postgraduate Taught" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`scholarships.${i}.academicYear`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Academic year</FormLabel>
+                            <FormControl>
+                              <Input {...field} value={field.value ?? ""} disabled={busy} placeholder="2026/27" />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name={`scholarships.${i}.url`}
+                      render={({ field }) => (
+                        <FormItem className="mt-3">
+                          <FormLabel>&quot;Learn more&quot; link (optional)</FormLabel>
+                          <FormControl>
+                            <Input {...field} value={field.value ?? ""} disabled={busy} placeholder="https://www.strath.ac.uk/..." />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name={`scholarships.${i}.description`}
+                      render={({ field }) => (
+                        <FormItem className="mt-3">
+                          <FormLabel>Details (optional)</FormLabel>
+                          <FormControl>
+                            <Textarea {...field} value={field.value ?? ""} disabled={busy} rows={2} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Gallery */}
+            <div className="rounded-xl border bg-white p-5">
+              <div className="mb-1 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-ink">Gallery images ({images.fields.length})</h2>
                 <label className="inline-flex cursor-pointer items-center gap-1 rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-neutral-50">
                   {uploadingGallery ? <Loader2 size={14} className="animate-spin" /> : <ImagePlus size={14} />}
@@ -543,6 +743,10 @@ export function SchoolForm({ school }: { school?: ExistingSchool }) {
                   />
                 </label>
               </div>
+              <p className="mb-4 text-xs text-neutral-500">
+                The first three images appear beside the Services, Accommodation and Location sections on the
+                school page.
+              </p>
 
               {images.fields.length === 0 && <p className="text-sm text-neutral-400">No gallery images yet.</p>}
 
