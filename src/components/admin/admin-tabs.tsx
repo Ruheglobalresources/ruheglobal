@@ -12,6 +12,7 @@ import {
   UsersRound,
   Newspaper,
   Building2,
+  GraduationCap,
   type LucideIcon,
 } from "lucide-react";
 
@@ -27,6 +28,7 @@ const TABS: Tab[] = [
   { href: "/admin/applications", label: "Applications", icon: FolderKanban, adminOnly: true },
   { href: "/admin/fields", label: "Field Library", icon: ListChecks, adminOnly: true },
   { href: "/admin/institutions", label: "Institutions", icon: Building2, adminOnly: true },
+  { href: "/admin/schools", label: "Schools", icon: GraduationCap, adminOnly: true },
   { href: "/admin/submissions", label: "Submissions", icon: Inbox, adminOnly: true },
   { href: "/admin/blog", label: "Blog", icon: Newspaper },
   { href: "/admin/counselors", label: "Counselors", icon: UsersRound, adminOnly: true },

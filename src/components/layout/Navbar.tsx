@@ -73,6 +73,7 @@ export function Navbar() {
   return (
     <header
       ref={headerRef}
+      onMouseEnter={clearCloseTimer}
       onMouseLeave={closeMenuSoon}
       className="absolute inset-x-0 top-0 z-30 border-b border-ink/10 bg-white shadow-lg shadow-black/5 backdrop-blur-xl"
     >
@@ -80,6 +81,7 @@ export function Navbar() {
         {/* logo + brand */}
         <a
           href="/"
+          onMouseEnter={closeMenuNow}
           className="flex min-w-0 items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember lg:shrink-0"
         >
           <LogoOrbit size={58} speed={2} className="h-14 w-14 shrink-0" />
@@ -115,14 +117,19 @@ export function Navbar() {
             onToggle={() => toggleMenu("services")}
           />
 
+          {/* links without a panel close whatever panel is open */}
           <Link
             href="/about"
+            onMouseEnter={closeMenuNow}
+            onFocus={closeMenuNow}
             className="text-sm font-medium text-ink/80 transition-colors hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
           >
             About
           </Link>
           <Link
             href="/contact"
+            onMouseEnter={closeMenuNow}
+            onFocus={closeMenuNow}
             className="text-sm font-medium text-ink/80 transition-colors hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
           >
             Contact
@@ -130,7 +137,10 @@ export function Navbar() {
         </nav>
 
         {/* desktop CTAs */}
-        <div className="hidden shrink-0 items-center gap-4 lg:flex">
+        <div
+          onMouseEnter={closeMenuNow}
+          className="hidden shrink-0 items-center gap-4 lg:flex"
+        >
           <MessageBox />
 
           <a
@@ -161,8 +171,8 @@ export function Navbar() {
         <div className="flex shrink-0 items-center gap-1 lg:hidden">
           <MessageBox />
 
-          <a
-            href={PHONE_HREF}
+          
+           <a href={PHONE_HREF}
             aria-label={`Call us at ${PHONE_DISPLAY}`}
             className="flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
           >
@@ -185,9 +195,11 @@ export function Navbar() {
             className="absolute inset-x-0 top-full z-40 hidden border-b border-ink/15 border-t-[3px] border-t-ruby bg-white lg:block"
           >
             <div className="mx-auto flex w-full max-w-7xl justify-start px-2 md:px-5 lg:px-10">
-              {activeMenu === "schools" && <SchoolsMegaPanel />}
-              {activeMenu === "programs" && <SimpleDropdownPanel links={PROGRAM_LINKS} />}
-              {activeMenu === "services" && <ServicesMegaPanel />}
+              {activeMenu === "schools" && <SchoolsMegaPanel onNavigate={closeMenuNow} />}
+              {activeMenu === "programs" && (
+                <SimpleDropdownPanel links={PROGRAM_LINKS} onNavigate={closeMenuNow} />
+              )}
+              {activeMenu === "services" && <ServicesMegaPanel onNavigate={closeMenuNow} />}
             </div>
           </motion.div>
         )}

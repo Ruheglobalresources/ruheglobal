@@ -9,7 +9,7 @@ import { AiCourseSearchBox } from "./AiCourseSearchBox";
 
 const SCHOOLS_PER_COUNTRY = 3;
 
-export function SchoolsMegaPanel() {
+export function SchoolsMegaPanel({ onNavigate }: { onNavigate: () => void }) {
   const [activeCountry, setActiveCountry] = useState(COUNTRIES[0].name);
 
   const schools = useMemo(
@@ -58,6 +58,7 @@ export function SchoolsMegaPanel() {
           <Link
             key={school.id}
             href={`/school-search?school=${school.id}`}
+            onClick={onNavigate}
             className="group flex flex-col transition-colors hover:bg-ink/5"
           >
             <div className="relative h-32 w-full overflow-hidden border-b border-ink/12">
@@ -84,6 +85,7 @@ export function SchoolsMegaPanel() {
 
         <Link
           href="/search"
+          onClick={onNavigate}
           className="flex flex-col items-center justify-center gap-1.5 bg-ink px-2 py-4 text-cloud transition-colors hover:bg-ink/90"
         >
           <ArrowRight size={18} />

@@ -195,3 +195,63 @@ export const InstitutionSchema = z.object({
   isActive: z.boolean().default(true),
   order: z.coerce.number().int().default(0),
 });
+
+// ── Schools ────────────────────────────────────────────────────────────
+// Child rows (courses, gallery images) are edited inline on the school form
+// and replaced wholesale on save, so they travel inside the same payload.
+
+export const SchoolCourseSchema = z.object({
+  name: z.string().min(1, "Course name is required"),
+  level: z.string().optional(),
+  duration: z.string().optional(),
+  tuition: z.string().optional(),
+  intakes: z.string().optional(),
+  description: z.string().optional(),
+  imageUrl: z.string().optional(),
+});
+
+export const SchoolImageSchema = z.object({
+  url: z.string().min(1, "Image is required"),
+  altText: z.string().optional(),
+  caption: z.string().optional(),
+});
+
+export const SchoolSchema = z.object({
+  name: z.string().min(1, "School name is required"),
+  slug: z
+    .string()
+    .min(1, "Slug is required")
+    .regex(/^[a-z0-9-]+$/, "Use lowercase letters, numbers and hyphens only"),
+  country: z.string().min(1, "Country is required"),
+  city: z.string().min(1, "City is required"),
+  // Empty input ("") must mean "not set", not 0, because coerce would turn it into 0.
+  founded: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    z.coerce.number().int().min(1000, "Enter a 4-digit year").max(2100).optional()
+  ),
+  ranking: z.string().max(80).optional(),
+  acceptanceRate: z.string().max(40).optional(),
+  tuitionFrom: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : v),
+    z.coerce.number().min(0).optional()
+  ),
+  tuitionCurrency: z.string().min(3, "Use an ISO code, e.g. GBP").max(3, "Use an ISO code, e.g. GBP"),
+  website: z.string().optional(),
+  description: z
+    .string()
+    .min(1, "Short description is required")
+    .max(320, "Keep the short description under 320 characters"),
+  paragraph1: z.string().optional(),
+  paragraph2: z.string().optional(),
+  paragraph3: z.string().optional(),
+  paragraph4: z.string().optional(),
+  coverImage: z.string().min(1, "Cover image is required"),
+  coverImageAlt: z.string().optional(),
+  logoUrl: z.string().optional(),
+  metaTitle: z.string().max(70, "Keep the meta title under 70 characters").optional(),
+  metaDescription: z.string().max(170, "Keep the meta description under 170 characters").optional(),
+  isActive: z.boolean().default(true),
+  order: z.coerce.number().int().default(0),
+  courses: z.array(SchoolCourseSchema).default([]),
+  images: z.array(SchoolImageSchema).default([]),
+});

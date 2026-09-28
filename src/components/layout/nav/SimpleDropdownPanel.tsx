@@ -1,7 +1,12 @@
 import Link from "next/link";
 import type { NavLink } from "@/data/site-nav";
 
-export function SimpleDropdownPanel({ links }: { links: NavLink[] }) {
+type SimpleDropdownPanelProps = {
+  links: NavLink[];
+  onNavigate?: () => void;
+};
+
+export function SimpleDropdownPanel({ links, onNavigate }: SimpleDropdownPanelProps) {
   return (
     <div className="w-72 divide-y divide-ink/10 py-1">
       {links.map((link) => {

@@ -33,7 +33,7 @@ const COLUMN_ACCENTS = [
   },
 ] as const;
 
-export function ServicesMegaPanel() {
+export function ServicesMegaPanel({ onNavigate }: { onNavigate: () => void }) {
   return (
     <div className="w-full py-1">
       <div className="grid grid-cols-4 divide-x divide-ink/12">
@@ -51,6 +51,7 @@ export function ServicesMegaPanel() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
+                        onClick={onNavigate}
                         className={`group flex items-start gap-2.5 border-l-[3px] border-l-transparent px-4 py-3 transition-colors focus:outline-none ${accent.tick} ${accent.tint}`}
                       >
                         {Icon && (
@@ -94,6 +95,7 @@ export function ServicesMegaPanel() {
         </div>
         <Link
           href="/contact"
+          onClick={onNavigate}
           className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-ruby px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ruby-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
         >
           Book free consultation

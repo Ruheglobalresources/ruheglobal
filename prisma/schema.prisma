@@ -483,3 +483,93 @@ model Institution {
   @@index([isActive])
   @@index([order])
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// SCHOOLS
+// The admin-managed schools behind the "Top schools" section on the home
+// page and each school's own SEO detail page at /schools/[slug].
+// `description` is the short blurb (card + meta-description fallback);
+// paragraph1..4 are the short-blog body of the detail page. Courses and
+// gallery images are child rows so the admin can add/remove as many as
+// needed without a schema change. `country` must match a name in
+// COUNTRIES (src/constants/schools.ts) so the country tabs keep working.
+// ─────────────────────────────────────────────────────────────────────────
+
+model School {
+  id   String @id @default(uuid())
+  name String
+  slug String @unique
+
+  country String // must match a COUNTRIES name, e.g. "United Kingdom"
+  city    String
+  founded Int?
+  ranking String? // e.g. "QS #29 (2026)"
+
+  acceptanceRate  String? // e.g. "60%+"
+  tuitionFrom     Int? // whole units of tuitionCurrency, per year
+  tuitionCurrency String  @default("USD") // ISO 4217: GBP, CAD, USD, EUR, AUD
+  website         String?
+
+  // Content
+  description String  @db.Text // short blurb: school card + meta fallback
+  paragraph1  String? @db.Text
+  paragraph2  String? @db.Text
+  paragraph3  String? @db.Text
+  paragraph4  String? @db.Text
+
+  // Images
+  coverImage    String // card image + hero + og:image fallback
+  coverImageAlt String?
+  logoUrl       String?
+
+  // SEO overrides (fall back to name/description when empty)
+  metaTitle       String?
+  metaDescription String?
+
+  isActive Boolean @default(true)
+  order    Int     @default(0)
+
+  courses SchoolCourse[]
+  images  SchoolImage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([country])
+  @@index([isActive])
+  @@index([order])
+}
+
+model SchoolCourse {
+  id          String  @id @default(uuid())
+  schoolId    String
+  name        String // "MSc Data Science"
+  level       String? // "Undergraduate", "Postgraduate", "Foundation"...
+  duration    String? // "1 year", "3 years"
+  tuition     String? // free text, e.g. "£18,500 / year"
+  intakes     String? // e.g. "September, January"
+  description String? @db.Text
+  imageUrl    String?
+  order       Int     @default(0)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([schoolId])
+}
+
+model SchoolImage {
+  id       String  @id @default(uuid())
+  schoolId String
+  url      String
+  altText  String?
+  caption  String?
+  order    Int     @default(0)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([schoolId])
+}
