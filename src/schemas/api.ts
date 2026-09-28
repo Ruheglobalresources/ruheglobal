@@ -43,10 +43,18 @@ export const ApiSchoolCardSchema = z
     logoUrl: z.string().nullable(),
     founded: z.number().int().nullable(),
     ranking: z.string().nullable(),
+    famousFor: z
+      .string()
+      .nullable()
+      .openapi({ example: "Business, Engineering, Physics", description: "Subjects the school is best known for" }),
     tuitionFrom: z
       .number()
       .nullable()
       .openapi({ description: "Yearly tuition in whole units of tuitionCurrency" }),
+    tuitionTo: z
+      .number()
+      .nullable()
+      .openapi({ description: "Top of the yearly tuition range. Null when only tuitionFrom is known" }),
     tuitionCurrency: z.string().openapi({ example: "GBP" }),
     acceptanceRate: z.string().nullable(),
     description: z.string(),
@@ -59,6 +67,7 @@ export const ApiSchoolCourseSchema = z
   .object({
     id: z.string(),
     name: z.string(),
+    degree: z.string().nullable().openapi({ example: "MSc" }),
     level: z.string().nullable(),
     duration: z.string().nullable(),
     tuition: z.string().nullable(),
@@ -77,14 +86,33 @@ export const ApiSchoolImageSchema = z
   })
   .openapi("SchoolImage");
 
+export const ApiSchoolScholarshipSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    academicYear: z.string().nullable().openapi({ example: "2026/27" }),
+    description: z.string().nullable(),
+    url: z.string().nullable().openapi({ description: "Link to learn more" }),
+  })
+  .openapi("SchoolScholarship");
+
+export const ApiSchoolSectionsSchema = z
+  .object({
+    overview: z.string().nullable().openapi({ description: "Who the school is and what it is known for. Paragraphs are separated by a blank line" }),
+    services: z.string().nullable().openapi({ description: "Services for international students" }),
+    highlights: z.array(z.string()).openapi({ description: "Rankings and highlights, one bullet per entry" }),
+    accommodation: z.string().nullable(),
+    location: z.string().nullable().openapi({ description: "The city and campus location" }),
+  })
+  .openapi("SchoolSections");
+
 export const ApiSchoolDetailSchema = ApiSchoolCardSchema.extend({
   website: z.string().nullable(),
-  paragraphs: z
-    .array(z.string())
-    .openapi({ description: "The written article in order, with empty paragraphs removed" }),
+  sections: ApiSchoolSectionsSchema,
   metaTitle: z.string().nullable(),
   metaDescription: z.string().nullable(),
   courses: z.array(ApiSchoolCourseSchema),
+  scholarships: z.array(ApiSchoolScholarshipSchema),
   images: z.array(ApiSchoolImageSchema),
   updatedAt: z.string().openapi({ description: "ISO 8601" }),
 }).openapi("SchoolDetail");
