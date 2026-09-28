@@ -10,7 +10,7 @@ import { CourseExplorer } from "@/components/schools/detail/CourseExplorer"
 import {
   Section,
   TextWithImage,
-  RankingsList,
+  RankingsSection,
   ScholarshipGrid,
 } from "@/components/schools/detail/SchoolSections"
 
@@ -169,8 +169,8 @@ export default async function SchoolPage({ params }: PageProps) {
                   {school.city}, {school.country}
                 </span>
                 {school.website && /^https?:\/\//i.test(school.website) && (
-                  <a
-                    href={school.website}
+                  
+                   <a href={school.website}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 underline underline-offset-4 hover:text-gold"
@@ -179,8 +179,8 @@ export default async function SchoolPage({ params }: PageProps) {
                     Visit website
                   </a>
                 )}
-                <a
-                  href={`/contact?school=${encodeURIComponent(school.name)}`}
+                
+                <a  href={`/contact?school=${encodeURIComponent(school.name)}`}
                   className="rounded-full bg-ruby px-5 py-2 text-white no-underline transition-colors hover:bg-ruby-600"
                 >
                   Talk to a counsellor
@@ -205,11 +205,7 @@ export default async function SchoolPage({ params }: PageProps) {
         </Section>
       )}
 
-      {school.highlights.length > 0 && (
-        <Section id="rankings" title="Rankings">
-          <RankingsList items={school.highlights} />
-        </Section>
-      )}
+      {school.highlights.length > 0 && <RankingsSection items={school.highlights} />}
 
       {school.accommodation && (
         <Section id="accommodation" title="Accommodation">
@@ -227,6 +223,7 @@ export default async function SchoolPage({ params }: PageProps) {
         <Section id="courses" title={`Courses offered at ${school.name}`}>
           <CourseExplorer
             schoolName={school.name}
+            schoolSlug={school.slug}
             courses={school.courses.map((c) => ({
               id: c.id,
               name: c.name,

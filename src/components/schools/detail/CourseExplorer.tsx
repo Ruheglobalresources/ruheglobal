@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { applyHref } from "@/lib/apply-link";
 
 export type CourseRow = {
   id: string;
@@ -17,7 +18,14 @@ export type CourseRow = {
 
 const PAGE = 12;
 
-export function CourseExplorer({ courses, schoolName }: { courses: CourseRow[]; schoolName: string }) {
+export function CourseExplorer({
+  courses,
+  schoolSlug,
+}: {
+  courses: CourseRow[];
+  schoolName: string;
+  schoolSlug: string;
+}) {
   const [q, setQ] = useState("");
   const [level, setLevel] = useState("All");
   const [shown, setShown] = useState(PAGE);
@@ -106,12 +114,12 @@ export function CourseExplorer({ courses, schoolName }: { courses: CourseRow[]; 
                 {c.description && <p className="mt-1.5 line-clamp-2 text-xs text-ink/50">{c.description}</p>}
               </div>
 
-              {/* goes to the public contact page, not the portal login */}
+              {/* carries school + course to the dashboard; signed-out users are sent to login first */}
               <a
-                href={`/contact?school=${encodeURIComponent(schoolName)}&course=${encodeURIComponent(c.name)}`}
+                href={applyHref(schoolSlug, c.id)}
                 className="shrink-0 self-start rounded-full border border-ruby px-4 py-1.5 text-sm font-medium text-ruby transition-colors hover:bg-ruby hover:text-white sm:self-center"
               >
-                Enquire now
+                Choose this course
               </a>
             </li>
           ))}
