@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { ExternalLink } from "lucide-react";
 import { ShapeFrame, type FrameShape } from "@/components/curiositysection/Shapeframes";
 import { ShapeOutline } from "@/components/schools/detail/ShapeOutline";
+import { MorphFrame } from "@/components/MorphFrame";
 
 type GalleryImage = { url: string; altText: string | null };
 
@@ -15,6 +16,9 @@ const FRAMES: { shape: FrameShape; accent: string }[] = [
 ];
 
 const H2 = "font-display text-4xl font-semibold leading-tight sm:text-5xl";
+
+/** Size passed to MorphFrame in the Rankings section. */
+const MORPH_SIZE = 360;
 
 /** Paragraphs are separated by a blank line in the admin form. */
 export function Prose({ text, tone = "light" }: { text: string; tone?: "light" | "dark" }) {
@@ -75,8 +79,8 @@ export function TextWithImage({ text, image, tone }: { text: string; image?: Gal
 }
 
 /* ------------------------------ SERVICES ------------------------------ */
-/* Dark band, text on the left, rounded photo on the right, outlined shapes
-   from the site's own loop drifting behind the photo. */
+/* Dark band, text on the left, rounded photo on the right, one outlined
+   shape from the site's own loop drifting behind the photo. */
 
 export function ServicesSection({ text, image }: { text: string; image?: GalleryImage }) {
   return (
@@ -85,12 +89,6 @@ export function ServicesSection({ text, image }: { text: string; image?: Gallery
         shape="squareBurstHold"
         color="#ffd212"
         className="pointer-events-none absolute -right-24 -top-16 -z-10 w-[26rem] rotate-12 opacity-40"
-      />
-      <ShapeOutline
-        shape="triangleBurstHold"
-        color="#f87509"
-        offset={2}
-        className="pointer-events-none absolute -bottom-24 -right-10 -z-10 w-[24rem] -rotate-6 opacity-40"
       />
 
       <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
@@ -120,20 +118,20 @@ export function ServicesSection({ text, image }: { text: string; image?: Gallery
 }
 
 /* ------------------------------ RANKINGS ------------------------------ */
-/* White band. Big ruby shape with the photo on the left, bullet list on the
-   right. Uses the triangle tiling from the site's shape loop. */
+/* White band. MorphFrame with the school photos on the left, bullet list on
+   the right. */
 
-export function RankingsSection({ items, image }: { items: string[]; image?: GalleryImage }) {
+export function RankingsSection({ items, images }: { items: string[]; images: GalleryImage[] }) {
   return (
     <section id="rankings" className="relative scroll-mt-16 overflow-hidden bg-white py-14">
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 sm:px-8 md:grid-cols-[minmax(0,360px)_1fr] lg:gap-20 lg:px-12">
         <div className="flex justify-center">
-          <ShapeFrame
-            shape="triangles"
-            src={image?.url}
-            alt={image?.altText || "Rankings"}
-            accent="#AF0E13"
-            className="w-full max-w-xs md:max-w-sm"
+          <MorphFrame
+            size={MORPH_SIZE}
+            images={images.map((img) => img.url)}
+            alt={images.map((img) => img.altText || "School photo")}
+            fit="cover"
+            transitionDuration={0.5}
           />
         </div>
 
@@ -208,8 +206,8 @@ export function ScholarshipGrid({ items }: { items: Scholarship[] }) {
           <h3 className="mt-3 font-display text-lg leading-snug text-ink">{s.name}</h3>
           {s.description && <p className="mt-2 text-sm leading-6 text-ink/65">{s.description}</p>}
           {s.url && /^https?:\/\//i.test(s.url) && (
-            <a
-              href={s.url}
+            
+              <a href={s.url}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-medium text-ruby hover:underline"

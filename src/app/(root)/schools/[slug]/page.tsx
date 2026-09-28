@@ -10,6 +10,7 @@ import { CourseExplorer } from "@/components/schools/detail/CourseExplorer"
 import {
   Section,
   TextWithImage,
+  ServicesSection,
   RankingsSection,
   ScholarshipGrid,
 } from "@/components/schools/detail/SchoolSections"
@@ -76,8 +77,17 @@ export default async function SchoolPage({ params }: PageProps) {
     school.scholarships.length > 0 && { id: "scholarships", label: "Scholarships" },
   ].filter((t): t is SchoolTab => !!t);
 
-  // first three gallery images sit beside Services, Accommodation and Location
-  const [imgServices, imgAccommodation, imgLocation] = school.images;
+  // first three gallery images sit beside Services, Accommodation and Location,
+  // the rest go to the Rankings MorphFrame
+  const [imgServices, imgAccommodation, imgLocation, ...moreImages] = school.images;
+
+  // Rankings needs at least one image, so fall back to all gallery images, then the cover image
+  const rankingsImages =
+    moreImages.length > 0
+      ? moreImages
+      : school.images.length > 0
+        ? school.images
+        : [{ url: school.coverImage, altText: school.name }];
 
   const lagoon = BLOB_SHAPES.lagoon;
   const organic = BLOB_SHAPES.organic;
@@ -199,13 +209,9 @@ export default async function SchoolPage({ params }: PageProps) {
         </Section>
       )}
 
-      {school.services && (
-        <Section id="services" title="Services">
-          <TextWithImage text={school.services} image={imgServices} tone={0} />
-        </Section>
-      )}
+      {school.services && <ServicesSection text={school.services} image={imgServices} />}
 
-      {school.highlights.length > 0 && <RankingsSection items={school.highlights} />}
+      {school.highlights.length > 0 && <RankingsSection items={school.highlights} images={rankingsImages} />}
 
       {school.accommodation && (
         <Section id="accommodation" title="Accommodation">

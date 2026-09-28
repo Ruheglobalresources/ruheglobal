@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useId, useState } from "react";
 import { blobPathAt, phaseAt, PHASES, type BlobConfig } from "@/lib/blob-architectural";
 
