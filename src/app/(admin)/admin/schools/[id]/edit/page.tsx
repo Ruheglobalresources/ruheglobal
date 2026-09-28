@@ -1,3 +1,4 @@
+//src/app/%28admin%29/admin/schools/%5Bid%5D/edit/page.tsx
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
@@ -14,6 +15,7 @@ export default async function EditSchoolPage({ params }: { params: Promise<{ id:
     include: {
       courses: { orderBy: { order: "asc" } },
       images: { orderBy: { order: "asc" } },
+      scholarships: { orderBy: { order: "asc" } },
     },
   });
   if (!school) notFound();
