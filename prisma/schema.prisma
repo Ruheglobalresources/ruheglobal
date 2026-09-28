@@ -618,14 +618,3 @@ model SchoolScholarship {
 
   @@index([schoolId])
 }
-
-// ─────────────────────────────────────────────────────────────────────────
-// MIGRATING. If you have NO schools saved yet, just run:
-//     npx prisma db push      (or: npx prisma migrate dev --name school-detail-sections)
-// If you already saved schools, keep their write-ups:
-//     npx prisma migrate dev --create-only --name school-detail-sections
-// then, in the generated migration.sql, put this BEFORE the DROP COLUMN lines:
-//     UPDATE "School" SET "overview" = concat_ws(E'\n\n', "paragraph1", "paragraph2", "paragraph3", "paragraph4");
-// and run `npx prisma migrate dev`.
-// Finally: npx prisma generate
-// ─────────────────────────────────────────────────────────────────────────
