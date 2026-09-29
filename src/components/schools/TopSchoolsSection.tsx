@@ -171,7 +171,7 @@ export function TopSchoolsSection({ schools: allSchools, onApply = () => {}, onS
                 if (isDragging) e.stopPropagation();
               }}
             >
-              <SchoolCard school={school} index={i} onApply={onApply} onSave={onSave} />
+              <SchoolCard school={school} index={i} onApply={onApply}  />
             </div>
           ))}
           <div className="w-1 shrink-0" aria-hidden />

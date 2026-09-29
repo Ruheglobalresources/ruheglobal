@@ -53,35 +53,41 @@ export default async function HomePage() {
         tuitionCurrency: true,
         acceptanceRate: true,
         description: true,
+        // Gallery photos for the card slider, in the admin defined order.
+        // The card adds the cover in front, so 5 here gives 6 slides at most.
+        images: {
+          orderBy: { order: "asc" },
+          take: 5,
+          select: { url: true, altText: true },
+        },
         _count: { select: { courses: true } },
       },
     }),
   ]);
 
-  const topSchools = schoolRows.map(({ _count, ...school }) => ({
+  // The card expects `gallery`, so the `images` relation is renamed here.
+  const topSchools = schoolRows.map(({ _count, images, ...school }) => ({
     ...school,
+    gallery: images,
     courseCount: _count.courses,
   }));
 
   return (
     <main>
-      <HeroSection
-        backgroundVideoSrc="/hero.webm"
-      />
+      <HeroSection backgroundVideoSrc="/hero.webm" />
 
       <PressTicker />
-       <CuriositySection />
+      <CuriositySection />
       <TopSchoolsSection schools={topSchools} />
       <GlobalJourneySection />
-      
+
       <ProcessConsultationSection />
-      <CountriesSection/>  
+      <CountriesSection />
       <CourseSearchSection />
       <BlogSection posts={blogPosts} />
       <CompanyReviewsSection />
       <ReviewsSeparator />
       <StudyAbroadReviewsSection />
-      
     </main>
   );
 }
