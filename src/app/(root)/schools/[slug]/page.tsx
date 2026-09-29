@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Globe, MapPin } from "lucide-react";
 import { db } from "@/lib/db";
 import { BLOB_SHAPES } from "@/lib/blob-shapes";
+import { applyHref } from "@/lib/apply-link";
 import { SchoolTabs, type SchoolTab } from "@/components/schools/detail/SchoolTabs"
 import { CourseExplorer } from "@/components/schools/detail/CourseExplorer"
 import {
@@ -182,7 +183,7 @@ export default async function SchoolPage({ params }: PageProps) {
                 </span>
                 {school.website && /^https?:\/\//i.test(school.website) && (
                   
-                   <a href={school.website}
+                  <a  href={school.website}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 underline underline-offset-4 hover:text-gold"
@@ -191,9 +192,17 @@ export default async function SchoolPage({ params }: PageProps) {
                     Visit website
                   </a>
                 )}
+
                 
-                <a  href={`/contact?school=${encodeURIComponent(school.name)}`}
+                 <a href={applyHref(school.slug)}
                   className="rounded-full bg-ruby px-5 py-2 text-white no-underline transition-colors hover:bg-ruby-600"
+                >
+                  Start your application
+                </a>
+
+                
+                 <a href={`/contact?school=${encodeURIComponent(school.name)}`}
+                  className="rounded-full bg-white px-5 py-2 text-ruby no-underline transition-colors hover:bg-ruby hover:text-white"
                 >
                   Talk to a counsellor
                 </a>
