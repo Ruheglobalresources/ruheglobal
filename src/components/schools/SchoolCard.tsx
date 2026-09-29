@@ -4,7 +4,37 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { MapPin, Calendar, Award, Plus, Check, ArrowUpRight } from "lucide-react";
-import type { School } from "@/constants/schools";
+
+// The shape the homepage passes down after reading the School table.
+export type TopSchool = {
+  id: string;
+  slug: string;
+  name: string;
+  city: string;
+  country: string; // matches a name in COUNTRIES
+  coverImage: string;
+  coverImageAlt: string | null;
+  founded: number | null;
+  ranking: string | null;
+  tuitionFrom: number | null;
+  tuitionTo: number | null;
+  tuitionCurrency: string; // ISO 4217, e.g. GBP
+  acceptanceRate: string | null;
+  courseCount: number;
+  description: string;
+};
+
+function formatMoney(amount: number, currency: string) {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `${currency} ${amount.toLocaleString("en-US")}`;
+  }
+}
 
 export function SchoolCard({
   school,
@@ -12,10 +42,10 @@ export function SchoolCard({
   onApply,
   onSave,
 }: {
-  school: School;
+  school: TopSchool;
   index: number;
-  onApply: (school: School) => void;
-  onSave?: (school: School) => void;
+  onApply: (school: TopSchool) => void;
+  onSave?: (school: TopSchool) => void;
 }) {
   const [saved, setSaved] = useState(false);
 
@@ -24,9 +54,16 @@ export function SchoolCard({
     onSave?.(school);
   };
 
+  const hasRange =
+    school.tuitionFrom !== null && school.tuitionTo !== null && school.tuitionTo > school.tuitionFrom;
+
   const secondaryStat = school.acceptanceRate
     ? { label: "Acceptance", value: school.acceptanceRate }
-    : { label: "Programs", value: String(school.programs.length) };
+    : school.courseCount > 0
+      ? { label: "Programs", value: String(school.courseCount) }
+      : null;
+
+  const hasStats = school.tuitionFrom !== null || secondaryStat !== null;
 
   return (
     <motion.div
@@ -39,8 +76,8 @@ export function SchoolCard({
       {/* image */}
       <div className="relative h-44 w-full overflow-hidden sm:h-52">
         <Image
-          src={school.image}
-          alt={`${school.name} campus, ${school.city}`}
+          src={school.coverImage}
+          alt={school.coverImageAlt || `${school.name} campus, ${school.city}`}
           fill
           draggable={false}
           className="pointer-events-none object-cover"
@@ -80,15 +117,25 @@ export function SchoolCard({
         <p className="mt-1 line-clamp-2 text-xs italic text-ink/60">{school.description}</p>
 
         <div className="mt-4 border-t border-ink/10 pt-3">
-          {school.tuitionFrom && (
+          {hasStats && (
             <p className="text-xs text-ink/70">
-              <span className="text-ink/50">Tuition</span>{" "}
-              <span className="font-semibold text-ink">
-                ${school.tuitionFrom.toLocaleString()}/yr
-              </span>
-              <span className="mx-1.5 text-ink/30">|</span>
-              <span className="text-ink/50">{secondaryStat.label}</span>{" "}
-              <span className="font-semibold text-ink">{secondaryStat.value}</span>
+              {school.tuitionFrom !== null && (
+                <>
+                  <span className="text-ink/50">{hasRange ? "Tuition from" : "Tuition"}</span>{" "}
+                  <span className="font-semibold text-ink">
+                    {formatMoney(school.tuitionFrom, school.tuitionCurrency)}/yr
+                  </span>
+                </>
+              )}
+              {school.tuitionFrom !== null && secondaryStat && (
+                <span className="mx-1.5 text-ink/30">|</span>
+              )}
+              {secondaryStat && (
+                <>
+                  <span className="text-ink/50">{secondaryStat.label}</span>{" "}
+                  <span className="font-semibold text-ink">{secondaryStat.value}</span>
+                </>
+              )}
             </p>
           )}
 

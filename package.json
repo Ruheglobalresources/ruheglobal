@@ -10,7 +10,7 @@
     "seed:institutions": "tsx prisma/seed-institutions.ts",
     "seed:fields": "tsx prisma/seed-fields.ts",
     "seed:featured-institutions": "tsx prisma/seed-featured-institutions.ts",
-    "seed:heriot-watt-school": "tsx prisma/seed-heriot-watt-school.ts"
+    "seed:school": "tsx prisma/seed-school.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",

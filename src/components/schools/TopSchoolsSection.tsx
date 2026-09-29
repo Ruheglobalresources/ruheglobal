@@ -2,17 +2,33 @@
 
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { SchoolCard } from "./SchoolCard";
-import { COUNTRIES, SCHOOLS, type School } from "@/constants/schools";
+import { SchoolCard, type TopSchool } from "./SchoolCard";
+import { COUNTRIES } from "@/constants/schools";
 import { SectionBreaker } from "../Sectionbreaker";
 
 export type TopSchoolsSectionProps = {
-  onApply?: (school: School) => void;
-  onSave?: (school: School) => void;
+  // Active schools read from the database by the homepage.
+  schools: TopSchool[];
+  onApply?: (school: TopSchool) => void;
+  onSave?: (school: TopSchool) => void;
 };
 
-export function TopSchoolsSection({ onApply = () => {}, onSave }: TopSchoolsSectionProps) {
-  const [activeCountry, setActiveCountry] = useState(COUNTRIES[0].name);
+export function TopSchoolsSection({ schools: allSchools, onApply = () => {}, onSave }: TopSchoolsSectionProps) {
+  // Only show a tab for countries that actually have a school in the database,
+  // keeping the order (and flags) defined in COUNTRIES.
+  const countries = useMemo(() => {
+    const present = new Set(allSchools.map((s) => s.country));
+    return COUNTRIES.filter((c) => present.has(c.name));
+  }, [allSchools]);
+
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+
+  // Falls back to the first available country if nothing is picked yet, or if
+  // the picked country no longer has any schools after a refresh.
+  const activeCountry =
+    selectedCountry && countries.some((c) => c.name === selectedCountry)
+      ? selectedCountry
+      : (countries[0]?.name ?? "");
 
   const trackRef = useRef<HTMLDivElement>(null);
   const dragState = useRef({ isDown: false, startX: 0, startScroll: 0 });
@@ -23,8 +39,8 @@ export function TopSchoolsSection({ onApply = () => {}, onSave }: TopSchoolsSect
   const isFirstRender = useRef(true);
 
   const schools = useMemo(
-    () => SCHOOLS.filter((s) => s.country === activeCountry),
-    [activeCountry]
+    () => allSchools.filter((s) => s.country === activeCountry),
+    [allSchools, activeCountry]
   );
 
   // slide the active country tab into view when it's off-screen on mobile
@@ -83,6 +99,10 @@ export function TopSchoolsSection({ onApply = () => {}, onSave }: TopSchoolsSect
     requestAnimationFrame(() => setIsDragging(false));
   };
 
+  // No active schools in the database yet, so hide the whole section
+  // (all hooks above run first, which keeps the hook order stable).
+  if (countries.length === 0) return null;
+
   return (
     <>
       <section className="bg-ink py-16 text-cloud sm:py-24">
@@ -103,7 +123,7 @@ export function TopSchoolsSection({ onApply = () => {}, onSave }: TopSchoolsSect
             ref={tabsRef}
             className="flex items-center gap-1 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
           >
-            {COUNTRIES.map((country, i) => {
+            {countries.map((country, i) => {
               const active = country.name === activeCountry;
               return (
                 <Fragment key={country.name}>
@@ -113,7 +133,7 @@ export function TopSchoolsSection({ onApply = () => {}, onSave }: TopSchoolsSect
                       tabRefs.current[country.name] = el;
                     }}
                     type="button"
-                    onClick={() => setActiveCountry(country.name)}
+                    onClick={() => setSelectedCountry(country.name)}
                     className={`relative flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                       active ? "text-ink" : "text-cloud/60 hover:text-cloud"
                     }`}
