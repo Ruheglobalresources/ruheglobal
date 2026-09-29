@@ -11,7 +11,9 @@ import {
   Section,
   TextWithImage,
   ServicesSection,
+  AccommodationSection,
   RankingsSection,
+  LocationSection,
   ScholarshipGrid,
 } from "@/components/schools/detail/SchoolSections"
 
@@ -214,19 +216,20 @@ export default async function SchoolPage({ params }: PageProps) {
       {school.highlights.length > 0 && <RankingsSection items={school.highlights} images={rankingsImages} />}
 
       {school.accommodation && (
-        <Section id="accommodation" title="Accommodation">
-          <TextWithImage text={school.accommodation} image={imgAccommodation} tone={1} />
-        </Section>
+        <AccommodationSection text={school.accommodation} image={imgAccommodation} />
       )}
 
       {school.locationInfo && (
-        <Section id="location" title="Location">
-          <TextWithImage text={school.locationInfo} image={imgLocation} tone={2} />
-        </Section>
+        <LocationSection
+          text={school.locationInfo}
+          image={imgLocation}
+          city={school.city}
+          country={school.country}
+        />
       )}
 
       {school.courses.length > 0 && (
-        <Section id="courses" title={`Courses offered at ${school.name}`}>
+        <Section id="courses" titleClassName="mx-auto max-w-3xl" title={`Courses offered at ${school.name}`}>
           <CourseExplorer
             schoolName={school.name}
             schoolSlug={school.slug}
@@ -245,7 +248,7 @@ export default async function SchoolPage({ params }: PageProps) {
       )}
 
       {school.scholarships.length > 0 && (
-        <Section id="scholarships" title={`Scholarships offered by ${school.name}`}>
+        <Section id="scholarships" titleClassName="mx-auto max-w-3xl" title={`Scholarships offered by ${school.name}`}>
           <ScholarshipGrid items={school.scholarships} />
         </Section>
       )}
