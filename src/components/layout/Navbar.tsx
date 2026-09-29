@@ -20,6 +20,8 @@ type MenuKey = "schools" | "programs" | "services";
 
 export function Navbar() {
   const [activeMenu, setActiveMenu] = useState<MenuKey | null>(null);
+  // hide on scroll down, reveal on scroll up
+  const [visible, setVisible] = useState(true);
   const headerRef = useRef<HTMLElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -70,17 +72,74 @@ export function Navbar() {
 
   useEffect(() => () => clearCloseTimer(), []);
 
+  // Scroll direction: down = hide, up = show. Always shown near the top of the
+  // page. The small delta ignores trackpad jitter / tiny back-and-forth.
+  useEffect(() => {
+    const TOP_ZONE = 80;
+    const MIN_DELTA = 6;
+    let lastY = window.scrollY;
+    let ticking = false;
+
+    const update = () => {
+      ticking = false;
+      const y = Math.max(window.scrollY, 0); // iOS rubber-band can go negative
+      if (y <= TOP_ZONE) {
+        setVisible(true);
+        lastY = y;
+        return;
+      }
+      const diff = y - lastY;
+      if (Math.abs(diff) < MIN_DELTA) return;
+      if (diff > 0) {
+        setVisible(false);
+        closeMenuNow(); // don't leave a mega menu floating while the bar leaves
+      } else {
+        setVisible(true);
+      }
+      lastY = y;
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(update);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Publish how much of the top of the viewport the navbar is covering as
+  // --nav-offset (0px while hidden). The pinned search widget and any sticky
+  // sidebars use it so they sit under the navbar instead of behind it.
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const root = document.documentElement;
+    const publish = () =>
+      root.style.setProperty("--nav-offset", visible ? `${el.offsetHeight}px` : "0px");
+    publish();
+    const ro = new ResizeObserver(publish);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      root.style.removeProperty("--nav-offset");
+    };
+  }, [visible]);
+
   return (
     <header
       ref={headerRef}
       onMouseEnter={clearCloseTimer}
       onMouseLeave={closeMenuSoon}
-      className="absolute inset-x-0 top-0 z-30 border-b border-ink/10 bg-white shadow-lg shadow-black/5 backdrop-blur-xl"
+      onFocusCapture={() => setVisible(true)}
+      style={{ transform: visible ? "translateY(0)" : "translateY(calc(-100% - 32px))" }}
+      className="fixed inset-x-0 top-0 z-40 transition-transform duration-300 ease-out motion-reduce:transition-none border-b border-ink/10 bg-white shadow-lg shadow-black/5 backdrop-blur-xl"
     >
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3 md:gap-4 px-2 md:px-5 py-2 md:py-4 lg:px-5">
         {/* logo + brand */}
-        <a
-          href="/"
+        
+          <a href="/"
           onMouseEnter={closeMenuNow}
           className="flex min-w-0 items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember lg:shrink-0"
         >
@@ -143,8 +202,8 @@ export function Navbar() {
         >
           <MessageBox />
 
-          <a
-            href={PHONE_HREF}
+          
+           <a href={PHONE_HREF}
             className="hidden items-center gap-2 text-sm font-medium text-ink/80 transition-colors hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ember xl:flex"
           >
             <Phone size={16} className="text-ember" />

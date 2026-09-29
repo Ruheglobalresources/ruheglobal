@@ -9,11 +9,14 @@ export type SchoolTab = { id: string; label: string };
  * Sticky section nav. Clicking a tab scrolls to that section, and the active
  * tab follows the reader as they scroll. On small screens the strip scrolls
  * sideways and keeps the active tab centred, like a breadcrumb trail.
- * The site navbar is absolutely positioned (it scrolls away), so this bar
- * sticks to the very top of the viewport.
+ * The site navbar is fixed and hides on scroll down / shows on scroll up.
+ * It publishes --nav-offset (its height while showing, 0px while hidden), so
+ * this bar sits directly under the navbar when it is showing and moves up to
+ * the top of the viewport when the navbar hides.
  */
 export function SchoolTabs({ tabs }: { tabs: SchoolTab[] }) {
   const [active, setActive] = useState(tabs[0]?.id ?? "");
+  const barRef = useRef<HTMLElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
   const locked = useRef(false);
@@ -67,22 +70,34 @@ export function SchoolTabs({ tabs }: { tabs: SchoolTab[] }) {
     e.preventDefault();
     setActive(id);
     locked.current = true;
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    // Land the section heading just below whatever bars will be on screen when
+    // the scroll finishes. Going down hides the navbar (only the tabs bar
+    // remains); going up shows it (navbar + tabs bar). scrollIntoView can't be
+    // used here: it works out its landing spot before the navbar has moved.
+    const navHeight =
+      parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-height")) || 0;
+    const barHeight = barRef.current?.offsetHeight ?? 0;
+    const targetTop = target.getBoundingClientRect().top + window.scrollY;
+    const goingUp = targetTop < window.scrollY;
+    const offset = barHeight + (goingUp ? navHeight : 0) + 8;
+
+    window.scrollTo({ top: Math.max(targetTop - offset, 0), behavior: "smooth" });
     window.setTimeout(() => (locked.current = false), 900);
   };
 
   return (
     <nav
+      ref={barRef}
       aria-label="School sections"
-      className="sticky top-0 z-20 border-b border-ink/10 bg-white/95 backdrop-blur"
+      className="sticky top-[var(--nav-offset,0px)] z-20 border-b border-ink/10 bg-white/95 backdrop-blur transition-[top] duration-300 ease-out motion-reduce:transition-none"
     >
       <div
         ref={stripRef}
         className="relative mx-auto flex max-w-7xl overflow-x-auto px-2 [scrollbar-width:none] sm:px-8 lg:justify-center [&::-webkit-scrollbar]:hidden"
       >
         {tabs.map((t) => (
-          <a
-            key={t.id}
+          <a key={t.id}
             ref={(el) => {
               tabRefs.current[t.id] = el;
             }}

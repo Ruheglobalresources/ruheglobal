@@ -73,15 +73,17 @@ export function TravelSearchWidget({
   // Submission — a new/prospective lead filling out the fields, taking their
   // selections into the login flow so the right application form is preselected.
   function handleSubmit() {
-    if (!canSubmit) 
-      router.push("/auth/login?");
-     return;
-    const params = new URLSearchParams();
-    params.set("country", destination!);
-    params.set("course", course!);
-    params.set("email", email);
-    router.push(`/auth/login?${params.toString()}`);
+  if (!canSubmit) {
+    router.push("/auth/login");
+    return;
   }
+
+  const params = new URLSearchParams();
+  params.set("country", destination!);
+  params.set("course", course!);
+  params.set("email", email);
+  router.push(`/auth/login?${params.toString()}`);
+}
 
   // Direct portal access — an existing user who doesn't need to fill anything out,
   // separate from the lead-capture submission above.
@@ -104,10 +106,13 @@ export function TravelSearchWidget({
             }
           : { type: "spring", stiffness: 320, damping: 32 }
       }
+      // pinned strip sits just under the navbar when it's showing (--nav-offset
+      // is set by Navbar; 0px when the navbar is hidden or absent)
+      style={pinned ? { top: "var(--nav-offset, 0px)" } : undefined}
       className={[
         "w-full",
         pinned
-          ? "fixed inset-x-0 top-0 z-[60] border-b border-black/10 bg-white/95 px-3 py-2.5 shadow-lg backdrop-blur-md sm:px-5 sm:py-3 md:px-8 md:py-3.5 lg:px-10 lg:py-4"
+          ? "fixed inset-x-0 top-0 z-[60] border-b border-black/10 bg-white/95 px-3 py-2.5 shadow-lg backdrop-blur-md sm:px-5 sm:py-3 md:px-8 md:py-3.5 lg:px-10 lg:py-1.5"
           : "relative rounded-3xl border border-black/10 bg-white shadow-2xl",
         className,
       ].join(" ")} >
@@ -146,7 +151,7 @@ export function TravelSearchWidget({
   aria-label="Get started"
   className={
     pinned
-      ? "m-1 flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#AF0E13] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8f0b10] focus:outline-none focus-visible:ring-2 focus-visible:ring-ruby sm:px-6 sm:py-3 sm:text-base"
+      ? "m-1 flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#AF0E13] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#8f0b10] focus:outline-none focus-visible:ring-2 focus-visible:ring-ruby sm:px-6 sm:py-3 sm:text-base lg:py-2"
       : "m-1 flex items-center justify-center gap-2 rounded-2xl bg-[#AF0E13] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#8f0b10] focus:outline-none focus-visible:ring-2 focus-visible:ring-ruby lg:m-1.5 lg:px-8 lg:py-4 lg:text-base lg:font-bold"
   }
 >
@@ -233,7 +238,7 @@ function SearchField({
       className={[
         "flex min-w-0 flex-1 items-center text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ruby",
         compact
-          ? "gap-2 rounded-xl px-3 py-2.5 sm:gap-2.5 sm:px-4 sm:py-3 lg:px-5 lg:py-3.5"
+          ? "gap-2 rounded-xl px-3 py-2.5 sm:gap-2.5 sm:px-4 sm:py-3 lg:px-5 lg:py-1.5"
           : "gap-3 rounded-2xl px-5 py-3.5 lg:gap-2 lg:px-3 lg:py-2.5",
         active ? "bg-ruby/10" : "hover:bg-black/5",
       ].join(" ")}
@@ -251,7 +256,7 @@ function SearchField({
         <span
           className={[
             "truncate font-medium text-black/55",
-            compact ? "text-sm sm:text-base lg:text-lg" : "text-sm lg:text-lg",
+            compact ? "text-sm sm:text-base lg:text-base" : "text-sm lg:text-lg",
           ].join(" ")}
         >
           {value}
@@ -276,7 +281,7 @@ function EmailField({
       className={[
         "flex min-w-0 flex-1 cursor-text items-center text-left transition-colors hover:bg-black/5 focus-within:bg-ruby/10",
         compact
-          ? "gap-2 rounded-xl px-3 py-2.5 sm:gap-2.5 sm:px-4 sm:py-3 lg:px-5 lg:py-3.5"
+          ? "gap-2 rounded-xl px-3 py-2.5 sm:gap-2.5 sm:px-4 sm:py-3 lg:px-5 lg:py-1.5"
           : "gap-3 rounded-2xl px-5 py-3.5 lg:gap-2 lg:px-3 lg:py-2.5",
       ].join(" ")}
     >
