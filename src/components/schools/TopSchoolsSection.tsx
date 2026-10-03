@@ -190,7 +190,7 @@ export function TopSchoolsSection({ schools: allSchools, onApply = () => {}, onS
             aria-label="Show previous school"
             disabled={!canScrollLeft}
             onClick={() => scrollByCard(-1)}
-            className={`absolute left-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center bg-transparent p-2 text-cloud opacity-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] transition duration-200 hover:scale-110 focus-visible:opacity-100 lg:flex ${
+            className={`absolute left-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center bg-transparent p-2 text-ruby-500 opacity-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] transition duration-200 hover:scale-110 hover:text-ruby-400 focus-visible:opacity-100 lg:flex ${
               canScrollLeft ? "lg:group-hover:opacity-100" : "pointer-events-none"
             }`}
           >
@@ -213,7 +213,7 @@ export function TopSchoolsSection({ schools: allSchools, onApply = () => {}, onS
             aria-label="Show next school"
             disabled={!canScrollRight}
             onClick={() => scrollByCard(1)}
-            className={`absolute right-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center bg-transparent p-2 text-cloud opacity-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] transition duration-200 hover:scale-110 focus-visible:opacity-100 lg:flex ${
+            className={`absolute right-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center bg-transparent p-2 text-ruby-500 opacity-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] transition duration-200 hover:scale-110 hover:text-ruby-400 focus-visible:opacity-100 lg:flex ${
               canScrollRight ? "lg:group-hover:opacity-100" : "pointer-events-none"
             }`}
           >
