@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { SchoolCard, type TopSchool } from "./SchoolCard";
 import { COUNTRIES } from "@/constants/schools";
@@ -34,6 +34,11 @@ export function TopSchoolsSection({ schools: allSchools, onApply = () => {}, onS
   const dragState = useRef({ isDown: false, startX: 0, startScroll: 0 });
   const [isDragging, setIsDragging] = useState(false);
 
+  // whether there are more schools hidden to the left or right of the track
+  // (drives the lg only hover arrows)
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
   const tabsRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const isFirstRender = useRef(true);
@@ -42,6 +47,13 @@ export function TopSchoolsSection({ schools: allSchools, onApply = () => {}, onS
     () => allSchools.filter((s) => s.country === activeCountry),
     [allSchools, activeCountry]
   );
+
+  const updateArrows = useCallback(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    setCanScrollLeft(track.scrollLeft > 4);
+    setCanScrollRight(track.scrollLeft + track.clientWidth < track.scrollWidth - 4);
+  }, []);
 
   // slide the active country tab into view when it's off-screen on mobile
   // (skips on initial mount, and only scrolls the tabs strip itself,
@@ -77,6 +89,23 @@ export function TopSchoolsSection({ schools: allSchools, onApply = () => {}, onS
     if (!track) return;
     track.scrollTo({ left: 0, behavior: "smooth" });
   }, [activeCountry]);
+
+  // keep the arrows in sync when the schools change or the window is resized
+  useEffect(() => {
+    updateArrows();
+    window.addEventListener("resize", updateArrows);
+    return () => window.removeEventListener("resize", updateArrows);
+  }, [schools, updateArrows]);
+
+  // scroll the track by exactly one card (card width plus the gap between cards)
+  const scrollByCard = (direction: 1 | -1) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const firstCard = track.firstElementChild as HTMLElement | null;
+    if (!firstCard) return;
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+    track.scrollBy({ left: direction * (firstCard.offsetWidth + gap), behavior: "smooth" });
+  };
 
   const onPointerDown = (e: React.PointerEvent) => {
     const track = trackRef.current;
@@ -154,27 +183,77 @@ export function TopSchoolsSection({ schools: allSchools, onApply = () => {}, onS
           </div>
         </div>
 
-        <div
-          ref={trackRef}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={endDrag}
-          onPointerLeave={endDrag}
-          className={`mt-8 flex gap-5 overflow-x-auto px-6 pb-4 snap-x snap-mandatory scroll-smooth sm:px-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${
-            isDragging ? "cursor-grabbing select-none" : "cursor-grab"
-          }`}
-        >
-          {schools.map((school, i) => (
-            <div
-              key={school.id}
-              onClickCapture={(e) => {
-                if (isDragging) e.stopPropagation();
-              }}
+        {/* schools track with lg only hover arrows */}
+        <div className="group relative mt-8">
+          <button
+            type="button"
+            aria-label="Show previous school"
+            disabled={!canScrollLeft}
+            onClick={() => scrollByCard(-1)}
+            className={`absolute left-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center bg-transparent p-2 text-cloud opacity-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] transition duration-200 hover:scale-110 focus-visible:opacity-100 lg:flex ${
+              canScrollLeft ? "lg:group-hover:opacity-100" : "pointer-events-none"
+            }`}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-12 w-12"
+              aria-hidden
             >
-              <SchoolCard school={school} index={i} onApply={onApply}  />
-            </div>
-          ))}
-          <div className="w-1 shrink-0" aria-hidden />
+              <path d="M15 5l-7 7 7 7" />
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            aria-label="Show next school"
+            disabled={!canScrollRight}
+            onClick={() => scrollByCard(1)}
+            className={`absolute right-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center bg-transparent p-2 text-cloud opacity-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] transition duration-200 hover:scale-110 focus-visible:opacity-100 lg:flex ${
+              canScrollRight ? "lg:group-hover:opacity-100" : "pointer-events-none"
+            }`}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-12 w-12"
+              aria-hidden
+            >
+              <path d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          <div
+            ref={trackRef}
+            onScroll={updateArrows}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={endDrag}
+            onPointerLeave={endDrag}
+            className={`flex gap-5 overflow-x-auto px-6 pb-4 snap-x snap-mandatory scroll-smooth sm:px-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${
+              isDragging ? "cursor-grabbing select-none" : "cursor-grab"
+            }`}
+          >
+            {schools.map((school, i) => (
+              <div
+                key={school.id}
+                onClickCapture={(e) => {
+                  if (isDragging) e.stopPropagation();
+                }}
+              >
+                <SchoolCard school={school} index={i} onApply={onApply} />
+              </div>
+            ))}
+            <div className="w-1 shrink-0" aria-hidden />
+          </div>
         </div>
       </section>
 

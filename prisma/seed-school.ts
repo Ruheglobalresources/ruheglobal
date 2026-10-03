@@ -27,128 +27,132 @@ if (!process.env.DATABASE_URL) {
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const db = new PrismaClient({ adapter });
+
+
+
 // ═════════════════════════════════════════════════════════════════════════
 // PART 1: SCHOOL DATA (replace this whole part for each new school)
-// Currently: Trent University (Peterborough and Durham GTA, Ontario), Canada
+// Currently: Trinity Western University, Langley, British Columbia, Canada
 // ═════════════════════════════════════════════════════════════════════════
 
-const SLUG = "trent-university";
-const WEBSITE = "https://www.trentu.ca";
+const SLUG = "trinity-western-university";
+const WEBSITE = "https://www.twu.ca";
 
 // Wikipedia article title used to find a placeholder campus photo.
-const WIKI_QUERY = "Trent University";
+const WIKI_QUERY = "Trinity Western University";
 
 // Set this to a real image URL or path if you already have the cover uploaded.
-const COVER_IMAGE_OVERRIDE: string | null =
-  "https://my.trentu.ca/portalv2/modules/api/news.php?f=display&id=357659";
+// Left null, the script looks up a campus photo on Wikipedia as a placeholder.
+const COVER_IMAGE_OVERRIDE: string | null = null;
 
 // Paragraphs are separated by a blank line, the same as the admin form.
 const overview = [
-  "Trent University is a public university in Ontario, Canada, with its main campus on the Otonabee River in Peterborough, about 125 km northeast of Toronto, and a second campus, Trent Durham GTA, in Oshawa. It was founded in 1964 and is known for small classes, a collegiate system, and close contact between students and professors.",
-  "Trent teaches mostly at the undergraduate level, with popular programs in business administration, computer science and software engineering, psychology, nursing, forensic science, biology, environmental studies, international development and education. Its graduate school offers research master's and PhD programs, and course-based programs such as the Master of Management at the Durham campus.",
-  "Trent describes itself as the number one undergraduate university in Ontario and number one in Ontario for student services in Maclean's primarily undergraduate category. International students are automatically considered for renewable entrance scholarships.",
+  "Trinity Western University (TWU) is a private Christian liberal arts university in Langley, British Columbia, in the Metro Vancouver region of western Canada. It was founded in 1962 as Trinity Junior College, became Trinity Western College in 1972 and received university status in 1985. It is Canada's largest Christian university, with more than 6,000 students, and about 35% of its undergraduates come from the United States and other countries, representing over 70 nationalities.",
+  "Teaching is organised into the Faculty of Humanities and Social Sciences, the Faculty of Natural and Applied Sciences, and the Schools of Business, Nursing, Education, Human Kinetics, the Arts, Media and Culture, and Graduate Studies, together with the Trinity Evangelical Divinity School. TWU offers 48 undergraduate and 20 graduate degree programs, the average first-year class has about 25 students, and it is recognised under the British Columbia government's Education Quality Assurance designation. Maclean's reports that TWU is consistently ranked among the top two universities in Canada for Educational Experience in the National Survey of Student Engagement.",
+  "Beyond the Langley campus, TWU has a Richmond location and the Laurentian Leadership Centre in Ottawa, where students can complete internships. Students can also earn credit on travel studies in places such as France, Spain, East Africa, Italy, Hawaii, China and Vietnam, and the Spartans varsity teams compete in U Sports. Christian faith is part of campus life, including chapel, discipleship and mentoring programs.",
 ].join("\n\n");
 
 const services = [
-  "To enter an undergraduate program, applicants need a high school diploma that meets Trent's general and program-specific requirements, plus proof of English. Undergraduate applications are made through the Ontario Universities' Application Centre (OUAC). Accepted English tests are IELTS 6.5 with no band below 6.0, TOEFL iBT 4.5 on the new scale with at least 4.0 in writing (86 with writing 20 for tests taken before 2026), PTE Academic 59, CAEL 60, Cambridge B2 First or C1 Advanced 176 with no part below 169, and Duolingo 115 (undergraduate only; the School of Graduate Studies does not accept Duolingo).",
-  "Trent will waive the English test for applicants with an IB Diploma where English Language A was taught, a British curriculum O-Level English grade C or better, or at least three years of full-time study in a secondary school where all teaching was in English with no ESL courses. Nigerian applicants who qualify under the English-medium school rule should confirm with Trent International before applying. Proof of English is due by 1 July for September entry, 1 November for January entry and 1 March for May entry. For graduate programs, applicants normally need a bachelor's degree with a strong average and a statement of purpose.",
-  "International students pay tuition and ancillary fees each term, and the tuition quoted does not include housing and meals if they live in residence. Trent International (international@trentu.ca) supports international students with immigration advice, orientation and career experience, and the university offers an Academic Skills Centre, wellness services, Careerspace and ESL Academic English courses. Students on study permits can usually work part time on or off campus.",
+  "International undergraduate applicants send official supporting documents, and documents that cannot be replaced should be sent by registered mail. Applicants from GCE based systems need standing in five subjects with at least two at the Advanced level, and TWU may award three semester hours of credit for each Advanced level course passed with a C or better, up to 12 semester hours. Applicants from other systems, including Nigeria's WAEC and NECO, should confirm with the admissions office how their results are assessed. Transfer credit from schools outside Canada must be assessed by an external credential evaluation agency such as ICES (through BCIT), WES or IQAS.",
+  "All applicants must show English proficiency. For undergraduate entry the minimums are TOEFL iBT 88 with 20 in each band for tests taken before January 21, 2026, or 4.5 overall (with 3.5 in Reading, Listening and Speaking and 4.0 in Writing) for tests taken on or after that date; IELTS Academic 6.5 with 6.0 in each band; PTE Academic 65 with 60 in each band; Duolingo English Test 120 (110 in Writing and Reading, 95 in Speaking and Listening); or Cambridge 176 and CAEL 70. Students from Nigeria, Ghana, Kenya, Uganda, Zambia, Zimbabwe and South Africa can meet the requirement without a test if they completed three consecutive years of full-time high school or post-secondary education in an internationally recognised English curriculum immediately before enrolling, and they should have the school issue a letter confirming English as the medium of instruction. Students who fall short can enter through the U1 University Transition year or the Trinity Language Centre, and completing those programs meets the requirement.",
+  "Graduate applicants whose degrees were completed outside Canada and the US need a Canadian equivalency assessment from TWU Degree Evaluation Services or another recognised agency. English requirements are higher than for undergraduates, for example IELTS 7.5 in most programs and 7.0 for the MBA and MA in Leadership, or Duolingo 140 and 130 respectively. The MA in Leadership asks for a four year degree with a GPA of at least 3.0 in the final two years and prefers three to five years of work experience, and the MBA does not require the GMAT. International MBA applicants pay a $150 application fee and may be given conditional admission with English language training first.",
+  "For 2026/27, incoming international undergraduates pay $855 per credit hour, about $25,650 a year at a full 30 credit load, and returning international students pay $815. Fees add $50 per credit hour for infrastructure, technology and activities and a $75 per semester student association fee, so a full year comes to about $27,300 before housing. Graduate tuition for incoming international students ranges from $663 per credit hour for the MA in Linguistics to $1,235 for the Executive MBA, plus the $50 per credit hour fee. New international students are enrolled in Guard.Me interim medical insurance for three months, a one-time charge of $160 unless they hold valid BC MSP coverage.",
+  "TWU requires proof of an approved study permit before classes begin, and most applicants need a provincial attestation letter (PAL). After admission, students use the BorderPass service to prepare the study permit application, and TWU pays the BorderPass membership and initial questionnaire fee. Students then pay the non-refundable international enrolment deposit, which is applied to tuition and is refunded only if a study permit is refused, after which TWU issues the letter of admission and PAL. The Government of Canada application fee is paid by the student.",
 ].join("\n\n");
 
-// Trent's housing page was not read in detail. Please review before publishing.
+// Written from Trinity Western University's housing pages (Fall 2026 / Spring 2027 rates).
+// Please review it, and replace it with your own paragraph if you prefer.
 const accommodation = [
-  "Trent's residences on the Peterborough campus are organised around its historic colleges, and first-year students are encouraged to apply for residence, with meal plans available. Residence and meal costs are billed separately from tuition and ancillary fees.",
-  "Off-campus housing in Peterborough, usually a shared house or apartment within walking distance or a short bus ride of campus, is generally more affordable than in Toronto. Students at the Durham GTA campus in Oshawa usually rent off campus. Check current residence rates and deadlines on Trent's housing website before applying.",
+  "TWU has on-campus housing for about 1,100 students, including dorms, community-style living in Robson Hall and apartments that are reserved for upper-year students. For Fall 2026 and Spring 2027, rates per semester start at $1,690 for a shared room in Douglas Hall ($3,380 for a single) and $1,940 in DeVries Centre, then rise to $3,180 in the Skidmore dorm suites, $3,325 in Robson Hall, $2,910 to $3,190 per person in Jacobson Hall pods and $3,445 to $3,675 in the McMillan apartments. Furniture is included.",
+  "A meal plan is required for all students in residence and is not included in those prices, so students should add it to their budget. Single rooms in the Skidmore Hall four-bedroom pods are $5,620 per semester. Rates are subject to change, and eligibility for TWU housing is set out on the university's housing page, so students should apply as soon as they are admitted. Students who live off campus can use TWU's off-campus housing information and should arrange somewhere to live before they arrive.",
 ].join("\n\n");
 
-// Written from Trent's own pages. Please review before publishing.
+// Written from the university's Langley campus and facts pages. Please review before publishing.
 const locationInfo = [
-  "The Peterborough campus is on the banks of the Otonabee River, with riverside trails, woodland and the Trent Nature Areas on its doorstep, about 125 km northeast of Toronto. The Durham GTA campus at 55 Thornton Road South in Oshawa is a smaller, city campus in the eastern Greater Toronto Area.",
-  "Peterborough is a mid-sized city in the Kawarthas region of Ontario, known for its arts scene, lakes and outdoor life. Toronto is within reach by bus and road, and living costs are generally lower than in the larger Canadian cities.",
+  "TWU's main campus is at 22500 University Drive in Langley, in the Fraser Valley area of British Columbia, about 45 minutes from Vancouver, 40 minutes from the beach and 45 minutes from the mountains. The campus includes a 60-acre ecological study area, and students have access to a fitness centre, an outdoor centre, a bouldering wall and sports fields.",
+  "Langley is a quieter suburban setting than downtown Vancouver, and the campus works as a small community with its own library, cafeteria, wellness centre and campus store. Students who want city life, internships or a different setting can also study at the Richmond location or at the Laurentian Leadership Centre in Ottawa.",
 ].join("\n\n");
 
 const highlights = [
-  "Maclean's: #1 in Ontario, primarily undergraduate category, and #1 for student services (as stated by Trent)",
-  "Two campuses: Peterborough, and Durham GTA in Oshawa",
-  "Automatic renewable entrance scholarships for international undergraduates, from C$2,500 to C$5,500 a year",
-  "Competitive prestigious scholarships worth up to C$15,000 a year and C$60,000 over a four-year degree",
-  "Guaranteed funding packages for research master's students (C$18,000 to C$23,000 a year for two years)",
-  "International PhD students pay the domestic out-of-province tuition rate",
+  "Founded in 1962 and described as Canada's largest Christian university, with over 6,000 students",
+  "Consistently ranked among the top two universities in Canada for Educational Experience in the NSSE, according to Maclean's",
+  "Average first-year class of about 25 students, with 48 undergraduate and 20 graduate degree programs",
+  "Academic entrance scholarships of $2,000 to $6,000 a year, awarded automatically on admission with no separate application",
+  "Students from Nigeria and other approved English-curriculum countries can meet the English requirement without a test after three consecutive years of English-medium study",
+  "About 45 minutes from Vancouver, with on-campus housing for about 1,100 students",
 ];
 
 // Static fields. Every limit here matches SchoolSchema in src/schemas/index.ts,
 // and the engine below checks them before writing anything.
 const SCHOOL = {
-  name: "Trent University",
+  name: "Trinity Western University",
   country: "Canada", // must match a name in COUNTRIES
-  city: "Peterborough",
-  founded: 1964,
-  ranking: "Maclean's: #1 in Ontario, primarily undergraduate category",
-  famousFor: "Business, Computer Science, Psychology, Nursing, Forensic Science, Environmental Studies, Education",
+  city: "Langley, British Columbia",
+  founded: 1962,
+  ranking: "Top two in Canada for Educational Experience (NSSE, Maclean's)",
+  famousFor: "Business, Nursing, Computing Science, Psychology, Human Kinetics, Education, Liberal Arts",
   acceptanceRate: null as string | null,
-  tuitionFrom: 25616,
-  tuitionTo: 38577,
+  tuitionFrom: 25650,
+  tuitionTo: null as number | null,
   tuitionCurrency: "CAD",
   description:
-    "A public university in Ontario with campuses in Peterborough and Durham GTA, known for small classes, a collegiate system and strong undergraduate teaching in business, computing, psychology, nursing and environmental studies.",
-  coverImageAlt: "Trent University campus on the Otonabee River in Peterborough",
-  metaTitle: "Study at Trent University, Ontario | Ruhe Global Resources",
+    "A private Christian liberal arts university in Langley, British Columbia, about 45 minutes from Vancouver, with small first-year classes, 48 undergraduate programs and automatic entrance scholarships worth up to $6,000 a year.",
+  coverImageAlt: "Trinity Western University campus in Langley, British Columbia",
+  metaTitle: "Study at Trinity Western University, Canada | Ruhe Global Resources",
   metaDescription:
-    "Explore Trent University in Peterborough and Durham, Ontario. Compare programs, tuition fees, scholarships and housing, then apply with RGR.",
+    "Explore Trinity Western University in Langley, BC. Compare popular courses, tuition, entrance scholarships and housing, then apply with RGR.",
   isActive: true,
-  order: 8,
+  order: 10,
 };
 
-// ─────────────────────────────────────────────────────────────────────────
-// COURSES (popular programs; Peterborough unless noted)
-// Fees are Trent's published international fees, in CAD:
-//   Undergraduate, new start Fall 2026 / Winter 2027 (Peterborough):
-//     tuition $35,631.91, plus about $3,397 in ancillary and levy fees,
-//     so about $39,029 in total. Nursing (Collaborative and Compressed) and
-//     the Bachelor of Education are billed on the same tuition.
-//   Research master's (2025/26, three terms): tuition $25,615.67, plus
-//     about $493 in ancillary fees. Trent's limited International Graduate
-//     Scholarships bring many research master's students down to about the
-//     out-of-province domestic rate.
-//   Master of Management, Durham (2025/26, three terms): $38,576.73.
-//     The program is 16 months (four terms).
-//   2026/27 graduate fees were not posted yet when this was written.
-// Program names come from Trent's fee pages, graduate pages and common
-// program lists, so confirm each one on trentu.ca before publishing.
-// ─────────────────────────────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════
+// COURSES
+// Only a selection of programmes is listed, not the full catalogue.
+// Rates are TWU's 2026/27 incoming international rates from the Registrar's
+// Tuition & Fees page (all in CAD):
+//   Undergraduate: $855 per credit hour, so about $25,650 a year at 30 credits
+//   Graduate: per credit hour, set per programme below
+// Fees are extra: $50 per credit hour (infrastructure, technology and
+// activity), $75 per semester student association fee for undergraduates,
+// and $3 per credit hour graduate student association fee for graduates.
+//
+// The programme names and degree titles come from TWU's undergraduate and
+// graduate programme lists. Please check these before publishing, because
+// they are NOT confirmed on the tuition page:
+//   4 years for every bachelor's, starting in September or January
+//   Graduate programme lengths and total credits (so the totals are not shown)
+// ═════════════════════════════════════════════════════════════════════════
 
 type Row = [name: string, degree: string];
+type GradRow = [name: string, degree: string, perCredit: number, intakes: string | null];
 
 const UG: Row[] = [
-  ["Business Administration", "BBA"],
-  ["Computer Science", "BSc"],
-  ["Software Engineering", "BEng"],
-  ["Psychology", "BA/BSc"],
-  ["Forensic Science", "BSc"],
+  ["Business", "BBA"],
+  ["Computing Science", "BSc"],
   ["Biology", "BSc"],
-  ["Environmental Science and Studies", "BA/BSc"],
-  ["International Development Studies", "BA"],
-  ["Economics", "BA"],
-  ["Nursing (Collaborative and Compressed)", "BScN"],
-  ["Education", "BEd"],
+  ["Chemistry", "BSc"],
+  ["Mathematics", "BSc"],
+  ["Psychology", "BA"],
+  ["International Studies", "BA"],
+  ["Media + Communication", "BA"],
+  ["Game Development", "BA"],
+  ["Human Kinetics", "BHK"],
+  ["Sport Management", "BSM"],
+  ["Political Studies", "BA"],
 ];
 
-const PG_RESEARCH: Row[] = [
-  ["Environmental and Life Sciences", "MSc"],
-  ["Applied Modelling and Quantitative Methods", "MSc"],
-  ["Sustainability Studies", "MA"],
-  ["Psychology", "MA/MSc"],
+const PG: GradRow[] = [
+  ["Leadership", "MA", 982, "September, January, May"],
+  ["Counselling Psychology", "MA", 837, null],
+  ["Educational Studies", "MA", 837, null],
+  ["Linguistics", "MA", 663, null],
+  ["Non-Profit and Charitable Organizations", "MBA", 940, null],
+  ["International Business", "MBA", 994, null],
 ];
 
-const PG_MANAGEMENT: Row[] = [
-  ["Management (Durham GTA campus)", "MMgmt"],
-];
-
-const FEE = {
-  ugTuition: 35632,
-  ugWithFees: 39029,
-  pgResearch: 25616,
-  pgManagement: 38577,
+const RATE = {
+  ugPerCredit: 855,
+  ugCreditsPerYear: 30,
 };
 
 type CourseRow = {
@@ -162,87 +166,97 @@ type CourseRow = {
   order: number;
 };
 
-const cad = (n: number) => `C$${n.toLocaleString("en-CA")}`;
+const money = (n: number) => `$${n.toLocaleString("en-US")}`;
 
 function buildCourses(): CourseRow[] {
   const out: CourseRow[] = [];
 
-  const add = (
-    level: string,
-    tuition: string,
-    duration: string,
-    intakes: string,
-    description: string | null,
-    rows: Row[]
-  ) => {
-    for (const [name, degree] of rows) {
-      out.push({ name, degree, level, duration, tuition, intakes, description, order: out.length });
-    }
-  };
+  const ugYear = RATE.ugPerCredit * RATE.ugCreditsPerYear;
 
-  add(
-    "Undergraduate",
-    `${cad(FEE.ugTuition)} / year tuition (about ${cad(FEE.ugWithFees)} with ancillary fees)`,
-    "4 years",
-    "September, January, May",
-    "2026/27 international fee for new students. Entrance scholarships of C$2,500 to C$5,500 a year are assessed automatically.",
-    UG
-  );
-  add(
-    "Postgraduate",
-    `${cad(FEE.pgResearch)} / year tuition (2025/26)`,
-    "1 to 2 years",
-    "September",
-    "Research-based master's program. Eligible students receive a funding package, and limited International Graduate Scholarships reduce tuition.",
-    PG_RESEARCH
-  );
-  add(
-    "Postgraduate",
-    `${cad(FEE.pgManagement)} for a three-term year (2025/26)`,
-    "16 months",
-    "September, January, May",
-    "Course-based professional master's with streams including Strategic Change Management. Professional programs do not offer funding packages.",
-    PG_MANAGEMENT
-  );
+  for (const [name, degree] of UG) {
+    out.push({
+      name,
+      degree,
+      level: "Undergraduate",
+      duration: "4 years",
+      tuition: `${money(RATE.ugPerCredit)} / credit hour (about ${money(ugYear)} / year at 30 credits)`,
+      intakes: "September, January",
+      description:
+        "International students pay the incoming international rate of $855 per credit hour, plus a $50 per credit hour fee and a $75 per semester student association fee. Courses are at the Langley campus.",
+      order: out.length,
+    });
+  }
+
+  for (const [name, degree, perCredit, intakes] of PG) {
+    out.push({
+      name,
+      degree,
+      level: "Postgraduate",
+      duration: null,
+      tuition: `${money(perCredit)} / credit hour`,
+      intakes,
+      description:
+        "Charged per credit hour at the incoming international rate, plus a $50 per credit hour fee and a $3 per credit hour graduate student association fee. Total cost depends on the programme's credit requirement.",
+      order: out.length,
+    });
+  }
 
   return out;
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-// SCHOLARSHIPS (from trentu.ca international scholarships pages)
-// ─────────────────────────────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════
+// SCHOLARSHIPS
+// From TWU's undergraduate scholarships page. Academic scholarships are made
+// automatically on admission, based on the average grade of the courses used
+// in the admission evaluation. The need-based TWU Grant is for Canadian and
+// US citizens and permanent residents only, so it is not listed here.
+// ═════════════════════════════════════════════════════════════════════════
 
-const SCHOLARSHIP_PAGE = "https://www.trentu.ca/international/discover-trent/tuition-scholarships/scholarships";
-const GRAD_FUNDING_PAGE = "https://www.trentu.ca/graduatestudies/funding-tuition/funding";
+const SCHOLARSHIP_PAGE =
+  "https://www.twu.ca/admissions-aid/scholarships-financial-aid/undergraduate-students/twu-scholarships-aid";
 
 const scholarships = [
   {
-    name: "International Entrance Scholarships",
-    academicYear: "2026/27",
+    name: "President's Scholarship",
+    academicYear: null as string | null,
     description:
-      "Assessed automatically for international undergraduate applicants with a Canadian-equivalent high school average of 80% or higher, studying on a study permit. Worth C$5,500 a year for 95 to 100%, C$4,500 for 90 to 94.9%, C$3,500 for 85 to 89.9% and C$2,500 for 80 to 84.9%. Renewable each year if the student keeps an 80% average on a full course load.",
+      "$6,000 a year at a full course load ($4,800 at 80%) for incoming students with a high school average of 90% or higher, a 3.73 to 4.00 GPA on a 4.00 scale, or 31 or more IB points. Considered automatically on admission, with no separate application. Returning students must meet the renewal GPA each year.",
     url: SCHOLARSHIP_PAGE,
   },
   {
-    name: "Renewable Prestigious Scholarships and Awards",
-    academicYear: "2026/27",
+    name: "Provost's Scholarship",
+    academicYear: null as string | null,
     description:
-      "Competitive awards for entering international undergraduates with outstanding academic achievement, community service, leadership potential and some financial need. They fund tuition and ancillary fees up to C$15,000 per year and C$60,000 over a four-year degree, and can be combined with the entrance scholarship. Apply in the Trent Applicant Portal between 1 November and 15 February. January starters are not eligible.",
+      "$4,000 a year at a full course load ($3,200 at 80%) for incoming students with a high school average of 85.0% to 89.9%, a 3.50 to 3.72 GPA on a 4.00 scale, or 29 to 30 IB points. Considered automatically on admission, with no separate application.",
     url: SCHOLARSHIP_PAGE,
   },
   {
-    name: "Moore Family International Scholarship",
-    academicYear: "2026/27",
+    name: "Dean's Scholarship",
+    academicYear: null as string | null,
     description:
-      "Up to C$12,000 a year, renewable up to C$48,000 over four years, for three entering students from outside North America with outstanding academic achievement, community service, leadership potential and some financial need. Applications go through the prestigious scholarships form.",
+      "$2,000 a year at a full course load ($1,600 at 80%) for incoming students with a high school average of 73.0% to 84.9%, a 2.80 to 3.49 GPA on a 4.00 scale, or 26 to 28 IB points. Considered automatically on admission, with no separate application.",
     url: SCHOLARSHIP_PAGE,
   },
   {
-    name: "Graduate Funding Packages and International Graduate Scholarships",
-    academicYear: "2026/27",
+    name: "Equipped for Life Scholarship",
+    academicYear: "2027/28",
     description:
-      "Eligible research-based master's students receive guaranteed funding of at least C$18,000 to C$23,000 a year for two years, and limited International Graduate Scholarships offset tuition so recipients pay about the same as out-of-province domestic students. Professional and course-based programs, such as the Master of Management, do not offer funding packages.",
-    url: GRAD_FUNDING_PAGE,
+      "$1,000 for 25 incoming new and transfer students who show leadership potential and a commitment to building a Christ-centred community. Recipients join a leadership retreat in September. Apply through the admissions application by March 15, with recipients chosen in mid-May.",
+    url: SCHOLARSHIP_PAGE,
+  },
+  {
+    name: "Alumni Legacy Scholarship",
+    academicYear: "2027/28",
+    description:
+      "$1,000 for incoming students whose parent or grandparent graduated with a degree from TWU. Non-renewable and awarded in the first year of study. Apply through the admissions application by March 15.",
+    url: SCHOLARSHIP_PAGE,
+  },
+  {
+    name: "Endowment Awards",
+    academicYear: null as string | null,
+    description:
+      "Donor-funded awards of up to $10,000, offered on criteria such as financial need and academic program. Most are for returning students, but several are open to new students. Submit the Financial Need Assessment and endowment application by March 15 for priority.",
+    url: SCHOLARSHIP_PAGE,
   },
 ];
 
