@@ -27,23 +27,18 @@ const COLUMN_ACCENTS = [
   { pill: "bg-gold", tick: "border-l-gold" },
 ] as const;
 
-type SectionKey = "programs" | "services";
-
 export function MobileNavSheet() {
   const [open, setOpen] = useState(false);
-  const [section, setSection] = useState<SectionKey | null>(null);
-
-  const toggleSection = (key: SectionKey) =>
-    setSection((current) => (current === key ? null : key));
+  const [programsOpen, setProgramsOpen] = useState(false);
 
   const closeAll = () => {
     setOpen(false);
-    setSection(null);
+    setProgramsOpen(false);
   };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
+      <SheetTrigger asChild>
         <button
           type="button"
           aria-label={open ? "Close menu" : "Open menu"}
@@ -53,8 +48,8 @@ export function MobileNavSheet() {
         </button>
       </SheetTrigger>
 
-      {/* [&>button]:hidden strips shadcn's default top-right close icon —
-          the hero below has its own close button, so we don't want two. */}
+      {/* [&>button]:hidden strips shadcn's default top right close icon.
+          The hero below has its own close button, so we don't want two. */}
       <SheetContent
         side="right"
         className="inset-y-0 h-[100dvh] w-screen max-w-none border-0 bg-white p-0 sm:max-w-none [&>button]:hidden"
@@ -106,23 +101,23 @@ export function MobileNavSheet() {
               <ArrowRight size={16} className="text-ink/30" />
             </Link>
 
-            {/* Programs */}
+            {/* Programs (still a dropdown) */}
             <div className="border-b border-ink/10">
               <button
                 type="button"
-                onClick={() => toggleSection("programs")}
-                aria-expanded={section === "programs"}
+                onClick={() => setProgramsOpen((current) => !current)}
+                aria-expanded={programsOpen}
                 className="flex w-full items-center justify-between py-4 text-[15px] font-semibold text-ink"
               >
                 Programs
                 <ChevronDown
                   size={17}
                   className={`text-ink/40 transition-transform ${
-                    section === "programs" ? "rotate-180" : ""
+                    programsOpen ? "rotate-180" : ""
                   }`}
                 />
               </button>
-              {section === "programs" && (
+              {programsOpen && (
                 <div className="flex flex-col gap-1 pb-4">
                   {PROGRAM_LINKS.map((link) => {
                     const Icon = link.icon;
@@ -149,61 +144,46 @@ export function MobileNavSheet() {
               )}
             </div>
 
-            {/* Services */}
+            {/* Services (always visible, heading only, no dropdown) */}
             <div className="border-b border-ink/10">
-              <button
-                type="button"
-                onClick={() => toggleSection("services")}
-                aria-expanded={section === "services"}
-                className="flex w-full items-center justify-between py-4 text-[15px] font-semibold text-ink"
-              >
-                Services
-                <ChevronDown
-                  size={17}
-                  className={`text-ink/40 transition-transform ${
-                    section === "services" ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-              {section === "services" && (
-                <div className="flex flex-col gap-5 pb-4">
-                  {SERVICE_COLUMNS.map((column, i) => {
-                    const accent = COLUMN_ACCENTS[i % COLUMN_ACCENTS.length];
-                    return (
-                      <div key={column.title}>
-                        <p
-                          className={`${accent.pill} inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white`}
-                        >
-                          {column.title}
-                        </p>
-                        <div className="mt-1.5 flex flex-col">
-                          {column.links.map((link) => {
-                            const Icon = link.icon;
-                            return (
-                              <Link
-                                key={link.href}
-                                href={link.href}
-                                onClick={closeAll}
-                                className={`flex items-start gap-3 border-l-[3px] border-l-transparent px-2 py-2.5 transition-colors hover:bg-ink/5 ${accent.tick}`}
-                              >
-                                <Icon size={16} className="mt-0.5 shrink-0 text-ink/40" />
-                                <span>
-                                  <span className="block text-sm font-semibold text-ink">
-                                    {link.label}
-                                  </span>
-                                  <span className="mt-0.5 block text-xs leading-snug text-ink/55">
-                                    {link.blurb}
-                                  </span>
+              <p className="py-4 text-[15px] font-semibold text-ink">Services</p>
+              <div className="flex flex-col gap-5 pb-4">
+                {SERVICE_COLUMNS.map((column, i) => {
+                  const accent = COLUMN_ACCENTS[i % COLUMN_ACCENTS.length];
+                  return (
+                    <div key={column.title}>
+                      <p
+                        className={`${accent.pill} inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] text-white`}
+                      >
+                        {column.title}
+                      </p>
+                      <div className="mt-1.5 flex flex-col">
+                        {column.links.map((link) => {
+                          const Icon = link.icon;
+                          return (
+                            <Link
+                              key={link.href}
+                              href={link.href}
+                              onClick={closeAll}
+                              className={`flex items-start gap-3 border-l-[3px] border-l-transparent px-2 py-2.5 transition-colors hover:bg-ink/5 ${accent.tick}`}
+                            >
+                              <Icon size={16} className="mt-0.5 shrink-0 text-ink/40" />
+                              <span>
+                                <span className="block text-sm font-semibold text-ink">
+                                  {link.label}
                                 </span>
-                              </Link>
-                            );
-                          })}
-                        </div>
+                                <span className="mt-0.5 block text-xs leading-snug text-ink/55">
+                                  {link.blurb}
+                                </span>
+                              </span>
+                            </Link>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                </div>
-              )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             <Link
@@ -220,11 +200,9 @@ export function MobileNavSheet() {
             >
               Contact
             </Link>
-          </nav>
 
-          {/* bottom actions */}
-          <div className="shrink-0 border-t border-ink/10 bg-white px-5 py-4">
-            <div className="flex flex-col gap-2.5">
+            {/* actions, now at the very end of the scrolling menu */}
+            <div className="flex flex-col gap-2.5 pb-6 pt-5">
               <a
                 href={PHONE_HREF}
                 onClick={closeAll}
@@ -248,7 +226,7 @@ export function MobileNavSheet() {
                 Book free consultation
               </Link>
             </div>
-          </div>
+          </nav>
         </div>
       </SheetContent>
     </Sheet>
