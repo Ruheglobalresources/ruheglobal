@@ -147,3 +147,173 @@ export const ApiListSchoolsQuerySchema = z.object({
 export const ApiSchoolSlugParamSchema = z.object({
   slug: z.string().openapi({ example: "coventry-university" }),
 });
+
+// ─────────────────────────────────────────────────────────────────────────
+// CATALOG: institutions and courses (Institution table)
+// ─────────────────────────────────────────────────────────────────────────
+
+export const ApiCourseInstitutionSchema = z
+  .object({
+    id: z.string(),
+    slug: z.string().openapi({ example: "conestoga-college" }),
+    name: z.string().openapi({ example: "Conestoga College" }),
+    logoUrl: z.string().nullable(),
+    city: z.string().nullable(),
+    country: z.string().nullable().openapi({ example: "Canada" }),
+    countryFlag: z.string().nullable().openapi({ example: "🇨🇦" }),
+    url: z.string().openapi({ description: "Public web page for this institution" }),
+  })
+  .openapi("CourseInstitution");
+
+export const ApiCourseCardSchema = z
+  .object({
+    id: z.string(),
+    kind: z.enum(["course", "programme"]).openapi({
+      description:
+        "course is a real course entered for the institution. programme is a subject area listed on an institution that has no course rows yet",
+    }),
+    name: z.string().openapi({ example: "Ontario College Graduate Certificate, Cybersecurity Response Planning" }),
+    degree: z.string().nullable(),
+    level: z.string().nullable().openapi({ example: "Postgraduate" }),
+    subject: z.string().nullable().openapi({ example: "Cyber Security" }),
+    duration: z.string().nullable().openapi({ example: "1 Year" }),
+    nextIntake: z.string().nullable().openapi({ example: "Jan 2027" }),
+    tuition: z.string().nullable().openapi({
+      description: "Ready to show price label. Starts with From when it is the institution's starting fee",
+      example: "CA$16,808 / yr",
+    }),
+    institution: ApiCourseInstitutionSchema,
+  })
+  .openapi("CourseCard");
+
+export const ApiInstitutionCardSchema = z
+  .object({
+    id: z.string(),
+    slug: z.string(),
+    name: z.string(),
+    city: z.string().nullable(),
+    country: z.string().nullable(),
+    countryFlag: z.string().nullable(),
+    institutionType: z.string().nullable().openapi({ example: "Public college" }),
+    imageUrl: z.string().nullable().openapi({ description: "Campus photo" }),
+    logoUrl: z.string().nullable(),
+    ranking: z.string().nullable(),
+    tuition: z.string().nullable().openapi({ example: "From CA$20,978 / yr" }),
+    courseCount: z.number().int(),
+    url: z.string(),
+  })
+  .openapi("InstitutionCard");
+
+export const ApiInstitutionDetailSchema = z
+  .object({
+    id: z.string(),
+    slug: z.string(),
+    name: z.string(),
+    city: z.string().nullable(),
+    country: z.string().nullable(),
+    countryFlag: z.string().nullable(),
+    institutionType: z.string().nullable(),
+    summary: z.string(),
+    website: z.string().nullable(),
+    imageUrl: z.string().nullable(),
+    logoUrl: z.string().nullable(),
+    ranking: z.string().nullable(),
+    founded: z.number().int().nullable(),
+    acceptanceRate: z.string().nullable(),
+    upcomingIntake: z.string().nullable(),
+    tuition: z.object({
+      min: z.number().nullable(),
+      max: z.number().nullable(),
+      currency: z.string().nullable(),
+      period: z.string().nullable(),
+      note: z.string().nullable(),
+      label: z.string().nullable(),
+    }),
+    english: z.object({
+      ieltsOverall: z.number().nullable(),
+      ieltsMinBand: z.number().nullable(),
+      alternatives: z.array(z.string()),
+      note: z.string().nullable(),
+    }),
+    subjects: z.array(z.string()),
+    highlights: z.object({
+      overview: z.string().nullable(),
+      studentLife: z.string().nullable(),
+      accommodation: z.string().nullable(),
+      library: z.string().nullable(),
+      sports: z.string().nullable(),
+    }),
+    social: z.object({
+      facebook: z.string().nullable(),
+      instagram: z.string().nullable(),
+      twitter: z.string().nullable(),
+      linkedin: z.string().nullable(),
+      youtube: z.string().nullable(),
+    }),
+    courses: z.array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        level: z.string().nullable(),
+        degree: z.string().nullable(),
+        subject: z.string().nullable(),
+        duration: z.string().nullable(),
+        nextIntake: z.string().nullable(),
+        intakes: z.string().nullable(),
+        tuition: z.string().nullable(),
+        description: z.string().nullable(),
+      })
+    ),
+    campuses: z.array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        city: z.string().nullable(),
+        address: z.string().nullable(),
+        description: z.string().nullable(),
+      })
+    ),
+    documents: z.array(
+      z.object({
+        id: z.string(),
+        studyLevel: z.string().openapi({ example: "Undergraduate" }),
+        category: z.string().openapi({ example: "Visa" }),
+        name: z.string().openapi({ example: "Passport" }),
+      })
+    ),
+    faqs: z.array(z.object({ id: z.string(), question: z.string(), answer: z.string() })),
+    metaTitle: z.string().nullable(),
+    metaDescription: z.string().nullable(),
+    url: z.string(),
+    updatedAt: z.string().openapi({ description: "ISO 8601" }),
+  })
+  .openapi("InstitutionDetail");
+
+export const ApiCatalogSummarySchema = z
+  .object({
+    courses: z.number().int().openapi({ description: "All courses, including subject areas of institutions with no course rows yet" }),
+    institutions: z.number().int(),
+  })
+  .openapi("CatalogSummary");
+
+export const ApiCatalogQuerySchema = z.object({
+  country: z
+    .string()
+    .trim()
+    .min(1)
+    .optional()
+    .openapi({ description: "Exact country name, for example Canada", example: "Canada" }),
+  q: z
+    .string()
+    .trim()
+    .min(1)
+    .max(80)
+    .optional()
+    .openapi({ description: "Matches the course or subject and the institution name (city too for institutions)" }),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(12),
+});
+
+export const ApiInstitutionSlugParamSchema = z.object({
+  slug: z.string().openapi({ example: "conestoga-college" }),
+});
