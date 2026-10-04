@@ -55,7 +55,6 @@ export function MobileNavSheet() {
         className="inset-y-0 h-[100dvh] w-screen max-w-none border-0 bg-white p-0 sm:max-w-none [&>button]:hidden"
       >
         <SheetTitle className="sr-only">Site menu</SheetTitle>
-
         <div className="flex h-full flex-col overflow-hidden">
           {/* hero */}
           <div className="shrink-0 bg-ink px-5 pb-6 pt-6">
