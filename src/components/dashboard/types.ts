@@ -1,6 +1,7 @@
 // src/components/dashboard/types.ts
 // Shapes returned by GET /api/v1/courses, /institutions and /catalog/summary.
 // The Expo app can copy this file as it is.
+
 export type CourseCardData = {
   id: string;
   kind: "course" | "programme"; // programme = a subject area of an institution with no course rows yet
