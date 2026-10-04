@@ -1,0 +1,620 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// AUTH
+// (Kept from the template you started from — this part is genuinely
+// ─────────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  COUNSELOR // staff assigned to guide an applicant through a submission
+  USER
+}
+
+model User {
+  id                 String    @id @default(uuid())
+  name               String?
+  email              String?   @unique
+  emailVerified      DateTime?
+  image              String?
+  password           String?
+  role               UserRole  @default(USER)
+  isTwoFactorEnabled Boolean   @default(false)
+
+  accounts              Account[]
+  twoFactorConfirmation TwoFactorConfirmation?
+
+  // Submissions this user (as an applicant) owns.
+  submissions           ApplicationSubmission[] @relation("UserSubmissions")
+  // Submissions this user (as staff) has been assigned to counsel.
+  counseledSubmissions  ApplicationSubmission[] @relation("CounseledSubmissions")
+
+  // Conversations where this user is the client (support/enquiry chats).
+  clientConversations Conversation[] @relation("ConversationClient")
+  // Conversations an admin/counselor has joined or picked up — a chat can
+  // have more than one staff member on it, and any admin/counselor can
+  // join at any time.
+  staffConversations  Conversation[] @relation("ConversationStaff")
+  messagesSent        Message[]      @relation("MessageSender")
+  blogPosts           BlogPost[]     @relation("BlogPostAuthor")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model VerificationToken {
+  id      String   @id @default(uuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(uuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorToken {
+  id      String   @id @default(uuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorConfirmation {
+  id     String @id @default(uuid())
+  userId String @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// PORTAL — ADMIN-MANAGED TERMINALS
+// The 5 terminals (Exams & Prep, Work & Migration, Study Abroad,
+// Scholarships, Free Courses) are just rows here, not a hardcoded enum —
+// the admin block manages them directly, so adding a 6th one later
+// (e.g. a dedicated "Property" or "Money Exchange" terminal) needs no
+// schema change.
+// ─────────────────────────────────────────────────────────────────────────
+
+model PortalTerminal {
+  id       String  @id @default(uuid())
+  name     String  @unique // "Exams & Prep"
+  slug     String  @unique // "exams-prep"
+  icon     String?
+  order    Int     @default(0)
+  isActive Boolean @default(true)
+
+  applications Application[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// FIELD LIBRARY
+// Every possible input a form could ever ask for — personal-data fields
+// (family name, DOB, passport number...) sit in the same catalog as
+// travel/property/exchange-specific ones (preferred country, property
+// budget, currency amount, passport photo...). Nothing about "personal
+// details" is special-cased in its own model anymore — it's just a group
+// of FieldDefinitions like any other, which is what lets the admin select
+// and unselect exactly what a given application needs.
+// ─────────────────────────────────────────────────────────────────────────
+
+enum FieldType {
+  TEXT
+  TEXTAREA
+  EMAIL
+  PHONE
+  NUMBER
+  DATE
+  SELECT
+  MULTI_SELECT
+  CHECKBOX
+  IMAGE // e.g. passport photo
+  FILE // e.g. passport bio page, proof of funds, transcripts
+}
+
+model FieldDefinition {
+  id          String    @id @default(uuid())
+  key         String    @unique // "family_name", "passport_number", "property_budget"
+  label       String // "Family name / surname (exactly as in passport)"
+  type        FieldType
+  category    String    @default("General") // groups the library in the admin UI — "Personal Details", "Academic Background"...
+  placeholder String?
+  helpText    String?
+  options     Json? // choices for SELECT/MULTI_SELECT, e.g. ["Mr","Mrs","Ms","Dr"]
+
+  // Optional validation, enforced server-side when a value is saved.
+  minLength Int?
+  maxLength Int?
+  pattern   String? // regex, e.g. for passport number formats
+
+  applicationFields ApplicationField[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// APPLICATIONS (admin-created, one per terminal)
+// This is what the admin creates under a terminal — "IELTS Academic",
+// "Work in Germany", "Study at XYZ University", "Buy Property — Lekki
+// Gardens", "USD/NGN Exchange". Which inputs it asks for is entirely
+// driven by which FieldDefinitions get attached via ApplicationField, so
+// a brand-new kind of application (money exchange, property purchase...)
+// is just new rows, never a schema change.
+// ─────────────────────────────────────────────────────────────────────────
+
+model Application {
+  id         String  @id @default(uuid())
+  terminalId String
+  name       String // "Work in Germany"
+  subtitle   String? // "One team, 14 countries..."
+  slug       String
+  icon       String?
+  badge      String? // "14 countries open"
+  isLive     Boolean @default(false) // the small green dot shown on IELTS in the mock
+  order      Int     @default(0)
+  isActive   Boolean @default(true)
+
+  terminal    PortalTerminal          @relation(fields: [terminalId], references: [id], onDelete: Cascade)
+  tags        ApplicationTag[]
+  fields      ApplicationField[]
+  submissions ApplicationSubmission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([terminalId, slug])
+  @@index([terminalId])
+}
+
+// Small pills shown on an application card — country flags under "Work in
+// Europe" (Poland, Germany...), exam variants under "IELTS", etc.
+model ApplicationTag {
+  id            String  @id @default(uuid())
+  applicationId String
+  label         String
+  icon          String?
+  order         Int     @default(0)
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+}
+
+// Join table: which FieldDefinitions belong to THIS Application, in what
+// order, on which wizard step, and whether they're required here — the
+// same "passport number" field can be required on one application and
+// absent entirely from another.
+model ApplicationField {
+  id                String  @id @default(uuid())
+  applicationId     String
+  fieldDefinitionId String
+  isRequired        Boolean @default(false)
+  stepNumber        Int     @default(1) // which step of the wizard this field appears on
+  order             Int     @default(0) // position within that step
+
+  application     Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  fieldDefinition FieldDefinition   @relation(fields: [fieldDefinitionId], references: [id], onDelete: Cascade)
+  values          SubmissionValue[]
+
+  @@unique([applicationId, fieldDefinitionId])
+  @@index([applicationId])
+  @@index([fieldDefinitionId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// SUBMISSIONS
+// One applicant's actual attempt at an Application. Total step count and
+// per-step completion are derived from ApplicationField + SubmissionValue
+// at query time (max stepNumber, and which required fields have a value)
+// rather than stored, the same way SalonOrder.amount was always computed
+// server-side rather than trusted/cached.
+// ─────────────────────────────────────────────────────────────────────────
+
+enum SubmissionStatus {
+  DRAFT // started, not yet submitted — "nothing is created until you save"
+  IN_PROGRESS
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+model ApplicationSubmission {
+  id            String @id @default(uuid())
+  userId        String
+  applicationId String
+
+  status      SubmissionStatus @default(DRAFT)
+  currentStep Int              @default(1)
+  submittedAt DateTime?
+
+  // "Has someone at Mafit already been helping you?" — typed before being
+  // matched to a real counselor account; counselorId is set once matched.
+  counselorRequestName String?
+  counselorId          String?
+
+  user        User        @relation("UserSubmissions", fields: [userId], references: [id], onDelete: Cascade)
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  counselor   User?       @relation("CounseledSubmissions", fields: [counselorId], references: [id], onDelete: SetNull)
+
+  values SubmissionValue[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([applicationId])
+  @@index([status])
+}
+
+// The actual answer to one ApplicationField, for one submission.
+// Text/number/date/select answers go in `value` (stringified); IMAGE/FILE
+// fields use `fileUrl` instead (store a JSON array there if an image field
+// is ever configured to accept more than one file — no schema change
+// needed for that later).
+model SubmissionValue {
+  id                 String @id @default(uuid())
+  submissionId       String
+  applicationFieldId String
+
+  value   String? @db.Text
+  fileUrl String?
+
+  submission       ApplicationSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  applicationField ApplicationField      @relation(fields: [applicationFieldId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([submissionId, applicationFieldId])
+  @@index([submissionId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// MESSAGING — a support/enquiry chat between one client and whichever
+// admin(s)/counselor(s) handle it. One fixed client per conversation;
+// staff is a many-to-many so any admin or counselor can pick up, join, or
+// hand off the same conversation at any time — nothing about "who's
+// assigned" is locked in at creation. submissionId optionally ties the
+// chat to the ApplicationSubmission it's about, since a lot of these
+// conversations will start from an applicant's in-progress submission.
+// ─────────────────────────────────────────────────────────────────────────
+
+enum ConversationStatus {
+  OPEN
+  CLOSED
+}
+
+model Conversation {
+  id           String             @id @default(uuid())
+  clientId     String
+  submissionId String? // optional link to the ApplicationSubmission this chat is about
+  subject      String? // short label, e.g. "Question about IELTS submission"
+  status       ConversationStatus @default(OPEN)
+
+  client User @relation("ConversationClient", fields: [clientId], references: [id], onDelete: Cascade)
+  staff  User[] @relation("ConversationStaff") // admins/counselors who've joined or picked this up
+
+  messages Message[]
+
+  lastMessageAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([submissionId])
+  @@index([status])
+  @@index([lastMessageAt])
+}
+
+model Message {
+  id             String  @id @default(uuid())
+  conversationId String
+  senderId       String
+  body           String? @db.Text
+  fileUrl        String? // image/document attachment
+
+  seenByIds String[] @default([]) // userIds who've seen this message
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([conversationId])
+  @@index([senderId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// BLOG
+// coverImage is the required front/hero image shown on cards and at the
+// top of a post. content stores the rich-text editor's HTML output.
+// BlogPostImage holds any additional images used inside the post body
+// (a gallery, or images the editor uploads and references by URL in
+// `content`) — kept as its own model rather than a plain String[] so each
+// image can carry its own alt text, caption, and ordering.
+// ─────────────────────────────────────────────────────────────────────────
+
+enum BlogPostStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model BlogPost {
+  id              String         @id @default(uuid())
+  title           String
+  slug            String         @unique
+  excerpt         String?
+  content         String         @db.Text
+  coverImage      String // required front/hero image for the post
+  coverImageAlt   String?
+  tags            String[]       @default([])
+  status          BlogPostStatus @default(DRAFT)
+  publishedAt     DateTime?
+  views           Int            @default(0)
+  metaTitle       String? // optional SEO overrides
+  metaDescription String?
+
+  authorId String
+  author   User   @relation("BlogPostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  images BlogPostImage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([status])
+  @@index([publishedAt])
+}
+
+// Additional images used inside a post's body (beyond the single cover
+// image above) — e.g. a gallery block, or images inserted through the
+// editor's image-upload tool.
+model BlogPostImage {
+  id         String  @id @default(uuid())
+  blogPostId String
+  url        String
+  altText    String?
+  caption    String?
+  order      Int     @default(0)
+
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([blogPostId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// INSTITUTIONS
+// The persisted, admin-managed catalog behind the course-search feature.
+// Fields intentionally mirror the flat `School`/`RawSchool` shape the
+// Claude-powered search route already returns (src/lib/school-search/*),
+// so a row here and a live AI-search result can be rendered by the same
+// ResultCard component. imageUrl/logoUrl are resolved the same way the
+// search route does it (Wikipedia page-image + Google favicon) rather
+// than trusted from free text, since models/admins hallucinate URLs.
+// ─────────────────────────────────────────────────────────────────────────
+
+model Institution {
+  id   String @id @default(uuid())
+  name String
+  slug String @unique
+
+  city            String?
+  country         String?
+  institutionType String? // e.g. "Public research university", "Pathway college (Navitas)"
+  summary         String  @db.Text
+  programs        String[] @default([]) // up to 3 real programme names
+
+  // English-proficiency requirements
+  ieltsOverall      Float?
+  ieltsMinBand      Float?
+  ieltsAlternatives String[] @default([]) // e.g. ["TOEFL iBT 90", "PTE 65"]
+  ieltsNote         String?
+
+  // Tuition
+  tuitionMin      Int?
+  tuitionMax      Int?
+  tuitionCurrency String? // ISO 4217, e.g. GBP, USD, CAD, AUD
+  tuitionPeriod   String? // e.g. "per year (2025/26)"
+  tuitionNote     String?
+
+  ranking  String? // short ranking string, e.g. "QS #142 (2026)"
+  website  String?
+  imageUrl String? // campus photo
+  logoUrl  String? // favicon/logo
+
+  isActive Boolean @default(true)
+  // Main partner institutions shown on the course-search page before the
+  // visitor runs a search at all (a fixed "our partners" set, not a search
+  // result). `order` decides their left-to-right/top-to-bottom position.
+  isFeatured Boolean @default(false)
+  order      Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([country])
+  @@index([isActive])
+  @@index([order])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// SCHOOLS
+// The admin-managed schools behind the "Top schools" section on the home
+// page and each school's own SEO detail page at /schools/[slug].
+// `description` is the short blurb (card + meta-description fallback);
+// paragraph1..4 are the short-blog body of the detail page. Courses and
+// gallery images are child rows so the admin can add/remove as many as
+// needed without a schema change. `country` must match a name in
+// COUNTRIES (src/constants/schools.ts) so the country tabs keep working.
+// ─────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────
+// REPLACE the three School models in prisma/schema.prisma with this.
+//
+// What changed vs your current models:
+//   School:        + famousFor, tuitionTo, overview, services, accommodation,
+//                  locationInfo, highlights, scholarships relation
+//                  - paragraph1..4 (replaced by the named sections)
+//   SchoolCourse:  + degree
+//   SchoolScholarship: new child table
+//
+// Page sections this feeds (same order as the StudyIn page):
+//   stat strip  -> ranking, founded, famousFor, tuitionFrom..tuitionTo
+//   Overview    -> overview
+//   Services    -> services
+//   Rankings    -> highlights (bullet list)
+//   Accommodation -> accommodation
+//   Location    -> locationInfo
+//   Courses     -> courses rows
+//   Scholarships-> scholarships rows
+//   Photos between sections -> the existing gallery images
+// ─────────────────────────────────────────────────────────────────────────
+
+model School {
+  id   String @id @default(uuid())
+  name String
+  slug String @unique
+
+  country String // must match a COUNTRIES name, e.g. "United Kingdom"
+  city    String
+  founded Int?
+
+  // Stat strip
+  ranking    String? // e.g. "QS #29 (2026)"
+  famousFor  String? // e.g. "Business, Engineering, Physics"
+  acceptanceRate  String? // e.g. "60%+"
+  tuitionFrom     Int? // whole units of tuitionCurrency, per year
+  tuitionTo       Int? // top of the range; leave empty to show "from" only
+  tuitionCurrency String  @default("USD") // ISO 4217: GBP, CAD, USD, EUR, AUD
+  website         String?
+
+  // Content
+  description String @db.Text // short blurb: school card + meta fallback
+
+  // Detail page sections (each one optional; empty sections are hidden)
+  overview      String? @db.Text
+  services      String? @db.Text // international student services
+  accommodation String? @db.Text
+  locationInfo  String? @db.Text // the city / campus location section
+  highlights    String[] // "Rankings" bullet list, one item per entry
+
+  // Images
+  coverImage    String // card image + hero + og:image fallback
+  coverImageAlt String?
+  logoUrl       String?
+
+  // SEO overrides (fall back to name/description when empty)
+  metaTitle       String?
+  metaDescription String?
+
+  isActive Boolean @default(true)
+  order    Int     @default(0)
+
+  courses      SchoolCourse[]
+  images       SchoolImage[]
+  scholarships SchoolScholarship[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([country])
+  @@index([isActive])
+  @@index([order])
+}
+
+model SchoolCourse {
+  id          String  @id @default(uuid())
+  schoolId    String
+  name        String // "Advanced Computer Science"
+  degree      String? // "MSc", "BSc", "MBA", "Foundation"...
+  level       String? // "Undergraduate", "Postgraduate"...
+  duration    String? // "1 year", "3 years"
+  tuition     String? // free text, e.g. "£18,500 / year"
+  intakes     String? // e.g. "September, January"
+  description String? @db.Text
+  imageUrl    String?
+  order       Int     @default(0)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([schoolId])
+}
+
+model SchoolImage {
+  id       String  @id @default(uuid())
+  schoolId String
+  url      String
+  altText  String?
+  caption  String?
+  order    Int     @default(0)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([schoolId])
+}
+
+model SchoolScholarship {
+  id           String  @id @default(uuid())
+  schoolId     String
+  name         String // "Strathclyde Alumni Scholarship: Postgraduate Taught"
+  academicYear String? // "2026" or "2026/27"
+  description  String? @db.Text
+  url          String? // "Learn more" link
+  order        Int     @default(0)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([schoolId])
+}

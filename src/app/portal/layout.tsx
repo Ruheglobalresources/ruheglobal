@@ -1,8 +1,10 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Toaster } from "sonner";
+import { Search } from "lucide-react";
 import { auth } from "@/auth";
-import { LogoutButton } from "@/components/auth/logout-button";
-import { LogOut } from "lucide-react";
+import { PortalNav } from "@/components/portal/portal-nav";
+import { UserMenu } from "@/components/portal/user-menu";
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -10,21 +12,39 @@ export default async function PortalLayout({ children }: { children: React.React
   if (!session?.user) redirect("/auth/login?callbackUrl=/portal");
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-white">
       <Toaster richColors position="top-center" />
 
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b bg-white px-3 py-2.5 sm:px-6">
-        <p className="text-sm font-semibold text-[color:var(--color-ink)] sm:text-base">
-          Ruhe Global Resources — Applicant Portal
-        </p>
-        <LogoutButton>
-          <span className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-neutral-500 hover:bg-neutral-100">
-            <LogOut size={15} /> Log out
-          </span>
-        </LogoutButton>
+      {/* Top app bar */}
+      <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center gap-3 border-b border-neutral-200 bg-white px-4 sm:px-6">
+        <Link href="/portal" className="shrink-0 font-display text-xl font-semibold tracking-tight text-ruby-600">
+          Ruhe<span className="hidden text-ink sm:inline"> Global Resources</span>
+        </Link>
+
+        {/* Plain GET form: no JavaScript needed, lands on /portal/courses?q=... */}
+        <form action="/portal/courses" method="get" role="search" className="mx-auto w-full max-w-xl">
+          <label className="flex h-11 items-center gap-3 rounded-full border border-neutral-300 bg-white px-4 transition focus-within:border-ruby-500 focus-within:ring-2 focus-within:ring-ruby-500/20">
+            <Search size={18} className="shrink-0 text-neutral-500" />
+            <input
+              name="q"
+              type="search"
+              maxLength={80}
+              placeholder="Search for courses, institutions..."
+              className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-neutral-400"
+            />
+          </label>
+        </form>
+
+        <div className="shrink-0">
+          <UserMenu name={session.user.name ?? null} email={session.user.email ?? null} />
+        </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-3 py-6 sm:px-6 sm:py-8">{children}</main>
+      <PortalNav />
+
+      <main className="px-4 pb-28 pt-24 sm:px-6 lg:pb-12 lg:pl-[17rem] lg:pr-8">
+        <div className="mx-auto max-w-5xl">{children}</div>
+      </main>
     </div>
   );
 }

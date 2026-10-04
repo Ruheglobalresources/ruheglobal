@@ -469,6 +469,35 @@ model Institution {
   imageUrl String? // campus photo
   logoUrl  String? // favicon/logo
 
+  // ── Institution profile (all optional, filled in over time) ──────────
+  // Stat strip
+  founded        Int?
+  acceptanceRate String? // e.g. "85%"
+  upcomingIntake String? // e.g. "Jan 2027"
+
+  // "Highlights" tabs: one short paragraph each. A tab with no text is hidden.
+  overview      String? @db.Text
+  studentLife   String? @db.Text
+  accommodation String? @db.Text
+  library       String? @db.Text
+  sports        String? @db.Text
+
+  // Social links
+  facebookUrl  String?
+  instagramUrl String?
+  twitterUrl   String?
+  linkedinUrl  String?
+  youtubeUrl   String?
+
+  // SEO overrides for the institution page (fall back to name/summary)
+  metaTitle       String?
+  metaDescription String?
+
+  courses   InstitutionCourse[]
+  campuses  InstitutionCampus[]
+  faqs      InstitutionFaq[]
+  documents InstitutionDocument[]
+
   isActive Boolean @default(true)
   // Main partner institutions shown on the course-search page before the
   // visitor runs a search at all (a fixed "our partners" set, not a search
@@ -482,6 +511,86 @@ model Institution {
   @@index([country])
   @@index([isActive])
   @@index([order])
+}
+
+// A real, individual course at an institution (the "Courses" tab). The
+// institution's `programs` array stays as the short list of subject areas.
+model InstitutionCourse {
+  id            String  @id @default(uuid())
+  institutionId String
+  name          String // "Ontario College Graduate Certificate, Cybersecurity Response Planning"
+  level         String? // "Undergraduate" | "Postgraduate" (drives the study-level filter)
+  degree        String? // "MSc", "BSc", "Diploma", "Graduate Certificate"...
+  subject       String? // "Cyber Security" (drives the subject chips)
+  duration      String? // "1 Year"
+  nextIntake    String? // "Jan 2027"
+  intakes       String? // "January, May, September"
+
+  // Fee for the course. Currency falls back to the institution's tuitionCurrency.
+  tuitionAmount   Int?
+  tuitionCurrency String?
+  tuitionPeriod   String? // "per year"
+
+  description String? @db.Text
+  order       Int     @default(0)
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([institutionId])
+  @@index([level])
+  @@index([subject])
+}
+
+// A campus of the institution (the "Campuses" tab): a name plus one paragraph.
+model InstitutionCampus {
+  id            String  @id @default(uuid())
+  institutionId String
+  name          String // "Brantford"
+  city          String?
+  address       String?
+  description   String? @db.Text
+  order         Int     @default(0)
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([institutionId])
+}
+
+// One question and answer (the "FAQs" tab).
+model InstitutionFaq {
+  id            String @id @default(uuid())
+  institutionId String
+  question      String
+  answer        String @db.Text
+  order         Int    @default(0)
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([institutionId])
+}
+
+// A document an applicant needs (the "Required Documents" tab), grouped by
+// study level and by category (Visa, Financial, Identity, Academic...).
+model InstitutionDocument {
+  id            String @id @default(uuid())
+  institutionId String
+  studyLevel    String // "Undergraduate" | "Postgraduate"
+  category      String // "Visa" | "Financial" | "Identity" | "Academic"
+  name          String // "Passport"
+  order         Int    @default(0)
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([institutionId])
+  @@index([studyLevel])
 }
 
 // ─────────────────────────────────────────────────────────────────────────
