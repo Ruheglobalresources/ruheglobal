@@ -5,7 +5,14 @@ import { elevation1, filledButton } from "@/components/dashboard/styles";
 import type { PortalCounsellor } from "@/lib/portal-counsellor";
 import { cn } from "@/lib/utils";
 
-export function CounsellorCard({ counsellor, className }: { counsellor: PortalCounsellor | null; className?: string }) {
+type CounsellorCardProps = {
+  counsellor: PortalCounsellor | null;
+  className?: string;
+  /** Lets the mobile sheet close itself when "Book a Session" is followed. */
+  onNavigate?: () => void;
+};
+
+export function CounsellorCard({ counsellor, className, onNavigate }: CounsellorCardProps) {
   return (
     <div className={cn("rounded-3xl border border-neutral-200 bg-white p-4", elevation1, className)}>
       {counsellor ? (
@@ -29,7 +36,7 @@ export function CounsellorCard({ counsellor, className }: { counsellor: PortalCo
         </p>
       )}
 
-      <Link href="/contact" className={cn(filledButton, "mt-4 w-full")}>
+      <Link href="/contact" onClick={onNavigate} className={cn(filledButton, "mt-4 w-full")}>
         <Headset size={18} /> Book a Session
       </Link>
     </div>

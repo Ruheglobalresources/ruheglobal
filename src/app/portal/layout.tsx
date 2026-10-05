@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Toaster } from "sonner";
 import { Search } from "lucide-react";
 import { auth } from "@/auth";
+import { PortalMobileSidebar } from "@/components/portal/portal-mobile-sidebar";
 import { PortalNav } from "@/components/portal/portal-nav";
 import { UserMenu } from "@/components/portal/user-menu";
 import { getPortalCounsellor } from "@/lib/portal-counsellor";
@@ -14,12 +15,17 @@ export default async function PortalLayout({ children }: { children: React.React
 
   const counsellor = await getPortalCounsellor(session.user.id);
 
+  const sidebarUser = { name: session.user.name ?? null, email: session.user.email ?? null };
+
   return (
     <div className="min-h-screen bg-white">
       <Toaster richColors position="top-center" />
 
       {/* Top bar */}
       <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center gap-3 border-b border-neutral-200 bg-white px-4 sm:px-6">
+        {/* Phones and tablets: the sidebar lives in a slide-in sheet */}
+        <PortalMobileSidebar user={sidebarUser} counsellor={counsellor} />
+
         <Link href="/portal" className="shrink-0 font-display text-xl font-semibold tracking-tight text-ruby-600">
           Ruhe<span className="hidden text-ink sm:inline"> Global Resources</span>
         </Link>
@@ -52,7 +58,7 @@ export default async function PortalLayout({ children }: { children: React.React
         </div>
       </header>
 
-      <PortalNav user={{ name: session.user.name ?? null, email: session.user.email ?? null }} counsellor={counsellor} />
+      <PortalNav user={sidebarUser} counsellor={counsellor} />
 
       <main className="px-4 pb-28 pt-24 sm:px-6 lg:pb-12 lg:pl-[19rem] lg:pr-8">
         <div className="mx-auto max-w-5xl">{children}</div>
