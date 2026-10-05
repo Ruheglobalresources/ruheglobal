@@ -166,11 +166,28 @@ export function PortalMain({ children }: { children: ReactNode }) {
   );
 }
 
-// A button that opens the chat sidebar (full-screen on phones).
-export function OpenChatButton({ className, children }: { className?: string; children: ReactNode }) {
+export function OpenChatButton({
+  className,
+  children,
+  onClick,
+}: {
+  className?: string;
+  children: ReactNode;
+  onClick?: () => void;
+}) {
   const { setChatOpen } = usePortalShell();
+
+  const handleClick = () => {
+    setChatOpen(true);
+    onClick?.();
+  };
+
   return (
-    <button type="button" onClick={() => setChatOpen(true)} className={className}>
+    <button
+      type="button"
+      onClick={handleClick}
+      className={className}
+    >
       {children}
     </button>
   );
