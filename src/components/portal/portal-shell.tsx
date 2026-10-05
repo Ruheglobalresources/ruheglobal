@@ -2,7 +2,9 @@
 
 // src/components/portal/portal-shell.tsx
 // Owns the layout state for the two portal sidebars:
-//   - left: the menu sidebar, expanded (icons + labels) or collapsed (icon rail)
+//   - left: the menu sidebar, pinned open (icons + labels) or collapsed (icon rail).
+//     A collapsed rail still opens over the page while the cursor is on it; that
+//     temporary "peek" lives in portal-nav.tsx and never moves the page.
 //   - right: the chat sidebar, open or closed, and how wide it is
 // The widths are published as CSS variables on one wrapper, so the fixed
 // sidebars and the page content (PortalMain) all follow the same numbers.
@@ -19,15 +21,19 @@ import {
 } from "react";
 import { cn } from "@/lib/utils";
 
-export const LEFT_EXPANDED = 288; // px, same as the old w-72
-export const LEFT_COLLAPSED = 76;
-export const CHAT_MIN = 320;
-export const CHAT_DEFAULT = 380;
+export const LEFT_EXPANDED = 248; // px (was 288)
+export const LEFT_COLLAPSED = 72; // px (was 76): one 48px icon slot plus 12px padding each side
+export const CHAT_MIN = 300; // px (was 320)
+export const CHAT_DEFAULT = CHAT_MIN; // the chat starts at its smallest width; people can drag it wider
 export const CHAT_MAX = 760;
 
 const KEY_LEFT = "portal:left-collapsed";
 const KEY_OPEN = "portal:chat-open";
-const KEY_WIDTH = "portal:chat-width";
+// "-v2": the old key saved the width on every visit (even when never touched), which
+// would have kept everyone on the old 380px. Now a width is only saved once the
+// person has actually resized the chat.
+const KEY_WIDTH = "portal:chat-width-v2";
+const KEY_WIDTH_OLD = "portal:chat-width";
 
 // The sidebars only sit beside the page from the lg breakpoint up.
 const DESKTOP_QUERY = "(min-width: 1024px)";
@@ -81,6 +87,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
       const savedLeft = localStorage.getItem(KEY_LEFT);
       const savedOpen = localStorage.getItem(KEY_OPEN);
       const savedWidth = Number(localStorage.getItem(KEY_WIDTH));
+      localStorage.removeItem(KEY_WIDTH_OLD);
 
       if (savedLeft !== null) setLeftCollapsed(savedLeft === "1");
       if (savedWidth) setChatWidthState(clampChat(savedWidth));
@@ -98,7 +105,8 @@ export function PortalShell({ children }: { children: ReactNode }) {
     if (!ready) return;
     try {
       localStorage.setItem(KEY_LEFT, leftCollapsed ? "1" : "0");
-      localStorage.setItem(KEY_WIDTH, String(chatWidth));
+      if (chatWidth === CHAT_DEFAULT) localStorage.removeItem(KEY_WIDTH);
+      else localStorage.setItem(KEY_WIDTH, String(chatWidth));
       // Don't let a phone session overwrite the desktop preference.
       if (window.matchMedia(DESKTOP_QUERY).matches) localStorage.setItem(KEY_OPEN, chatOpen ? "1" : "0");
     } catch {
@@ -151,14 +159,18 @@ export function PortalShell({ children }: { children: ReactNode }) {
 }
 
 // The page area. On desktop it leaves room for whichever sidebars are showing.
+// There is no top bar on desktop any more, so it starts near the top (lg:pt-8);
+// phones and tablets still have the top bar, hence pt-24 below lg.
+// The left space follows the pinned width only, so hovering a collapsed rail
+// opens it over the page without pushing anything.
 export function PortalMain({ children }: { children: ReactNode }) {
   const { ready, dragging } = usePortalShell();
 
   return (
     <main
       className={cn(
-        "px-4 pb-28 pt-24 sm:px-6 lg:pb-12 lg:pl-[calc(var(--portal-left)+1.5rem)] lg:pr-[calc(var(--portal-right)+1.5rem)]",
-        ready && !dragging && "lg:transition-[padding] lg:duration-200 lg:ease-out"
+        "px-4 pb-28 pt-24 sm:px-6 lg:pb-12 lg:pl-[calc(var(--portal-left)+1.5rem)] lg:pr-[calc(var(--portal-right)+1.5rem)] lg:pt-8",
+        ready && !dragging && "lg:transition-[padding] lg:duration-150 lg:ease-out motion-reduce:lg:transition-none"
       )}
     >
       <div className="mx-auto max-w-5xl">{children}</div>
