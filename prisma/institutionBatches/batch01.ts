@@ -1,61 +1,63 @@
-// prisma/institutionBatches/batch07.ts
+// prisma/institutionBatches/batch08.ts
 //
-// Batch 07: rows 31 to 38 of RGR University List new.pdf (all United Kingdom).
-//   31, 32, 33  University of Exeter (UK/Saudi), (Thailand), (India/Nepal/Sri Lanka/Bangladesh)
-//               These three PDF rows are regional contract lines for the same university,
-//               so they are MERGED into one entry: University of Exeter.
-//   34  Falmouth University
-//   35  University of Glasgow
-//   36  Glasgow Caledonian University
-//   37  Global Banking School (a private provider, not a university)
-//   38  Glyndwr University Wrexham (now called Wrexham University, plain name used)
+// Batch 08: rows 39 to 43 of RGR University List new.pdf (all United Kingdom).
+//   39  University of Greenwich
+//   40  Heriot-Watt University
+//   41  University of Hertfordshire
+//   42  University of Huddersfield
+//   43  University of Hull
 //
-// That gives 6 institutions from 8 PDF rows, because rows 31 to 33 are one university.
-// No countries needed correcting and none of these PDF lines were joined by a parsing error.
+// That gives 5 institutions from 5 PDF rows. Nothing needed merging, no countries needed
+// correcting, and none of these PDF lines were joined by a parsing error.
+// Batch 07 ended at row 38, so this batch carries on from row 39.
 //
-// This file is self contained. Save it as batch07.ts and run with 07, or paste it
-// over the contents of batch01.ts and run with 01. The engine only cares that the
-// file exports INSTITUTIONS.
+// This file is self contained. Save it as batch08.ts and run with 08. The engine only
+// cares that the file exports INSTITUTIONS.
 //
 // HOW SURE EACH NUMBER IS (confirm the flagged ones before this reaches students):
-//   Exeter      : IELTS profiles (6.0, 6.5 or 7.0 by course) and the 3,000 to 10,000 scholarship
-//                 ranges are from exeter.ac.uk and the Exeter International Study Centre. UG from
-//                 24,900 (business, finance, economics), medicine 48,900 and PG 30,700 to 44,700
-//                 come from an agent page quoting Exeter rates. Founded 1955 is the charter
-//                 date. Only MSc Finance, MSc Marketing and One Planet MBA are named in sources,
-//                 the UG course names are general knowledge. Jan 2027 start is from exeter.ac.uk.
-//   Falmouth    : The 19,950 flat UG fee and the 1,955 placement year fee come from one agent
-//                 page, so tuitionMax is left untouched and PG fees are not listed. IELTS 6.0
-//                 with 5.5 (UG) and 6.5 for some courses is from agent pages. The 2,000 and
-//                 5,000 scholarships and the 50 percent pre enrolment payment are from official
-//                 pages quoted by agents. Founded 2012 is the university title date. The Penryn
-//                 address is from a study portal.
-//   Glasgow     : UG 27,720 (arts and social sciences) is from gla.ac.uk, 33,210 (science and
-//                 engineering) is from an agent page, and the two PG course fees are from IDP.
-//                 IELTS 6.5 as the common profile and 7.0 for law, medicine and some PG courses
-//                 are from agent pages. Founded 1451 is from reference pages. The UG course
-//                 names are general knowledge.
-//   Glasgow Cal : 15,200 to 21,900 comes from ApplyBoard, while another agent page shows lower UG
-//                 fees from 14,500, so confirm. The 2,500 UG automatic discount is from
-//                 ApplyBoard. IELTS 6.0 (7.0 for some courses) is from agent pages. Founded 1993
-//                 is the university title date. Course names are from agent pages and general
-//                 knowledge.
-//   GBS         : Not a university. It offers courses validated by partner universities. No
-//                 international fees were found (home fees are 5,760 for a foundation year and
-//                 9,535 a year), so tuition fields are left untouched, and IELTS is left out
-//                 because it is set per course. Campus names, the 2016 start, October, February
-//                 and June intakes and course names are from GBS, Bath Spa and Wikipedia pages.
-//                 The FAQs are written by hand because it is not a university.
-//   Wrexham     : UG 11,750, MA and MSc 12,500 and MBA 13,000 for 2026/27 come from an agent
-//                 page quoting Wrexham fees. IELTS 6.0 is from an agent page, another shows
-//                 6.5. Founded 2008 is the university title date, roots go back to 1887. The
-//                 Northop and St Asaph sites are from one agent page. The PDF still says Glyndwr,
-//                 the university is now called Wrexham University. January starts are assumed.
-//   Left out on purpose: acceptance rate, ranking and social links (none were seen on
-//   official sites). Campus addresses are only given where a page showed them.
+//   Greenwich   : Official gre.ac.uk: the IELTS 6.5 (5.5 each skill) for BA English Language
+//                 and ELT, the 8.0 (7.5 each skill) for Speech and Language Therapy, the three
+//                 campuses, the 2,400 rooms and the Stockwell Street building (the campus page
+//                 is an older one, so recheck). The Greenwich and Kent group (LASEUG, from 1
+//                 August 2026) is from gre.ac.uk, kent.ac.uk and the Office for Students.
+//                 Agent sites only (Collegedunia, quoting gre.ac.uk): UG 17,975, PG 18,700,
+//                 MSc International Business 19,450, MBA 20,800, January 2027 starts. General
+//                 IELTS 6.0 UG and 6.5 PG is from an aggregator. Founded is LEFT OUT because
+//                 sources give 1992 and 1993 and the roots go back to 1890. The Park Row
+//                 address is from a third party page. BSc Computer Science is general knowledge.
+//   Heriot-Watt : Official hw.ac.uk: founded 1821, the campuses, 380 acres, the guaranteed
+//                 accommodation line, UG IELTS 6.0 (actuarial science and languages 6.5,
+//                 translation 7.0) from the Scotland English requirements PDF. Agent sites
+//                 only: UG 18,432 to 26,296 and PG 24,952 to 26,296 (Collegedunia), January
+//                 2027 starts for two MSc courses. Another agent page shows much higher UG fees
+//                 and an older page shows 18,704 to 24,048, so the range is flagged. MSc
+//                 Interpreting 7.0 and MSc Analytical Science 6.5 are from IDP. MBA fee not
+//                 listed. UG course durations were not confirmed so they are left out.
+//   Hertfordshire: UG 17,450, PG 17,950 to 22,450, MSc International Business 17,950 and the
+//                 up to 4,000 scholarship are from Collegedunia quoting herts.ac.uk (the herts
+//                 fees page returned an error). IELTS 6.0 UG and 6.5 PG with 5.5 each band is
+//                 from an aggregator, and a herts.ac.uk course page confirms 6.0 with 5.5.
+//                 Campuses, shuttle, first year room guarantee and the 22 minute train time
+//                 are from herts.ac.uk pages. Founded 1992 is the university title date from an
+//                 aggregator (the roots go back to 1952). Student numbers and the 90 countries
+//                 are from an aggregator. UG course names are general knowledge.
+//   Huddersfield: All tuition fees are from hud.ac.uk (international fees page, 2026/27) and
+//                 london.hud.ac.uk. The September 2026, January 2027 and May 2027 intakes are
+//                 from hud.ac.uk. IELTS 6.0 with 5.5 in each element is from IDP course pages
+//                 (agent), because the official page does not show the numbers in text.
+//                 Founded is LEFT OUT because no reliable year was found. Student Central,
+//                 the library and HudLets are from hud.ac.uk student pages (older pages).
+//   Hull        : Official hull.ac.uk: founded 1927 is from Wikipedia (the university site
+//                 says almost a century), campus, library, 2,300 rooms, TEF Gold, the January
+//                 2027 enrolment and the 2,000 UG fee waivers. IELTS 6.0 with 5.5 each skill
+//                 is from UCAS pages for hull.ac.uk courses. The only fee found, 18,945 for BA
+//                 Music, is from an aggregator, so tuitionMax is left out. PG waivers differ
+//                 between sources (4,500 and 5,000) so no figure is given in the file.
+//   Left out on purpose: acceptance rate and ranking (no university published them), social
+//   links for all except Hull (only Hull's own footer was seen), and anything unconfirmed.
 //
-// Run:  npm run seed:institutions -- 07 --dry
-//       npm run seed:institutions -- 07
+// Run:  npm run seed:institutions -- 08 --dry
+//       npm run seed:institutions -- 08
 
 import type { CourseInput, DocumentRow, FaqInput, InstitutionInput } from "./types";
 
@@ -115,16 +117,18 @@ function seo(name: string, place: string) {
 
 function ug(
   name: string,
+  degree: string,
   subject: string,
   duration: string | undefined,
   nextIntake: string | undefined,
   intakes: string | undefined,
-  tuitionAmount?: number
+  tuitionAmount?: number,
+  description?: string
 ): CourseInput {
   return {
     name,
     level: "Undergraduate",
-    degree: name.startsWith("BEng") ? "BEng" : name.startsWith("BA") ? "BA" : name.startsWith("LLB") ? "LLB" : "BSc",
+    degree,
     subject,
     duration,
     nextIntake,
@@ -132,17 +136,19 @@ function ug(
     tuitionAmount,
     tuitionCurrency: "GBP",
     tuitionPeriod: "per year (2026/27)",
+    description,
   };
 }
 
 function pg(
   name: string,
-  subject: string,
   degree: string,
+  subject: string,
   duration: string | undefined,
   nextIntake: string | undefined,
   intakes: string | undefined,
-  tuitionAmount?: number
+  tuitionAmount?: number,
+  description?: string
 ): CourseInput {
   return {
     name,
@@ -155,429 +161,366 @@ function pg(
     tuitionAmount,
     tuitionCurrency: "GBP",
     tuitionPeriod: "per year (2026/27)",
+    description,
   };
 }
 
 const SEP_JAN = "September, with January starts on some courses";
 
 export const INSTITUTIONS: InstitutionInput[] = [
-  // ── PDF rows 31, 32 and 33 (merged) ────────────────────────────────────
+  // ── PDF row 39 ─────────────────────────────────────────────────────────
   {
-    name: "University of Exeter",
-    city: "Exeter",
+    name: "University of Greenwich",
+    city: "Greenwich",
     country: "United Kingdom",
-    institutionType: "Public research university",
-    website: "https://www.exeter.ac.uk",
-    founded: 1955,
+    institutionType: "Public university",
+    website: "https://www.gre.ac.uk",
     upcomingIntake: "Jan 2027",
-    programs: ["Business", "Medicine", "Environmental Sciences"],
-    summary:
-      "A public Russell Group research university in Devon and Cornwall, with campuses in Exeter and Penryn, teaching business, medicine, humanities, science and engineering to students from over 150 countries.",
-    ieltsOverall: 6.0,
-    ieltsMinBand: 5.5,
-    ieltsNote: "Set by course: IELTS 6.0, 6.5 or 7.0 overall, with sub scores from 5.5 to 6.5. Check your course page for the exact profile.",
-    tuitionMin: 24900,
-    tuitionMax: 44700,
-    tuitionCurrency: "GBP",
-    tuitionPeriod: "per year (2026/27)",
-    tuitionNote: "UG from £24,900 and PG £30,700 to £44,700 from an agent page quoting Exeter rates. Medicine is £48,900. Confirm on exeter.ac.uk.",
-    overview:
-      "The University of Exeter is a Russell Group research university with campuses in Exeter, in Devon, and at Penryn, in Cornwall. It has around 30,000 students from more than 150 countries, and teaches business, medicine, humanities, social sciences, science and engineering, with an international study centre for pathway courses.",
-    studentLife:
-      "Students live in or near Exeter, a historic cathedral city, or in Cornwall at the Penryn campus, close to beaches and the coast. The students' guild runs clubs and societies, and the international team supports new students with visas and settling in.",
-    accommodation:
-      "Exeter offers halls of residence at its campuses, and many students also rent privately in the city. Check the accommodation pages for current prices, guarantee conditions and booking dates.",
-    library:
-      "Libraries across the campuses offer study spaces, computers and a large online collection of journals and ebooks. Check the library pages for the building closest to your course.",
-    sports:
-      "Students can use the university sport facilities and join clubs through the students' guild. Check the sport pages for current memberships.",
-    wikipediaTitle: "University of Exeter",
-    ...seo("University of Exeter", "Exeter and Penryn"),
-    courses: [
-      ug("BSc Economics", "Economics", "3 Years", "Sep 2027", "September", 24900),
-      ug("LLB Law", "Law", "3 Years", "Sep 2027", "September"),
-      ug("BSc Computer Science", "Computer Science", "3 Years", "Sep 2027", "September"),
-      pg("MSc Finance", "Finance", "MSc", "1 Year", "Jan 2027", SEP_JAN, 30700),
-      pg("MSc Marketing", "Marketing", "MSc", "1 Year", "Jan 2027", SEP_JAN, 30700),
-      pg("One Planet MBA", "Business", "MBA", "1 Year", "Sep 2027", "September", 44700),
-    ],
-    campuses: [
-      {
-        name: "Streatham Campus",
-        city: "Exeter",
-        description: "The main campus in Exeter, set in landscaped grounds close to the city centre, where most schools are based.",
-      },
-      {
-        name: "St Luke's Campus",
-        city: "Exeter",
-        description: "A campus in Exeter, home to sport, health and medical courses.",
-      },
-      {
-        name: "Penryn Campus",
-        city: "Penryn",
-        description: "The Cornwall campus near Falmouth, home to environment, sustainability and creative courses close to the coast.",
-      },
-    ],
-    documents: UK_DOCUMENTS,
-    faqs: ukFaqs({
-      name: "the University of Exeter",
-      sector: "public",
-      place: "Exeter and Penryn, England",
-      known:
-        "Exeter is known as a Russell Group research university with strong courses in business, medicine, humanities, science and environmental subjects, on campuses in Devon and Cornwall.",
-      ielts:
-        "Requirements are set by course. Most ask for IELTS 6.0 or 6.5 overall, and some ask for 7.0, with sub scores from 5.5 to 6.5. Check your course page for the exact profile.",
-      fees:
-        "Agent pages quoting Exeter's 2026/27 rates show undergraduate fees from £24,900 and postgraduate fees from £30,700 to £44,700, with medicine at £48,900. Merit scholarships of £3,000 to £10,000 may apply, so confirm with Exeter.",
-      intakes:
-        "Undergraduate courses start in September. Many postgraduate taught courses start in September, and some master's courses start in January. Check your course page for exact dates.",
-    }),
-  },
-
-  // ── PDF row 34 ─────────────────────────────────────────────────────────
-  {
-    name: "Falmouth University",
-    city: "Falmouth",
-    country: "United Kingdom",
-    institutionType: "Public university",
-    website: "https://www.falmouth.ac.uk",
-    founded: 2012,
-    upcomingIntake: "Sep 2027",
-    programs: ["Art and Design", "Media", "Business"],
-    summary:
-      "A small specialist creative university in Cornwall, teaching from Falmouth and Penryn, known for art, design, media, performance and business courses, including Cornwall Business School.",
-    ieltsOverall: 6.0,
-    ieltsMinBand: 5.5,
-    ieltsNote: "Undergraduate courses ask for IELTS 6.0 with no band below 5.5, and some courses ask for 6.5. Check your course page.",
-    tuitionMin: 19950,
-    tuitionCurrency: "GBP",
-    tuitionPeriod: "per year (2026/27)",
-    tuitionNote: "UG £19,950 flat fee on most on campus courses, from an agent page. PG fees were not confirmed. Check falmouth.ac.uk for 2026/27.",
-    overview:
-      "Falmouth University is a specialist creative university in Cornwall, with campuses in Falmouth and Penryn and more than 120 years of creative teaching. It teaches art, design, film, media, performance and games, and Cornwall Business School runs master's courses in international business, entrepreneurship and digital marketing.",
-    studentLife:
-      "Students live in a coastal Cornish town with beaches, harbours and a strong creative community, and it is a long train ride from London. The students' union runs clubs and societies, and the international team supports new students.",
-    accommodation:
-      "Falmouth offers halls of residence close to its campuses, and many students also rent privately around Falmouth and Penryn. Check the accommodation pages for current prices and booking dates.",
-    library:
-      "Libraries on the campuses offer study spaces, computers, studios and online collections of journals and ebooks. Check the library pages for opening hours and services.",
-    sports:
-      "Students can join sport and outdoor clubs through the students' union, and the coast offers surfing, sailing and walking. Check the university pages for current facilities.",
-    wikipediaTitle: "Falmouth University",
-    ...seo("Falmouth University", "Falmouth and Penryn, Cornwall"),
-    courses: [
-      ug("BA (Hons) Drawing", "Art and Design", "3 Years", "Sep 2027", "September", 19950),
-      ug("BA (Hons) Photography", "Art and Design", "3 Years", "Sep 2027", "September", 19950),
-      ug("BA (Hons) Fine Art", "Art and Design", "3 Years", "Sep 2027", "September", 19950),
-      pg("MSc International Business Management", "Business", "MSc", "1 Year", "Sep 2027", "September"),
-      pg("MSc Entrepreneurship and Innovation Management", "Business", "MSc", "1 Year", "Sep 2027", "September"),
-      pg("MSc Digital Marketing", "Marketing", "MSc", "1 Year", "Sep 2027", "September"),
-    ],
-    campuses: [
-      {
-        name: "Penryn Campus",
-        city: "Penryn",
-        address: "Treliever Road, Penryn TR10 9FE",
-        description: "A campus in Penryn, near Falmouth, where Cornwall Business School and many creative and technology courses are taught.",
-      },
-      {
-        name: "Falmouth Campus",
-        city: "Falmouth",
-        description: "A campus in the seaside town of Falmouth, home to art, design and media studios.",
-      },
-    ],
-    documents: UK_DOCUMENTS,
-    faqs: ukFaqs({
-      name: "Falmouth University",
-      sector: "public",
-      place: "Falmouth and Penryn, Cornwall, England",
-      known:
-        "Falmouth is known as a specialist creative university, with strong courses in art, design, media, film, performance and games, and a business school offering master's degrees.",
-      ielts:
-        "Undergraduate courses ask for IELTS 6.0 overall with no band below 5.5, and some courses ask for 6.5. Check your course page for the exact score.",
-      fees:
-        "An agent page lists a flat 2026/27 international undergraduate fee of £19,950 for most on campus courses. At least half of the first year fees must be paid before enrolment. Talent scholarships of £2,000 to £5,000 may apply, so confirm with Falmouth.",
-      intakes:
-        "Undergraduate courses start in September. Taught master's courses at Cornwall Business School also start in September, so check your course page for exact dates.",
-    }),
-  },
-
-  // ── PDF row 35 ─────────────────────────────────────────────────────────
-  {
-    name: "University of Glasgow",
-    city: "Glasgow",
-    country: "United Kingdom",
-    institutionType: "Public research university",
-    website: "https://www.gla.ac.uk",
-    founded: 1451,
-    upcomingIntake: "Sep 2027",
-    programs: ["Medicine", "Law", "Engineering"],
-    summary:
-      "A public Russell Group research university in Glasgow, Scotland, founded in 1451 and one of the oldest in the English speaking world, known for medicine, law, social sciences, science and engineering.",
-    ieltsOverall: 6.5,
-    ieltsNote: "Most courses ask for IELTS 6.5. Law, medicine and some postgraduate courses ask for 7.0. Check your course page.",
-    tuitionMin: 27720,
-    tuitionMax: 33210,
-    tuitionCurrency: "GBP",
-    tuitionPeriod: "per year (2026/27)",
-    tuitionNote: "UG £27,720 (arts and social sciences, gla.ac.uk) and £33,210 (sciences and engineering, agent page). Medicine costs more.",
-    overview:
-      "The University of Glasgow is a Russell Group research university founded in 1451, with its main campus at Gilmorehill in Glasgow's West End. It teaches medicine, law, social sciences, arts, science and engineering, and most Scottish undergraduate degrees take four years.",
-    studentLife:
-      "Glasgow is a lively, affordable Scottish city with a strong music, arts and food scene, and the main campus sits in the West End beside parks and museums. The students' union runs clubs and societies, and the international team supports new students.",
-    accommodation:
-      "The university offers halls of residence, and many students also rent privately in the West End and nearby areas. Check the accommodation pages for current prices and booking dates.",
-    library:
-      "The main library offers study spaces, computers and a large online collection of journals and ebooks. Check the library pages for opening hours and services.",
-    sports:
-      "Students can use the university sport and fitness facilities and join clubs through the students' union. Check the sport pages for current memberships.",
-    wikipediaTitle: "University of Glasgow",
-    ...seo("University of Glasgow", "Glasgow, Scotland"),
-    courses: [
-      ug("LLB Law", "Law", "4 Years", "Sep 2027", "September", 27720),
-      ug("BSc Computing Science", "Computer Science", "4 Years", "Sep 2027", "September", 33210),
-      ug("BEng Mechanical Engineering", "Engineering", "4 Years", "Sep 2027", "September", 33210),
-      pg("MSc Research in Physics and Astronomy", "Physics", "MSc", "1 Year", "Sep 2027", "September", 33210),
-      pg("MLitt Research in Philosophy", "Philosophy", "MLitt", "2 Years", "Sep 2027", "September", 27720),
-    ],
-    campuses: [
-      {
-        name: "Gilmorehill",
-        city: "Glasgow",
-        description: "The main campus in Glasgow's West End, centred on the historic Gothic main building, where most schools are based.",
-      },
-      {
-        name: "Garscube",
-        city: "Glasgow",
-        description: "A campus on the north west edge of Glasgow, home to the School of Veterinary Medicine.",
-      },
-      {
-        name: "Dumfries",
-        city: "Dumfries",
-        description: "A campus in Dumfries in south west Scotland, offering selected degrees outside Glasgow.",
-      },
-    ],
-    documents: UK_DOCUMENTS,
-    faqs: ukFaqs({
-      name: "the University of Glasgow",
-      sector: "public",
-      place: "Glasgow, Scotland",
-      known:
-        "Glasgow is known as a Russell Group research university founded in 1451, with strong courses in medicine, law, social sciences, science and engineering.",
-      ielts:
-        "Most undergraduate and master's courses ask for IELTS 6.5 overall. Law, medicine and some postgraduate courses ask for 7.0, so check your course page for the exact profile.",
-      fees:
-        "For 2026/27, international undergraduate fees are £27,720 for arts and social sciences and £33,210 for science and engineering. Medicine costs much more, and postgraduate fees vary by course, so confirm with Glasgow.",
-      intakes:
-        "Undergraduate courses start in September and most Scottish degrees take four years. Postgraduate taught courses also start mainly in September, so check your course page.",
-    }),
-  },
-
-  // ── PDF row 36 ─────────────────────────────────────────────────────────
-  {
-    name: "Glasgow Caledonian University",
-    city: "Glasgow",
-    country: "United Kingdom",
-    institutionType: "Public university",
-    website: "https://www.gcu.ac.uk",
-    founded: 1993,
-    upcomingIntake: "Jan 2027",
-    programs: ["Health", "Business", "Engineering"],
-    summary:
-      "A public university in Glasgow, Scotland, with a city centre campus in Cowcaddens and a London campus, known for health, nursing, business, engineering and the built environment, with placement year options.",
-    ieltsOverall: 6.0,
-    ieltsNote: "Many courses ask for IELTS 6.0, while others, such as nursing, ask for 7.0. Check your course page for the exact score.",
-    tuitionMin: 15200,
-    tuitionMax: 21900,
-    tuitionCurrency: "GBP",
-    tuitionPeriod: "per year (2026/27)",
-    tuitionNote: "£15,200 to £21,900 from an agent page. Another agent page shows UG from £14,500. A £2,500 UG discount may apply. Confirm on gcu.ac.uk.",
-    overview:
-      "Glasgow Caledonian University is a public university with its main campus in Cowcaddens, near Glasgow city centre, and a campus in London. It offers more than 150 courses in health, nursing, business, engineering and the built environment, and many courses include a placement year.",
-    studentLife:
-      "Students study in the middle of Glasgow, a friendly and affordable Scottish city with a strong music and arts scene. The students' association runs clubs and societies, and the international team supports new students.",
-    accommodation:
-      "The university offers halls of residence close to the city centre campus, and many students also rent privately in Glasgow. Check the accommodation pages for current prices and booking dates.",
-    library:
-      "The campus library offers study spaces, computers and a large online collection of journals and ebooks. Check the library pages for opening hours and services.",
-    sports:
-      "Students can use the university sport and fitness facilities and join clubs through the students' association. Check the sport pages for current memberships.",
-    wikipediaTitle: "Glasgow Caledonian University",
-    ...seo("Glasgow Caledonian University", "Glasgow, Scotland"),
-    courses: [
-      ug("BSc (Hons) Computer Science", "Computer Science", "4 Years", "Sep 2027", "September"),
-      ug("BEng (Hons) Mechanical Engineering", "Engineering", "4 Years", "Sep 2027", "September"),
-      pg("MSc International Management and Business Development", "Business", "MSc", "1 Year", "Jan 2027", "September and January, with some May starts"),
-    ],
-    campuses: [
-      {
-        name: "Glasgow Campus",
-        city: "Glasgow",
-        address: "Cowcaddens Road, Glasgow",
-        description: "The main campus in Cowcaddens, a short walk from Glasgow city centre, with teaching buildings, library and student services.",
-      },
-      {
-        name: "London Campus",
-        city: "London",
-        description: "A London campus offering selected postgraduate courses for international students.",
-      },
-    ],
-    documents: UK_DOCUMENTS,
-    faqs: ukFaqs({
-      name: "Glasgow Caledonian University",
-      sector: "public",
-      place: "Glasgow, Scotland, with a campus in London",
-      known:
-        "GCU is known for health, nursing, business, engineering and the built environment, with placement year options and a city centre campus in Glasgow.",
-      ielts:
-        "Many courses ask for IELTS 6.0 overall, while nursing and some other courses ask for 7.0. Check your course page for the exact score.",
-      fees:
-        "An agent page lists 2026/27 international fees of about £15,200 to £21,900 a year depending on the course. A £2,500 a year discount may apply to self funded undergraduates. Confirm the exact fee with GCU.",
-      intakes:
-        "Many courses start in September or January, and some start in May. Most Scottish undergraduate degrees take four years. Check your course page for exact dates.",
-    }),
-  },
-
-  // ── PDF row 37 ─────────────────────────────────────────────────────────
-  {
-    name: "Global Banking School",
-    city: "London",
-    country: "United Kingdom",
-    institutionType: "Private higher education provider",
-    website: "https://globalbanking.ac.uk",
-    founded: 2016,
-    upcomingIntake: "Feb 2027",
-    programs: ["Business", "Banking and Finance", "Computing"],
-    summary:
-      "A private higher education provider with campuses in London, Birmingham, Leeds and Manchester, teaching business, banking, finance, computing and health courses validated by partner universities.",
-    ieltsNote: "English requirements are set course by course and depend on the awarding university. Check the course page for the exact score.",
-    tuitionNote: "International fees were not confirmed. Check globalbanking.ac.uk for the fee for your course and campus.",
-    overview:
-      "Global Banking School is a private higher education provider that opened its first campus in East London in 2016 and now has ten campuses across London, Birmingham, Leeds and Manchester. Its business, banking, finance, computing and health courses are validated and awarded by partner universities, and it has students from over 85 nationalities.",
-    studentLife:
-      "Students study in busy city centre campuses in four of the UK's biggest cities, with flexible weekday, evening and weekend timetables. GBS gives one to one academic, personal and career guidance from application to graduation.",
-    accommodation:
-      "GBS does not run its own halls of residence. Students usually rent private or shared housing near their campus, so check with GBS for advice before you book anywhere.",
-    library:
-      "Each campus offers study spaces, computers and access to online learning resources. Ask your campus about opening hours and services.",
-    sports:
-      "Sport is not a main feature of the city centre campuses, so students normally use local gyms, clubs and parks. Ask GBS about student activities.",
-    wikipediaTitle: "Global Banking School",
-    skipImageLookup: true,
-    ...seo("Global Banking School", "London, Birmingham, Leeds and Manchester"),
-    courses: [
-      ug("BA (Hons) Global Business (Business Management) with Foundation Year", "Business", "4 Years", "Feb 2027", "October, February and June"),
-      ug("BSc (Hons) Computing with Integrated Foundation Year", "Computer Science", "4 Years", "Feb 2027", "October, February and June"),
-      ug("BSc (Hons) Project Management with Integrated Foundation Year", "Business", "4 Years", "Feb 2027", "October, February and June"),
-      pg("MSc Global Business", "Business", "MSc", undefined, "Feb 2027", "October, February and June"),
-      pg("MSc Project Management", "Business", "MSc", undefined, "Feb 2027", "October, February and June"),
-    ],
-    campuses: [
-      { name: "London Greenford", city: "London", description: "A GBS campus in Greenford, West London." },
-      { name: "London Canary Wharf", city: "London", description: "The Republic campus in Canary Wharf, East London." },
-      { name: "London Stratford", city: "London", description: "Campuses at GEDU House and Cam Road in Stratford, East London." },
-      { name: "London Bow Road", city: "London", description: "The original GBS campus on Bow Road in East London, opened in 2016." },
-      { name: "Birmingham Brindleyplace", city: "Birmingham", description: "A city centre campus at Brindleyplace in Birmingham." },
-      { name: "Birmingham Norfolk House", city: "Birmingham", description: "A city centre campus at Norfolk House in Birmingham." },
-      { name: "Manchester Universal Square", city: "Manchester", description: "A campus at Universal Square in Manchester." },
-      { name: "Leeds Wellington Place", city: "Leeds", description: "A city centre campus at Wellington Place in Leeds." },
-    ],
-    documents: UK_DOCUMENTS,
-    faqs: [
-      {
-        question: "Is Global Banking School a university?",
-        answer: "No. It is a private higher education provider in London, and its degrees are validated and awarded by partner universities such as Bath Spa, Suffolk and Leeds Trinity.",
-      },
-      {
-        question: "What is Global Banking School known for?",
-        answer: "GBS is known for business, banking, finance, accounting, computing and health courses, taught in city centre campuses with flexible timetables.",
-      },
-      {
-        question: "What IELTS score do I need for Global Banking School?",
-        answer: "English requirements are set for each course and depend on the awarding university, so check the course page for the exact IELTS score.",
-      },
-      {
-        question: "How much are tuition fees for international students at Global Banking School?",
-        answer: "Fees depend on the course and campus. Please confirm the current international fee for your course with GBS before you apply.",
-      },
-      {
-        question: "When can I start at Global Banking School?",
-        answer: "Courses start in October, February and June. Confirm the start dates for your course and campus before applying.",
-      },
-    ],
-  },
-
-  // ── PDF row 38 ─────────────────────────────────────────────────────────
-  {
-    name: "Wrexham University",
-    city: "Wrexham",
-    country: "United Kingdom",
-    institutionType: "Public university",
-    website: "https://www.wrexham.ac.uk",
-    founded: 2008,
-    upcomingIntake: "Sep 2027",
     programs: ["Business", "Computing", "Health"],
     summary:
-      "A public university in Wrexham, North Wales, formerly Glyndŵr University, known for health, computing, engineering, business and creative courses, and for lower international tuition fees.",
+      "A public university in south east London and Kent, with campuses at Greenwich, Avery Hill and Medway. It teaches business, computing, health, education, engineering and creative subjects, and is now part of the London and South East University Group with the University of Kent.",
     ieltsOverall: 6.0,
-    ieltsNote: "Standard IELTS 6.0 for most courses. Some courses ask for more. Check your course page for the exact score.",
-    tuitionMin: 11750,
-    tuitionMax: 13000,
+    ieltsNote: "Most UG courses ask for IELTS 6.0 and PG 6.5, per an agent site. BA English Language and ELT needs 6.5. Check your course page.",
+    tuitionMin: 17975,
+    tuitionMax: 20800,
     tuitionCurrency: "GBP",
     tuitionPeriod: "per year (2026/27)",
-    tuitionNote: "UG £11,750, MA and MSc £12,500, MBA £13,000, from an agent page quoting Wrexham fees. Confirm on wrexham.ac.uk.",
+    tuitionNote: "UG £17,975, PG £18,700, MSc International Business £19,450, MBA £20,800, per an agent site quoting Greenwich. Confirm on gre.ac.uk.",
     overview:
-      "Wrexham University, formerly Glyndŵr University, is a public university in North Wales close to the English border, with roots from the Wrexham School of Science and Art in 1887. It teaches health, computing, engineering, business and creative subjects, and keeps its international undergraduate fees the same through the degree.",
+      "The University of Greenwich has three campuses: the Old Royal Naval College in Greenwich, Avery Hill in Eltham and Medway in Kent. It teaches architecture, business, computing, health, education, engineering and more. From August 2026 it forms part of the London and South East University Group alongside the University of Kent.",
     studentLife:
-      "Wrexham is a market town in North Wales that is smaller and cheaper than the big UK cities, and it has become well known through Wrexham AFC. The students' union runs clubs and societies, and the international team supports new students.",
+      "Students can choose a historic riverside setting in Greenwich, a parkland campus at Avery Hill or a campus at Medway in Kent. Free buses link Avery Hill and Greenwich, and central London is a short train ride from Avery Hill. The students' union runs clubs and societies.",
     accommodation:
-      "The university offers halls of residence in Wrexham, and many students also rent privately in the town. Check the accommodation pages for current prices and booking dates.",
+      "The university has said it offers around 2,400 rooms on or near its campuses, with the Student Village at Avery Hill home to many students. Check the accommodation pages for current prices, guarantee conditions and booking dates.",
     library:
-      "The campus library offers study spaces, computers and a large online collection of journals and ebooks. Check the library pages for opening hours and services.",
+      "The Stockwell Street building at Greenwich houses a library alongside film and television studios, and libraries also serve the other campuses. Check the library pages for opening hours and services.",
     sports:
-      "Students can use the university sport facilities and join clubs through the students' union. Check the sport pages for current memberships.",
-    wikipediaTitle: "Wrexham University",
-    ...seo("Wrexham University", "Wrexham, North Wales"),
+      "Avery Hill has the main sports facilities, including a sports hall, outdoor pitches and a gym, and there is also a gym at Medway. Students can join exercise classes such as yoga and Zumba. Check the sport pages for current offers.",
+    wikipediaTitle: "University of Greenwich",
+    ...seo("University of Greenwich", "London and Kent"),
     courses: [
-      ug("BA (Hons) International Business", "Business", "3 Years", "Sep 2027", SEP_JAN, 11750),
-      ug("BSc (Hons) Computer Science", "Computer Science", "3 Years", "Sep 2027", SEP_JAN, 11750),
-      pg("MBA", "Business", "MBA", "1 Year", "Sep 2027", SEP_JAN, 13000),
+      ug("BA English Language and English Language Teaching", "BA", "English", undefined, "Sep 2027", "September and January", 17975),
+      ug("BSc Computer Science", "BSc", "Computer Science", undefined, "Sep 2027", "September and January", 17975),
+      ug("BSc Speech and Language Therapy", "BSc", "Health", undefined, "Sep 2027", "September", undefined, "A health course with a much higher English requirement, IELTS 8.0 overall with 7.5 in each skill. Check the fee with Greenwich."),
+      pg("MSc International Business", "MSc", "Business", "1 Year", "Jan 2027", "September and January", 19450),
+      pg("MBA", "MBA", "Business", undefined, "Jan 2027", "September and January", 20800),
     ],
     campuses: [
       {
-        name: "Plas Coch",
-        city: "Wrexham",
-        description: "The main campus in Wrexham, with teaching buildings, library and student services.",
+        name: "Greenwich Campus",
+        city: "Greenwich",
+        address: "Old Royal Naval College, Park Row, London SE10 9LS",
+        description: "The largest campus, in the historic Old Royal Naval College, a World Heritage Site beside the River Thames.",
       },
       {
-        name: "Regent Street",
-        city: "Wrexham",
-        description: "A second campus site in Wrexham town.",
+        name: "Avery Hill Campus",
+        city: "Eltham",
+        description: "A purpose built campus beside Avery Hill Park, with sports facilities and the student village. A free bus links it to Greenwich.",
       },
       {
-        name: "Northop",
-        city: "Northop",
-        description: "A campus in Northop, Flintshire, in North East Wales.",
-      },
-      {
-        name: "St Asaph",
-        city: "St Asaph",
-        description: "A campus in St Asaph, Denbighshire, in North Wales.",
+        name: "Medway Campus",
+        city: "Chatham Maritime",
+        description: "A campus in Chatham Maritime, Kent, with teaching and living spaces within a short walk of each other.",
       },
     ],
     documents: UK_DOCUMENTS,
     faqs: ukFaqs({
-      name: "Wrexham University",
+      name: "the University of Greenwich",
       sector: "public",
-      place: "Wrexham, North Wales",
+      place: "south east London and Kent, England",
       known:
-        "Wrexham is known for health, computing, engineering, business and creative courses, and for some of the lower international tuition fees among UK universities.",
+        "Greenwich is known for business, computing, architecture, health and education courses, three campuses in London and Kent, and a historic riverside campus in a World Heritage Site.",
       ielts:
-        "Most courses ask for IELTS 6.0 overall, though one agent page shows 6.5. Some courses ask for more, so check your course page for the exact score.",
+        "An agent site shows IELTS 6.0 for most undergraduate courses and 6.5 for postgraduate courses. BA English Language and ELT needs 6.5, and Speech and Language Therapy needs 8.0, so check your course.",
       fees:
-        "For 2026/27, an agent page lists international fees of £11,750 for undergraduate courses, £12,500 for MA and MSc courses and £13,000 for the MBA. Confirm the exact fee with Wrexham before you apply.",
+        "An agent site quoting Greenwich lists 2026/27 fees of £17,975 for undergraduate courses, £18,700 for most postgraduate courses, £19,450 for MSc International Business and £20,800 for the MBA. Confirm with Greenwich.",
       intakes:
-        "Many courses start in September, and some start in January. Check your course page for exact dates and deadlines.",
+        "Courses start in September and January. Check your course page for exact dates and deadlines.",
+    }),
+  },
+
+  // ── PDF row 40 ─────────────────────────────────────────────────────────
+  {
+    name: "Heriot-Watt University",
+    city: "Edinburgh",
+    country: "United Kingdom",
+    institutionType: "Public research university",
+    website: "https://www.hw.ac.uk",
+    founded: 1821,
+    upcomingIntake: "Jan 2027",
+    programs: ["Engineering", "Business", "Computer Science"],
+    summary:
+      "A public research university in Edinburgh, Scotland, with its main campus at Riccarton and further campuses in the Scottish Borders and Orkney. It is known for engineering, business, computing, science and design, and it also has campuses in Dubai and Malaysia.",
+    ieltsOverall: 6.0,
+    ieltsNote: "UG courses usually need IELTS 6.0, while actuarial science and languages need 6.5 or more. PG needs vary by course. Check your course page.",
+    tuitionMin: 18432,
+    tuitionMax: 26296,
+    tuitionCurrency: "GBP",
+    tuitionPeriod: "per year (2026/27)",
+    tuitionNote: "UG £18,432 to £26,296 and PG £24,952 to £26,296 from an agent site, but other agent sites differ. The MBA costs more. Confirm on hw.ac.uk.",
+    overview:
+      "Heriot-Watt University is a public research university in Edinburgh with roots in 1821. Its main campus sits in 380 acres of parkland at Riccarton, and it also has campuses in the Scottish Borders and Orkney, and in Dubai and Malaysia. It teaches engineering, business, computing, science, design and languages.",
+    studentLife:
+      "The Edinburgh campus is a green parkland site on the edge of the city, with the Scottish capital close by for culture and events. Students can also study at the Scottish Borders campus, which focuses on textiles and design, and the Go Global option lets students spend time at the Dubai or Malaysia campuses.",
+    accommodation:
+      "Heriot-Watt says all new entrants are guaranteed a place in university managed accommodation, with options at the Edinburgh and Borders campuses. Check the accommodation pages for current prices, conditions and booking dates.",
+    library:
+      "The Edinburgh campus library offers study spaces, computers and a large online collection of journals and ebooks. Check the library pages for opening hours and services.",
+    sports:
+      "Students can use the campus sport and fitness facilities and join clubs through the students' union. Check the sport pages for current memberships.",
+    wikipediaTitle: "Heriot-Watt University",
+    ...seo("Heriot-Watt University", "Edinburgh, Scotland"),
+    courses: [
+      ug("MA (Hons) International Business Management", "MA", "Business", undefined, "Sep 2027", "September", 18432),
+      ug("BSc (Hons) Computer Science", "BSc", "Computer Science", undefined, "Sep 2027", "September"),
+      pg("MSc International Business Management", "MSc", "Business", "1 Year", "Jan 2027", SEP_JAN, 24952),
+      pg("MSc Data Science", "MSc", "Data Science", "1 Year", "Jan 2027", SEP_JAN, 25720),
+      pg("MSc Interpreting", "MSc", "Languages", "1 Year", "Sep 2027", "September", undefined, "Needs IELTS 7.0 overall with at least 6.5 in every skill, plus strong command of English and other languages. Check the fee and language strands with Heriot-Watt."),
+      pg("MSc Analytical Science for the Biosciences Industries", "MSc", "Science", undefined, "Sep 2027", "September", undefined, "Needs IELTS 6.5 overall with at least 6.0 in each element, and a good degree in a life science, physical science or engineering subject."),
+    ],
+    campuses: [
+      {
+        name: "Edinburgh Campus",
+        city: "Edinburgh",
+        description: "The main campus, set in 380 acres of parkland in the Riccarton area of Edinburgh, home to most schools.",
+      },
+      {
+        name: "Scottish Borders Campus",
+        city: "Galashiels",
+        description: "A campus in Galashiels that is home to the School of Textiles and Design, for fashion, design and textiles.",
+      },
+      {
+        name: "Orkney Campus",
+        city: "Stromness",
+        description: "A campus in Stromness, Orkney, offering postgraduate study in marine and environmental science.",
+      },
+      {
+        name: "Dubai Campus",
+        city: "Dubai",
+        description: "A campus in Dubai, UAE, in a seven storey building opened in 2021, with subjects such as architecture, computer science, engineering and finance.",
+      },
+      {
+        name: "Malaysia Campus",
+        city: "Putrajaya",
+        description: "A campus in Putrajaya, near Kuala Lumpur, Malaysia. Its fees are set separately in Malaysian ringgit and are not covered here.",
+      },
+    ],
+    documents: UK_DOCUMENTS,
+    faqs: ukFaqs({
+      name: "Heriot-Watt University",
+      sector: "public",
+      place: "Edinburgh, Scotland, with further campuses in Scotland, Dubai and Malaysia",
+      known:
+        "Heriot-Watt is known for engineering, business, computing, science, design and languages, with a green parkland campus in Edinburgh and a specialist textiles and design campus in the Scottish Borders.",
+      ielts:
+        "Most undergraduate courses ask for IELTS 6.0, while actuarial science and languages ask for 6.5 or more. Postgraduate scores vary, for example 6.5 for analytical science and 7.0 for interpreting.",
+      fees:
+        "Agent sites quoting 2026/27 rates show undergraduate fees from about £18,432 to £26,296 and master's fees from about £24,952 to £26,296, but sources differ. A merit scholarship of up to £5,000 may apply. Confirm with Heriot-Watt.",
+      intakes:
+        "Undergraduate courses start in September. Many master's courses start in September, and an agent site shows January 2027 starts for some. Check your course page for exact dates.",
+    }),
+  },
+
+  // ── PDF row 41 ─────────────────────────────────────────────────────────
+  {
+    name: "University of Hertfordshire",
+    city: "Hatfield",
+    country: "United Kingdom",
+    institutionType: "Public university",
+    website: "https://www.herts.ac.uk",
+    founded: 1992,
+    upcomingIntake: "Jan 2027",
+    programs: ["Business", "Computing", "Engineering"],
+    summary:
+      "A public university in Hatfield, Hertfordshire, about 35 km north of London, with two campuses linked by a free shuttle bus. It teaches business, computing, engineering, health, law, psychology and creative subjects to students from nearly 90 countries.",
+    ieltsOverall: 6.0,
+    ieltsMinBand: 5.5,
+    ieltsNote: "UG usually needs IELTS 6.0 with 5.5 in each band, and PG 6.5 with 5.5, per an agent site. Check your course page.",
+    tuitionMin: 17450,
+    tuitionMax: 22450,
+    tuitionCurrency: "GBP",
+    tuitionPeriod: "per year (2026/27)",
+    tuitionNote: "UG £17,450 and PG £17,950 to £22,450 from an agent page quoting Hertfordshire. A scholarship of up to £4,000 may apply. Confirm on herts.ac.uk.",
+    overview:
+      "The University of Hertfordshire is a public university in Hatfield, close to London, with roots in a technical college founded in 1952 and university status since 1992. Its two campuses, College Lane and de Havilland, are linked by a free shuttle bus, and it has more than 25,000 students.",
+    studentLife:
+      "Hatfield sits on the main rail line into London, with a typical journey of about 22 minutes to King's Cross, and close to Hertfordshire countryside. Students can join sports teams that compete in British Universities and Colleges Sport leagues, and both campuses have cafes and social spaces.",
+    accommodation:
+      "Modern accommodation is available on campus, and the university guarantees a room in the first year for students who meet application deadlines and personal requirements. Private student housing is also close to campus. Check the accommodation pages for current prices.",
+    library:
+      "Libraries and learning spaces on the campuses offer study areas, computers and a large online collection of journals and ebooks. Check the library pages for opening hours and services.",
+    sports:
+      "The Hertfordshire Sports Village on the de Havilland campus has a 25 metre pool, sports halls, a fitness suite and outdoor pitches, and there is a smaller gym on College Lane. The village is open to the local community too.",
+    wikipediaTitle: "University of Hertfordshire",
+    ...seo("University of Hertfordshire", "Hatfield, Hertfordshire"),
+    courses: [
+      ug("BSc (Hons) Computer Science", "BSc", "Computer Science", "3 Years", "Sep 2027", "September", 17450),
+      ug("BA (Hons) Psychology", "BA", "Psychology", "3 Years", "Sep 2027", "September", 17450),
+      ug("LLB (Hons) Law", "LLB", "Law", "3 Years", "Sep 2027", "September", 17450),
+      pg("MSc International Business", "MSc", "Business", "1 Year", "Jan 2027", SEP_JAN, 17950),
+      pg("MSc Computer Science", "MSc", "Computer Science", "1 Year", "Jan 2027", SEP_JAN),
+    ],
+    campuses: [
+      {
+        name: "College Lane Campus",
+        city: "Hatfield",
+        address: "College Lane, Hatfield AL10 9AB",
+        description: "A main campus in Hatfield with teaching buildings, accommodation, cafes and a smaller gym.",
+      },
+      {
+        name: "de Havilland Campus",
+        city: "Hatfield",
+        address: "Hatfield AL10 9EU",
+        description: "A campus on the site of the former Hatfield aerodrome, home to the Sports Village, a restaurant and student accommodation.",
+      },
+    ],
+    documents: UK_DOCUMENTS,
+    faqs: ukFaqs({
+      name: "the University of Hertfordshire",
+      sector: "public",
+      place: "Hatfield, Hertfordshire, England",
+      known:
+        "Hertfordshire is known for business, computing, engineering, health, law and psychology courses, a Sports Village, and two campuses in Hatfield close to London.",
+      ielts:
+        "Undergraduate courses usually ask for IELTS 6.0 with no band below 5.5, and postgraduate courses usually ask for 6.5 with 5.5 in each band. Check your course page for the exact score.",
+      fees:
+        "An agent page quoting Hertfordshire lists 2026/27 fees of £17,450 for undergraduate courses and £17,950 to £22,450 for taught master's courses. A scholarship of up to £4,000 may apply, so confirm with Hertfordshire.",
+      intakes:
+        "Undergraduate courses start in September. Many master's courses start in September or January. An agent page gives a 27 November 2026 application deadline, so check your course page.",
+    }),
+  },
+
+  // ── PDF row 42 ─────────────────────────────────────────────────────────
+  {
+    name: "University of Huddersfield",
+    city: "Huddersfield",
+    country: "United Kingdom",
+    institutionType: "Public university",
+    website: "https://www.hud.ac.uk",
+    upcomingIntake: "Jan 2027",
+    programs: ["Business", "Computing", "Engineering"],
+    summary:
+      "A public university in Huddersfield, West Yorkshire, with a town centre campus at Queensgate and a London campus. It teaches business, computing, engineering, health, art and design and media courses, with a pathway centre for students who need extra preparation.",
+    ieltsOverall: 6.0,
+    ieltsMinBand: 5.5,
+    ieltsNote: "Many courses ask for IELTS 6.0 with no band below 5.5, per course pages on an agent site. Check your course page for the exact score.",
+    tuitionMin: 17600,
+    tuitionMax: 21000,
+    tuitionCurrency: "GBP",
+    tuitionPeriod: "per year (2026/27)",
+    tuitionNote: "UG £17,600, most MA and MSc £18,700, MBA £19,690, some health courses up to £21,000, from hud.ac.uk. Placement year £3,300.",
+    overview:
+      "The University of Huddersfield is a public university whose main campus at Queensgate sits in the town centre, with the Huddersfield Narrow Canal running through it. It also runs a London campus offering international business courses, and a separate International Study Centre offers pathway programmes for students who need extra preparation.",
+    studentLife:
+      "Huddersfield is a West Yorkshire town at the foot of the Pennines with good road and rail links. Student Central is the campus hub, bringing together the students' union, a shop, the library and computer suites, and the town centre is a short walk away.",
+    accommodation:
+      "Students can find university halls and private housing, and the students' union runs an accommodation office called HudLets that works with halls and private landlords. Check the accommodation pages for current prices and booking dates.",
+    library:
+      "The library sits in the heart of the campus within the Student Central building, with study spaces, computer suites and online collections. Check the library pages for opening hours and services.",
+    sports:
+      "Students can use the campus gym and sports facilities and join clubs through the students' union. Check the sport pages for current memberships.",
+    wikipediaTitle: "University of Huddersfield",
+    ...seo("University of Huddersfield", "Huddersfield and London"),
+    courses: [
+      ug("BA (Hons) International Business", "BA", "Business", undefined, "Jan 2027", "September, January and May", 17600, "Offered at the London campus, where the 2026/27 international fee is the same as the main undergraduate rate."),
+      ug("BSc (Hons) Computer Science", "BSc", "Computer Science", undefined, "Jan 2027", "September, January and May", 17600),
+      ug("BA (Hons) Media and Communications", "BA", "Media", undefined, "Jan 2027", "September, January and May", 17600),
+      pg("MSc International Business", "MSc", "Business", "1 Year", "Jan 2027", "September, January and May", 18700),
+      pg("MSc Electronic and Automotive Engineering", "MSc", "Engineering", "1 Year", "Jan 2027", "September, January and May", 18700),
+      pg("MBA", "MBA", "Business", undefined, "Jan 2027", "September, January and May", 19690),
+    ],
+    campuses: [
+      {
+        name: "Queensgate Campus",
+        city: "Huddersfield",
+        address: "Queensgate, Huddersfield HD1 3DH",
+        description: "The main campus in the town centre, with the library, students' union, teaching buildings and the Barbara Hepworth Building for art and design.",
+      },
+      {
+        name: "University of Huddersfield London",
+        city: "London",
+        description: "A London campus for international students, offering selected business courses with its own fees and entry requirements.",
+      },
+    ],
+    documents: UK_DOCUMENTS,
+    faqs: ukFaqs({
+      name: "the University of Huddersfield",
+      sector: "public",
+      place: "Huddersfield, West Yorkshire, England, with a campus in London",
+      known:
+        "Huddersfield is known for business, computing, engineering, health, music, art and design and media courses, a compact town centre campus and clear published fees for international students.",
+      ielts:
+        "Many courses ask for IELTS 6.0 overall with no element below 5.5, according to course pages on an agent site. Some courses ask for more, so check your course page for the exact score.",
+      fees:
+        "For 2026/27, Huddersfield lists £17,600 for undergraduate courses, £18,700 for most MA and MSc courses and £19,690 for the MBA. Some health and pharmacy courses cost more, and a placement year is £3,300.",
+      intakes:
+        "The 2026/27 year includes September 2026, January 2027 and May 2027 starts. Check your course page for which of these your course offers.",
+    }),
+  },
+
+  // ── PDF row 43 ─────────────────────────────────────────────────────────
+  {
+    name: "University of Hull",
+    city: "Hull",
+    country: "United Kingdom",
+    institutionType: "Public research university",
+    website: "https://www.hull.ac.uk",
+    founded: 1927,
+    upcomingIntake: "Jan 2027",
+    programs: ["Computing", "Business", "Health"],
+    summary:
+      "A public research university in Hull, East Riding of Yorkshire, on one compact campus on Cottingham Road. It teaches health, business, law, science, computing, arts and engineering, and runs the Hull York Medical School with the University of York.",
+    ieltsOverall: 6.0,
+    ieltsMinBand: 5.5,
+    ieltsNote: "UG courses ask for IELTS 6.0 overall with 5.5 in each skill. Some PG courses ask for 6.5. Check your course page.",
+    tuitionMin: 18945,
+    tuitionCurrency: "GBP",
+    tuitionPeriod: "per year (2026/27)",
+    tuitionNote: "Only one UG fee was found, £18,945 for BA Music from an aggregator site. Confirm all fees on hull.ac.uk before quoting.",
+    overview:
+      "The University of Hull began in 1927 as University College Hull and is based on a single campus on Cottingham Road. It describes itself as England's 14th oldest university and holds a Gold rating in the Teaching Excellence Framework 2023. It teaches business, health, science, computing, law and arts, and OnCampus Hull offers preparation programmes.",
+    studentLife:
+      "The university says students can reach lectures from their room in under 10 minutes on one safe campus. It describes Hull as the UK's most affordable city, with rent below half of London levels, and the campus has bars, cafes and support services.",
+    accommodation:
+      "New on campus accommodation provides rooms for more than 2,300 students, with wifi and bills included in the rent. Check the accommodation pages for current prices, guarantee conditions and booking dates.",
+    library:
+      "The seven storey Brynmor Jones Library holds over a million books and digital resources, with silent zones, group rooms, a family room, a cafe and views from its top floor.",
+    sports:
+      "The campus has an all new sports centre and gym, and students can join clubs through the students' union. Check the sport pages for current memberships.",
+    wikipediaTitle: "University of Hull",
+    facebookUrl: "https://www.facebook.com/UniversityOfHull",
+    instagramUrl: "https://www.instagram.com/universityofhull",
+    linkedinUrl: "https://uk.linkedin.com/school/university-of-hull",
+    ...seo("University of Hull", "Hull, Yorkshire"),
+    courses: [
+      ug("BSc (Hons) Computer Science", "BSc", "Computer Science", "3 Years", "Sep 2027", "September"),
+      ug("BSc (Hons) Computer Science (Artificial Intelligence)", "BSc", "Computer Science", undefined, "Sep 2027", "September"),
+      ug("BA (Hons) Music", "BA", "Music", "3 Years", "Sep 2027", "September", 18945),
+      ug("BA (Hons) English", "BA", "English", undefined, "Sep 2027", "September"),
+      ug("BEng (Hons) Civil Engineering", "BEng", "Engineering", undefined, "Sep 2027", "September"),
+      pg("MSc Artificial Intelligence and Data Science", "MSc", "Computer Science", "1 Year", undefined, undefined),
+    ],
+    campuses: [
+      {
+        name: "Hull Campus",
+        city: "Hull",
+        address: "Cottingham Road, Hull HU6 7RX",
+        description: "The single main campus, with the Brynmor Jones Library, a sports centre, the Allam Medical Building and on campus accommodation.",
+      },
+    ],
+    documents: UK_DOCUMENTS,
+    faqs: ukFaqs({
+      name: "the University of Hull",
+      sector: "public",
+      place: "Hull, East Riding of Yorkshire, England",
+      known:
+        "Hull is known for its single compact campus, a Gold rating in the Teaching Excellence Framework 2023, the Hull York Medical School and courses in business, health, computing, law and arts.",
+      ielts:
+        "Undergraduate courses ask for IELTS 6.0 overall with at least 5.5 in each skill. Some postgraduate courses ask for 6.5, so check your course page for the exact score.",
+      fees:
+        "Only one fee was found, £18,945 a year for BA Music from an aggregator site. Hull offers a £2,000 a year fee waiver to undergraduates from listed countries, and postgraduate waivers exist. Confirm all fees with Hull.",
+      intakes:
+        "Hull lists September 2026, January 2027 and May 2027 enrolment for its fee waivers. Most undergraduate courses start in September, so check your course page for exact dates.",
     }),
   },
 ];
