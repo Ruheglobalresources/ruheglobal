@@ -5,17 +5,20 @@ import { Search } from "lucide-react";
 import { auth } from "@/auth";
 import { PortalNav } from "@/components/portal/portal-nav";
 import { UserMenu } from "@/components/portal/user-menu";
+import { getPortalCounsellor } from "@/lib/portal-counsellor";
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 
-  if (!session?.user) redirect("/auth/login?callbackUrl=/portal");
+  if (!session?.user?.id) redirect("/auth/login?callbackUrl=/portal");
+
+  const counsellor = await getPortalCounsellor(session.user.id);
 
   return (
     <div className="min-h-screen bg-white">
       <Toaster richColors position="top-center" />
 
-      {/* Top app bar */}
+      {/* Top bar */}
       <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center gap-3 border-b border-neutral-200 bg-white px-4 sm:px-6">
         <Link href="/portal" className="shrink-0 font-display text-xl font-semibold tracking-tight text-ruby-600">
           Ruhe<span className="hidden text-ink sm:inline"> Global Resources</span>
@@ -35,14 +38,23 @@ export default async function PortalLayout({ children }: { children: React.React
           </label>
         </form>
 
+        <nav aria-label="Browse" className="hidden shrink-0 items-center gap-1 text-sm font-semibold text-ink md:flex">
+          <Link href="/portal/courses" className="rounded-full px-4 py-2 transition hover:bg-ruby-50 hover:text-ruby-700">
+            Courses
+          </Link>
+          <Link href="/portal/institutions" className="rounded-full px-4 py-2 transition hover:bg-ruby-50 hover:text-ruby-700">
+            Institutions
+          </Link>
+        </nav>
+
         <div className="shrink-0">
           <UserMenu name={session.user.name ?? null} email={session.user.email ?? null} />
         </div>
       </header>
 
-      <PortalNav />
+      <PortalNav user={{ name: session.user.name ?? null, email: session.user.email ?? null }} counsellor={counsellor} />
 
-      <main className="px-4 pb-28 pt-24 sm:px-6 lg:pb-12 lg:pl-[17rem] lg:pr-8">
+      <main className="px-4 pb-28 pt-24 sm:px-6 lg:pb-12 lg:pl-[19rem] lg:pr-8">
         <div className="mx-auto max-w-5xl">{children}</div>
       </main>
     </div>

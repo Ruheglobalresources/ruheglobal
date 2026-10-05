@@ -1,16 +1,32 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { ArrowRight } from "lucide-react";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { getPortalCounsellor } from "@/lib/portal-counsellor";
 import { TerminalCard } from "@/components/portal/terminal-card";
 import { ContinueList } from "@/components/portal/continue-list";
+import { CounsellorCard } from "@/components/portal/counsellor-card";
 import { computeOverallProgress, groupFieldsByStep, mapApplicationFields } from "@/components/portal/types";
+import { CoursesPreview, InstitutionsPreview } from "@/components/dashboard/catalog-lists";
+import { elevation1, filledButton } from "@/components/dashboard/styles";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
+// The portal's first page is the one place that shows everything:
+//   greeting and matches banner -> applications (continue + terminals)
+//   -> courses strip -> institutions strip
+// The two strips are swipeable previews. "Show all" opens /portal/courses and
+// /portal/institutions, which hold the full lists.
 export default async function PortalDashboardPage() {
   const session = await auth();
-  const userId = session!.user.id;
+  const userId = session?.user?.id;
+  if (!userId) redirect("/auth/login?callbackUrl=/portal");
 
-  const [terminals, inProgressSubmissions] = await Promise.all([
+  const firstName = session.user.name?.trim().split(/\s+/)[0] ?? null;
+
+  const [terminals, inProgressSubmissions, counsellor] = await Promise.all([
     db.portalTerminal.findMany({
       where: { isActive: true },
       orderBy: { order: "asc" },
@@ -30,6 +46,7 @@ export default async function PortalDashboardPage() {
         },
       },
     }),
+    getPortalCounsellor(userId),
   ]);
 
   const continueItems = inProgressSubmissions.map((submission) => {
@@ -50,27 +67,56 @@ export default async function PortalDashboardPage() {
   });
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-[color:var(--color-ink)]">Your applications</h1>
-        <p className="text-sm text-neutral-500">Pick up where you left off, or start something new below.</p>
-      </div>
+    <div className="space-y-12">
+      {/* Greeting + matches banner */}
+      <section>
+        <h1 className="font-display text-3xl font-semibold leading-tight text-ink sm:text-4xl">
+          We&apos;ve personalised your space{firstName ? "," : ""}{" "}
+          {firstName && <span className="text-ruby-600">{firstName}</span>}
+        </h1>
 
-      <ContinueList items={continueItems} />
+        <div className={cn("mt-6 rounded-3xl border border-ruby-100 bg-ruby-50 p-6", elevation1)}>
+          <h2 className="text-xl font-semibold text-ink">Not sure what you qualify for?</h2>
+          <p className="mt-1 text-neutral-600">Get your best-fit options in 30 seconds.</p>
+          <Link href="/portal/courses" className={cn(filledButton, "mt-5")}>
+            Show my matches <ArrowRight size={18} />
+          </Link>
+        </div>
 
-      <h2 className="mb-3 text-sm font-semibold text-[color:var(--color-ink)]">All terminals</h2>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {terminals.map((terminal) => (
-          <TerminalCard
-            key={terminal.id}
-            slug={terminal.slug}
-            name={terminal.name}
-            icon={terminal.icon}
-            applicationCount={terminal._count.applications}
-          />
-        ))}
-        {terminals.length === 0 && <p className="text-sm text-neutral-400">No terminals are open yet — check back soon.</p>}
-      </div>
+        {/* On a phone the sidebar is hidden, so the counsellor sits here instead. */}
+        <div className="mt-4 lg:hidden">
+          <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-neutral-500">Your counsellor</p>
+          <CounsellorCard counsellor={counsellor} />
+        </div>
+      </section>
+
+      {/* Applications: where you left off, then every terminal */}
+      <section id="applications" className="scroll-mt-24">
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-ink">Applications</h2>
+          <p className="text-sm text-neutral-500">Pick up where you left off, or choose a terminal to start something new.</p>
+        </div>
+
+        <ContinueList items={continueItems} />
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {terminals.map((terminal) => (
+            <TerminalCard
+              key={terminal.id}
+              slug={terminal.slug}
+              name={terminal.name}
+              icon={terminal.icon}
+              applicationCount={terminal._count.applications}
+            />
+          ))}
+          {terminals.length === 0 && (
+            <p className="text-sm text-neutral-400">No terminals are open yet, check back soon.</p>
+          )}
+        </div>
+      </section>
+
+      <CoursesPreview />
+      <InstitutionsPreview />
     </div>
   );
 }
