@@ -13,9 +13,37 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
-export function ProfileCard({ name, email }: { name: string | null; email: string | null }) {
+export function ProfileCard({
+  name,
+  email,
+  compact = false,
+}: {
+  name: string | null;
+  email: string | null;
+  compact?: boolean;
+}) {
   const label = name ?? email ?? "Your account";
   const initial = label.trim().charAt(0).toUpperCase();
+
+  // Collapsed sidebar: just the avatar. It still opens the account menu.
+  if (compact) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          aria-label={`Account menu for ${label}`}
+          title={label}
+          className="grid size-11 shrink-0 place-items-center rounded-full bg-ruby-500 text-lg font-semibold text-white outline-none transition hover:bg-ruby-600 focus-visible:ring-2 focus-visible:ring-ruby-500/50 focus-visible:ring-offset-2"
+        >
+          {initial}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" side="right" className="w-64 rounded-2xl p-1.5">
+          <DropdownMenuItem onSelect={() => logout()} className="cursor-pointer gap-2 rounded-xl px-3 py-2 text-sm">
+            <LogOut size={16} /> Log out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
 
   return (
     <DropdownMenu>
