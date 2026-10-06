@@ -212,7 +212,7 @@ export function Navbar() {
 
           <div className="flex items-center gap-2.5">
             <Link
-              href="/auth/login"
+              href="/portal"
               className="rounded-full border border-ink/20 px-5 py-2 text-sm font-medium text-ink transition-colors hover:border-ink/40 hover:bg-ink/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ember"
             >
               Login to portal

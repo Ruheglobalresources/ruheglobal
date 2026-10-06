@@ -1,78 +1,77 @@
-// prisma/institutionBatches/batch21.ts
+// prisma/institutionBatches/batch22.ts
 //
-// Batch 21: rows 115 to 121 of RGR University List new.pdf (all USA).
-//   115  Hult International Business School
-//   116  Kent State University
-//   117  Los Medanos College (CCCCD)
-//   118  Miami University Ohio (Oxford)
-//   119  Miami University Ohio Regionals (Middletown and Hamilton)
-//   120  Mt. San Antonio College
-//   121  New York Film Academy
+// Batch 22: rows 122 to 128 of RGR University List new.pdf (all USA).
+//   122  New York Institute of Technology (University)
+//   123  Purdue University Northwest
+//   124  Sacred Heart University
+//   125  Santa Monica College
+//   126  Seattle Colleges - North Seattle College
+//   127  Seattle Colleges - Seattle Central College
+//   128  Seattle Colleges - South Seattle College
 //
-// That gives 7 institutions from 7 PDF rows, nothing merged. Batch 20 ended at row 114 and Colorado Mesa
-// University (row 154) is already done, so skip it later. The next batch starts at row 122 (New York
-// Institute of Technology).
+// That gives 7 institutions from 7 PDF rows, nothing merged. Batch 21 ended at row 121. Santa Monica College
+// also appears at row 228, so skip it later. The next batch starts at row 129 (Southern Illinois University
+// Carbondale).
+//
+// The three Seattle Colleges share one district, one international office, one cost table and one English rule,
+// so they use shared constants the same way the Contra Costa colleges did. Each college still has its own entry,
+// campus and course list.
+//
+// New York Institute of Technology here is the New York (USA) university. It is a different school from
+// NYIT Vancouver (row 268, Canada), and the slugs do not clash.
 //
 // Country is written as "United States" for every entry, because the engine rejects "USA".
 //
-// HEADS UP FOR THE NEXT BATCH (rows 122 to 128): New York Institute of Technology (University) (a different
-// school from NYIT Vancouver, row 268, Canada), Purdue University Northwest, Sacred Heart University, Santa
-// Monica College (also row 228), North Seattle College, Seattle Central College and South Seattle College (the
-// three Seattle Colleges share one district, so check whether they share one cost and English table the way
-// the Contra Costa colleges do).
+// HEADS UP FOR THE NEXT BATCH (rows 129 to 135): Southern Illinois University Carbondale, Southwest Minnesota
+// State University (the PDF spells it "Minnesotta"), State University of New York Plattsburgh, Texas State
+// University, Texas Wesleyan University, Trine University and Troy University (Troy has campuses in several
+// places, so check which one the PDF means).
 //
-// OTHER PDF ROWS TO WATCH LATER (repeats or odd rows, nothing to do in this batch):
-//   Baylor University is rows 177 and 223. University of Massachusetts Amherst is rows 175 and 205. UMass
-//   Boston is rows 185 and 206. Trinity Western University is row 178 (listed as USA) and row 312 (Canada), and
-//   it is a Canadian university, so check the country. Saint Louis University is row 170 (USA) and row 340
-//   (Madrid, Spain). Long Island University is rows 164, 165 and 218 (Brooklyn, Post and the main entry).
+// OTHER PDF ROWS TO WATCH LATER (nothing to do in this batch): Colorado Mesa University is rows 108 and 154
+// (done in an earlier batch). Santa Monica College is rows 125 and 228. Baylor University is rows 177 and 223.
+// University of Massachusetts Amherst is rows 175 and 205. UMass Boston is rows 185 and 206. Trinity Western
+// University is row 178 (listed as USA) and row 312 (Canada), so check the country. Saint Louis University is
+// row 170 (USA) and row 340 (Madrid, Spain). Long Island University is rows 164, 165 and 218.
 //
 // This file is self contained. Paste it over batch01.ts and run: npm run seed:institutions
-// (or save it as batch21.ts and run with 21). The engine only cares that the file exports INSTITUTIONS.
+// (or save it as batch22.ts and run with 22). The engine only cares that the file exports INSTITUTIONS.
 //
 // HOW SURE EACH NUMBER IS (confirm the flagged ones before this reaches students):
-//   Hult           : Master's fees of $60,500 (finance, business analytics, marketing) and $63,000
-//                    (management) for Boston in 2026/27 are from the official hult.edu fees page. The $59,600 BBA
-//                    figure is an IDP listing, so confirm. The English scores (IELTS 6.0, TOEFL iBT 80, Duolingo 110)
-//                    come from Hult's own exchange programme fact sheet, and the master's scores (IELTS 6.5 with
-//                    5.5 in each part, TOEFL iBT 90, Duolingo 120) from a partner university's page, so confirm
-//                    both with admissions. Agent sites list TOEFL 74 for the BBA. Founded 1964 is the year the
-//                    Boston school began, per Hult's fact sheet (some sites say 2003 for the Hult name). The master's
-//                    start months (January, April, September) are from an agent listing. The MBA fee is not stored.
-//   Kent State     : Official kent.edu international tuition page for 2026/27: UG tuition and fees $24,298, graduate
-//                    $21,169, aeronautics with professional pilot $44,298, living costs $14,360, insurance and
-//                    books $3,935, I-20 total $42,593. English table (TOEFL iBT 71, IELTS 6.0, ESL Level 8 with a
-//                    3.75 GPA) is official, and graduate programmes set their own scores. Fall 2027 classes start
-//                    August 23, 2027 and spring 2027 classes start January 19, 2027 (official). The June 1 and
-//                    October 1 international deadlines and the $70 fee are from a third party, so confirm. The
-//                    October 1 spring date has already passed for Jan 2027, so the entry is set to Aug 2027.
-//                    Founded 1910 is general knowledge. Course names are programmes that normally exist.
-//   Los Medanos    : Same Contra Costa district figures as batch 20 (official intl.4cd.edu, checked October 2026).
-//                    The 16 international students from 12 countries (Spring 2026), 33 clubs, UC Berkeley concurrent
-//                    enrollment and honors programme facts are from the official district page. The four degrees
-//                    are confirmed on the official losmedanos.edu degree list. Founded 1974 and both addresses
-//                    are official.
-//   Miami Oxford   : 2026/27 non-Ohio resident tuition and fees of $42,882 are from the official 2026/27 international
-//                    viewbook. The English scores (IELTS 6.5, TOEFL iBT 80, PTE 53, Duolingo 110) are from the official
-//                    graduate page and a college guide for undergraduates, so confirm. Founded 1809 and the "Public
-//                    Ivy" wording are official. Course names are programmes that normally exist, not all checked.
-//   Miami Regionals: The official 2027 cohort page (entered 2026/27) gives per credit hour tuition $300.17, fees
-//                    $30.67 and a non-resident surcharge of $534.97. For 24 credits that is about $20,779, worked out
-//                    here, so confirm. The English minimum for the regional campuses is not published separately,
-//                    so the Oxford undergraduate scores are used, and conditional admission through the Middletown
-//                    English Language Center is official. The 135 international students and 18 to 1 ratio are
-//                    official. Middletown opened in 1966 (official). Degree names are from the official bulletin.
-//   Mt. SAC        : Official mtsac.edu pages: $434 per unit non-resident tuition and $46 per unit enrollment fee for 24
-//                    units, the $27,942 I-20 total, the $50 fee, the English table and the spring 2027 dates
-//                    (deadline November 15, 2026, classes February 22, 2027). The application page asks for proof of
-//                    $26,926 while the tuition page shows $27,942, so confirm which one the I-20 uses. Founded 1945
-//                    is general knowledge. Course names are programmes that normally exist, not all checked.
-//   NYFA           : Official nyfa.edu pages: the English table, the $75 fee, and 2026/27 Los Angeles and New York
-//                    filmmaking tuition of $19,500 per semester (MFA $20,500) plus a $2,000 departmental fee. The
-//                    fee is per semester and there are three semesters a year, so the entry says per semester.
-//                    Founded 1992 is from a college guide. The BFA January start is not on the programme page, so
-//                    confirm it. The street addresses are from memory, so confirm. Acting and photography fees
-//                    are not stored because the pages seen were out of date.
+//   NYIT           : English scores (IELTS 6.0, TOEFL iBT 79 or 4.0 new scale, Duolingo 105, ESL pathway for TOEFL
+//                    41 to 78) are from the official nyit.edu international pages. 2026/27 undergraduate tuition of
+//                    $24,150 a term, the BS/DO figure of $26,150 a term, graduate tuition of $1,800 per credit and the
+//                    F-1 insurance of $1,250 a semester are from the official nyit.edu bursar pages. The $48,300 a year
+//                    figure is two terms, worked out here and matched by a course listing. The $52,300 top figure is
+//                    the BS/DO rate, so confirm which programmes use it. Architecture and graduate programme totals
+//                    depend on credits, so confirm them. The July 1 and December 1 deadlines are from a third party.
+//                    Founded 1955, 70 plus countries and 1,000 plus international students are official. The Long
+//                    Island street address and course names (not all checked) are from memory, so confirm.
+//   Purdue NW      : The $155 international student fee per semester, per credit hour billing, the $25 UG and $75
+//                    international graduate application fees, the June 1 and October 15 UG deadlines, the Duolingo
+//                    100 to 110 score and the English Language Program Level Four route are from official pnw.edu
+//                    pages. NO 2026/27 tuition figure was found, so tuition amounts are not stored. The IELTS and
+//                    TOEFL minimums are not stored because they differ by programme. Founded 2016 is from a third
+//                    party. The $570 insurance figure is from the English Language Program page. Both street
+//                    addresses are from memory, so confirm. Course names are programmes that normally exist.
+//   Sacred Heart   : The English scores (IELTS 6.5, TOEFL iBT 80, Duolingo 110 with production 85, PTE 62, iTEP 5), the
+//                    MS Healthcare Informatics scores, provisional acceptance and the November 1 and March 1
+//                    preferred dates are from the official sacredheart.edu catalog and test page. The $50,084 and
+//                    $54,170 undergraduate tuition figures are from an IDP listing, and it is not clear which year
+//                    each belongs to, so confirm on sacredheart.edu/educationcost. Founded 1963 and the Luxembourg
+//                    campus are general knowledge. Course names are programmes that normally exist, not all checked.
+//   Santa Monica   : Official smc.edu pages: $486 per unit non-resident cost, the $34,000 estimate for Fall 2026 to
+//                    Spring 2027, the $1,000 a month Intensive English cost, the $84 upper division surcharge, the
+//                    $1,541 a month homestay estimate, the 12 unit rule and the out of country deadlines (winter
+//                    November 15, 2026, spring January 5, 2027, summer May 15, 2027). The $11,664 figure for 24 units
+//                    is worked out here. The accepted English tests and scores are NOT stored because the page seen
+//                    did not list them. Founded 1929 and the Bundy and Airport Arts sites are from memory, so confirm.
+//   Seattle Colleges: Official intl.seattlecolleges.edu Summer 2026 cost table: tuition $11,283 and fees $663 for nine
+//                    months, total $27,966, Intensive English tuition $11,694, BAS years 3 and 4 tuition $21,783. English
+//                    proof is not required to apply (official). The TOEFL iBT 64 and IELTS 6.0 scores that skip the
+//                    placement test are from an IDP listing, so confirm. Founding years (North 1970, Seattle Central
+//                    1966, South 1970), the North and South street addresses and the Georgetown campus are from
+//                    memory, so confirm. Course names are programmes that normally exist, not all checked. The
+//                    intake months follow the usual quarter system, so confirm the dates.
 //   Left out on purpose: acceptance rate, ranking, social links, and anything unconfirmed.
 //   Library, sports and student life paragraphs are kept general on purpose, and each one says to check
 //   the university pages for current details.
@@ -188,593 +187,502 @@ function pg(
   };
 }
 
-// Contra Costa Community College District (Contra Costa College, Diablo Valley College and Los Medanos
-// College) shares one international office, one cost table and one English table.
-const CCCCD_ENGLISH_NOTE =
-  "IELTS Academic 5.5 with no band below 4.5, TOEFL iBT 61, Duolingo 95, PTE 45 or iTEP 3.5. Partner English programmes can give conditional admission.";
-const CCCCD_TUITION_NOTE =
-  "Tuition and fees $10,728 at $447 per unit for 24 units. The I-20 funds estimate is $30,495 with homestay, books and insurance. Confirm on intl.4cd.edu.";
-const CCCCD_ENGLISH_ANSWER =
-  "You need IELTS Academic 5.5 with no band below 4.5, TOEFL iBT 61, Duolingo 95, PTE 45 or iTEP 3.5. Students who finish a partner English programme such as ELS Level 109 can get conditional admission.";
-const CCCCD_FEES_ANSWER =
-  "For 2026/27, tuition and fees are about $10,728 for 24 units at $447 per unit. The I-20 total is $30,495, which includes homestay, books, transport, personal costs and mandatory insurance. There is no application fee.";
-const CCCCD_INTAKES_ANSWER =
-  "You can start in fall (August) or spring (January). Overseas applicants apply by July 1 for fall and December 1 for spring, and spring 2027 classes begin on January 25, 2027.";
-
-// Per credit hour tuition for Miami University Ohio Regionals, 2026/27, non-Ohio resident, 24 credits a year:
-// (300.17 + 30.67 + 534.97) x 24 = 20,779.44
-const MIAMI_REGIONALS_YEARLY = 20779;
+// Seattle Colleges (North Seattle College, Seattle Central College and South Seattle College) share one
+// international office, one cost table and one English rule.
+const SEATTLE_ENGLISH_NOTE =
+  "No English proof needed to apply. TOEFL iBT 64 or IELTS 6.0 skips the placement test. College Bridge supports lower levels. Confirm on seattlecolleges.edu.";
+const SEATTLE_TUITION_NOTE =
+  "Tuition $11,283 for 9 months (15 credits a quarter), fees $663. Total estimate $27,966 with housing, books and insurance. Confirm on seattlecolleges.edu.";
+const SEATTLE_ENGLISH_ANSWER =
+  "Proof of English is not required to apply. A TOEFL iBT 64 with writing 17 or IELTS 6.0 with writing 5.0 skips the placement test, and the Seattle Colleges Institute of English offers College Bridge and Intensive English for lower levels.";
+const SEATTLE_FEES_ANSWER =
+  "For 2026/27, tuition is about $11,283 for nine months at 15 credits a quarter, with about $663 in fees. The total estimate is $27,966 including housing and food, books, insurance and transport. Bachelor of applied science years 3 and 4 cost more, at $21,783 tuition.";
+const SEATTLE_INTAKES_ANSWER =
+  "You can start in the fall (September), winter (January), spring (April) or summer quarter. Application deadlines differ by quarter, so check the Seattle Colleges international office and apply early for your I-20 and visa.";
+const SEATTLE_DOCUMENTS: Record<string, DocumentRow[]> = {
+  Undergraduate: [
+    ["Identity", "Passport"],
+    ["Academic", "High school transcripts (required if under 18, recommended for everyone)"],
+    ["Academic", "English language test result (optional, skips the placement test)"],
+    ["Financial", "Bank statement showing proof of funds"],
+    ["Financial", "Financial sponsor form (if you have a sponsor)"],
+    ["Visa", "Form I-20 issued by the college"],
+    ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
+  ],
+};
 
 export const INSTITUTIONS: InstitutionInput[] = [
-  // ── PDF row 115 ────────────────────────────────────────────────────────
+  // ── PDF row 122 ────────────────────────────────────────────────────────
   {
-    name: "Hult International Business School",
-    city: "Cambridge",
+    name: "New York Institute of Technology",
+    city: "New York",
     country: "United States",
-    institutionType: "Private business school",
-    website: "https://www.hult.edu",
-    founded: 1964,
+    institutionType: "Private research university",
+    website: "https://www.nyit.edu",
+    founded: 1955,
     upcomingIntake: "Jan 2027",
-    programs: ["Business Administration", "Finance", "Marketing"],
+    programs: ["Computer Science", "Architecture", "Engineering"],
     summary:
-      "A private business school with US campuses in Boston, San Francisco and New York, offering a four year BBA, one year master's degrees and MBAs, with AACSB, AMBA and EQUIS accreditation and optional dual degrees.",
+      "A private technology focused university with campuses in New York City and Old Westbury on Long Island, offering about 90 degree programmes, more than 1,000 international students from over 70 countries and an International Leadership Scholarship that can cover full undergraduate tuition.",
     ieltsOverall: 6.0,
-    ieltsAlternatives: ["TOEFL iBT 80", "Duolingo 110"],
+    ieltsAlternatives: ["TOEFL iBT 79", "Duolingo 105"],
     ieltsNote:
-      "UG: IELTS 6.0, TOEFL iBT 80 or Duolingo 110. Master's: IELTS 6.5, TOEFL iBT 90 or Duolingo 120. Some programmes ask for more. Confirm on hult.edu.",
-    tuitionMin: 59600,
-    tuitionMax: 63000,
+      "UG: IELTS 6.0, TOEFL iBT 79 or Duolingo 105. ESL pathway for TOEFL 41 to 78. Graduate programmes may differ. Confirm on nyit.edu.",
+    tuitionMin: 48300,
+    tuitionMax: 52300,
     tuitionCurrency: "USD",
-    tuitionPeriod: "per year (2026/27, Boston)",
+    tuitionPeriod: "per year (2026/27, undergraduate)",
     tuitionNote:
-      "BBA about $59,600 (IDP listing). Boston master's $60,500 to $63,000 (official hult.edu, 2026/27). Dual degree and MBA fees differ. Confirm on hult.edu.",
+      "UG tuition $24,150 a term (about $48,300 a year), BS/DO $52,300. Graduate $1,800 per credit. F-1 insurance $1,250 a semester. Confirm on nyit.edu.",
     overview:
-      "Hult International Business School is a private, non profit business school with its main US campus in Cambridge, Massachusetts, and further campuses in San Francisco and New York. It is part of the EF Education First group and holds AACSB, AMBA and EQUIS accreditation. It teaches a four year BBA, one year master's degrees in management, finance, marketing and business analytics, and a global one year MBA.",
+      "New York Institute of Technology, also called New York Tech, is a private research university founded in 1955, with campuses in Manhattan and Old Westbury on Long Island. It offers about 90 degree programmes in fields such as architecture, engineering and computing, management, health professions and arts and sciences. More than 1,000 international students from over 70 countries study there.",
     studentLife:
-      "Hult teaches through team projects and live business challenges, and students work with classmates from many countries. Students can spend time on other Hult campuses, including London and Dubai, and the school gives career support and international admissions help. Check the Hult student life pages for current clubs and events.",
+      "The international admissions team supports applicants from many countries, and every international student on an F-1 or J-1 visa takes the mandatory university health insurance plan. New York Tech has clubs, career services and a technology focused community across both campuses. Check the student life pages for current clubs and events.",
     accommodation:
-      "Hult House is student housing run by the school near the Boston campus, and many graduate students also rent apartments or share housing in Cambridge and Boston. Check the Hult housing pages for current prices and booking dates, and apply early.",
+      "New York Tech runs residence halls, where students share rooms on designated floors and single rooms are limited. Many older and graduate students rent apartments in Manhattan or on Long Island. Check the housing pages for current prices and booking dates, and apply early.",
     library:
-      "The Boston campus offers study spaces, group rooms and online business collections, with academic and career support for coursework. Check the Hult pages for opening hours and services.",
+      "The libraries on each campus offer study spaces, computers and online collections, and tutoring and writing support help with coursework. Check the library pages for opening hours and services.",
     sports:
-      "Hult is a specialist business school rather than a varsity sports university, so students usually join student clubs and activities or use gyms and facilities around Cambridge and Boston. Check the Hult pages for current options.",
-    wikipediaTitle: "Hult International Business School",
-    ...seo("Hult International Business School", "Cambridge, Massachusetts"),
+      "New York Tech competes in NCAA Division II athletics as the Bears, and students can also join recreation and club activities. Check the athletics and recreation pages for current teams and memberships.",
+    wikipediaTitle: "New York Institute of Technology",
+    ...seo("New York Institute of Technology", "New York and Old Westbury"),
     courses: [
-      ug("Bachelor of Business Administration (BBA)", "BBA", "Business", "4 Years", "Jan 2027", "January and September", 59600, "A four year business degree taught in Boston with specialisations such as marketing, finance and business analytics.", "per year (2026)"),
-      pg("Master's in Management", "Master's", "Business", "1 Year", "Jan 2027", "January, April and September", 63000, "A one year management degree for graduates, taught in Boston at the 2026/27 fee."),
-      pg("Master's in Finance", "Master's", "Finance", "1 Year", "Jan 2027", "January, April and September", 60500),
-      pg("Master's in Business Analytics", "Master's", "Business Analytics", "1 Year", "Jan 2027", "January, April and September", 60500),
-      pg("Master's in Marketing", "Master's", "Marketing", "1 Year", "Jan 2027", "January, April and September", 60500),
-      pg("Global One Year MBA", "MBA", "Business", "1 Year", "Jan 2027", "January and September", undefined, "A one year MBA with scholarships linked to GMAT or GRE results, so confirm the fee with admissions."),
+      ug("BS Computer Science", "BS", "Computer Science", "4 Years", "Jan 2027", "January and September", 48300),
+      ug("BS Information Technology", "BS", "Information Technology", "4 Years", "Jan 2027", "January and September", 48300, "An eight semester degree in New York City with hands on work in programming, databases and web development."),
+      ug("Bachelor of Architecture (B.Arch)", "B.Arch", "Architecture", "5 Years", "Jan 2027", "January and September", undefined, "A five year professional architecture degree, so confirm the fee and studio costs with admissions."),
+      pg("MS Computer Science", "MS", "Computer Science", "2 Years", "Jan 2027", "January and September", 1800, "A STEM graduate degree. Tuition is $1,800 per credit, so the yearly cost depends on the credits taken.", "per credit (2026/27)"),
+      pg("MS Data Science", "MS", "Data Science", "2 Years", "Jan 2027", "January and September", 1800, "Tuition is $1,800 per credit, so confirm the credits and total cost with admissions.", "per credit (2026/27)"),
+      pg("Master of Business Administration (MBA)", "MBA", "Business", undefined, "Jan 2027", "January and September", 1800, "Tuition is $1,800 per credit, so confirm the credits and total cost with admissions.", "per credit (2026/27)"),
     ],
     campuses: [
       {
-        name: "Boston Campus",
-        city: "Cambridge",
-        address: "1 Education Street, Cambridge, MA 02141",
-        description: "The main US campus, on the Charles River in Cambridge, with classrooms, the admissions team and nearby Hult House housing.",
-      },
-      {
-        name: "San Francisco Campus",
-        city: "San Francisco",
-        description: "A Hult campus in the San Francisco Bay Area for selected master's and MBA programmes, so check which courses run there.",
-      },
-      {
-        name: "New York Campus",
+        name: "Manhattan Campus",
         city: "New York",
-        description: "A Hult campus in New York City that supports graduate study, including finance pathways with Boston, so check which programmes run there.",
+        address: "1855 Broadway, New York, NY 10023",
+        description: "The New York City campus near Columbus Circle, with teaching spaces for many programmes, so check which courses run there.",
+      },
+      {
+        name: "Long Island Campus",
+        city: "Old Westbury",
+        address: "Northern Boulevard, Old Westbury, NY 11568",
+        description: "The larger suburban campus on Long Island, with teaching buildings, labs, athletics and residence halls, so check which courses run there.",
       },
     ],
     documents: {
-      Undergraduate: [
-        ["Identity", "Passport"],
-        ["Academic", "High school transcript and diploma"],
-        ["Academic", "English language test result"],
-        ["Financial", "Bank statement showing proof of funds"],
-        ["Visa", "Form I-20 issued by the school"],
-        ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
-      ],
+      Undergraduate: US_DOCUMENTS.Undergraduate,
       Postgraduate: [
         ["Identity", "Passport"],
-        ["Academic", "Bachelor's degree certificate and transcripts in English"],
+        ["Academic", "Degree certificate and transcripts with English translation"],
         ["Academic", "CV or resume"],
+        ["Academic", "Statement of purpose and reference letters"],
+        ["Academic", "GRE or GMAT scores, if the programme asks for them"],
         ["Academic", "English language test result"],
         ["Financial", "Bank statement showing proof of funds"],
-        ["Visa", "Form I-20 issued by the school"],
+        ["Visa", "Form I-20 issued by the university"],
         ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
       ],
     },
     faqs: usFaqs({
-      name: "Hult International Business School",
+      name: "New York Institute of Technology",
       sector: "private",
-      place: "Cambridge, Massachusetts",
+      place: "New York City and Old Westbury",
       known:
-        "Hult is known for one year master's degrees and MBAs, hands on team projects, AACSB, AMBA and EQUIS accreditation, and campuses in several global cities.",
+        "New York Tech is known for technology focused, career oriented degrees in computing, engineering, architecture and design, health professions and management, with campuses in New York City and on Long Island.",
       ielts:
-        "Undergraduates need about IELTS 6.0, TOEFL iBT 80 or Duolingo 110. Master's applicants need IELTS 6.5 with 5.5 in each part, TOEFL iBT 90 or Duolingo 120. Some programmes ask for more, so confirm with admissions.",
+        "Undergraduates need IELTS 6.0, TOEFL iBT 79 (4.0 on the new scale) or Duolingo 105. Students with TOEFL 41 to 78 can join an ESL pathway, and graduate programmes may set their own scores, so confirm with admissions.",
       fees:
-        "For 2026/27, Boston master's tuition is $60,500 for finance, business analytics and marketing, and $63,000 for management. BBA tuition is about $59,600. Scholarships are available, and living costs and fees are extra.",
+        "For 2026/27, undergraduate tuition is $24,150 a term, about $48,300 a year, and graduate tuition is $1,800 per credit. Mandatory F-1 health insurance is $1,250 a semester. Fees, housing and living costs are extra, and the International Leadership Scholarship can cover full undergraduate tuition.",
       intakes:
-        "Master's programmes start in January, April and September, and the BBA starts in September and January. Hult runs several admission rounds before each start, so check the dates for your term and apply early.",
+        "You can start in fall (September) or spring (January). Agent listings show July 1 for fall and December 1 for spring, so confirm the dates with admissions and apply early to leave time for your I-20 and visa.",
     }),
   },
 
-  // ── PDF row 116 ────────────────────────────────────────────────────────
+  // ── PDF row 123 ────────────────────────────────────────────────────────
   {
-    name: "Kent State University",
-    city: "Kent",
+    name: "Purdue University Northwest",
+    city: "Hammond",
     country: "United States",
-    institutionType: "Public research university",
-    website: "https://www.kent.edu",
-    founded: 1910,
-    upcomingIntake: "Aug 2027",
-    programs: ["Aeronautics", "Business", "Computer Science"],
-    summary:
-      "A public research university in Kent, Ohio, with international students from about 100 countries, more than 375 programmes, a professional pilot programme and scholarships worth up to $68,000 over four years for international undergraduates.",
-    ieltsOverall: 6.0,
-    ieltsAlternatives: ["TOEFL iBT 71", "ESL Center Level 8 (3.75 GPA)"],
-    ieltsNote:
-      "UG: IELTS 6.0, TOEFL iBT 71 or ESL Level 8 (3.75 GPA). Graduate programmes set their own scores. UG conditional admission possible. Confirm on kent.edu.",
-    tuitionMin: 24298,
-    tuitionMax: 44298,
-    tuitionCurrency: "USD",
-    tuitionPeriod: "per year (2026/27)",
-    tuitionNote:
-      "UG tuition and fees $24,298 ($44,298 professional pilot), graduate $21,169. The UG I-20 total is $42,593 with living costs and insurance. Confirm on kent.edu.",
-    overview:
-      "Kent State University is a public research university in Kent, Ohio, founded in 1910, with 375 or more programmes at certificate, undergraduate, master's and PhD level. It also runs regional campuses across northeast Ohio, and international students come from about 100 countries. Most scholarships are open to international students, and a strong academic record can lead to awards of up to $68,000 over four years.",
-    studentLife:
-      "International Admissions and the international student services team run orientation and support, and every international student takes the university health insurance plan unless a waiver applies. Kent has many student organizations and a lively campus around the town of Kent. Check the student life pages for current clubs and events.",
-    accommodation:
-      "Housing and dining on campus are run by the university, and the 2026/27 I-20 budget assumes $14,360 a year for living costs. Many older students and graduates rent apartments in and around Kent. Check the housing pages for current prices and booking dates.",
-    library:
-      "The University Libraries offer study spaces, computers and online collections, and tutoring, writing help and peer mentoring support coursework. Check the library pages for opening hours and services.",
-    sports:
-      "Kent State competes in NCAA Division I athletics as the Golden Flashes, and students can also join recreation and club sports. Check the athletics and recreation pages for current teams and memberships.",
-    wikipediaTitle: "Kent State University",
-    ...seo("Kent State University", "Kent, Ohio"),
-    courses: [
-      ug("BS Computer Science", "BS", "Computer Science", "4 Years", "Aug 2027", "August and January", 24298),
-      ug("BBA Business Management", "BBA", "Business", "4 Years", "Aug 2027", "August and January", 24298),
-      ug("BS Aeronautics, Professional Pilot concentration", "BS", "Aeronautics", "4 Years", "Aug 2027", "August and January", 44298, "A flight programme with a higher fee that covers flight training, so confirm the fee and entry rules with admissions."),
-      pg("Master of Business Administration (MBA)", "MBA", "Business", undefined, "Aug 2027", "August and January", 21169),
-      pg("MS Computer Science", "MS", "Computer Science", undefined, "Aug 2027", "August and January", 21169),
-    ],
-    campuses: [
-      {
-        name: "Kent Campus",
-        city: "Kent",
-        address: "1025 Risman Drive, Kent, OH 44242",
-        description: "The main campus in northeast Ohio, with most teaching, the University Libraries, residence halls and the international admissions office.",
-      },
-      {
-        name: "Regional Campuses",
-        description: "Kent State also runs regional campuses in Ashtabula, East Liverpool, Geauga, Salem, Stark, Trumbull and Tuscarawas, so confirm where your course is taught.",
-      },
-    ],
-    documents: {
-      Undergraduate: [
-        ["Identity", "Passport"],
-        ["Academic", "High school transcripts and certificates"],
-        ["Academic", "English language test result"],
-        ["Financial", "Bank statement showing proof of funds"],
-        ["Financial", "Kent State Affidavit of Financial Support, if you have a sponsor"],
-        ["Visa", "Form I-20 issued by the university"],
-        ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
-      ],
-      Postgraduate: [
-        ["Identity", "Passport"],
-        ["Academic", "Degree certificate and transcripts"],
-        ["Academic", "English language test result"],
-        ["Financial", "Kent State Financial Information Worksheet"],
-        ["Financial", "Bank statement showing proof of funds"],
-        ["Visa", "Form I-20 issued by the university"],
-        ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
-      ],
-    },
-    faqs: usFaqs({
-      name: "Kent State University",
-      sector: "public",
-      place: "Kent, Ohio",
-      known:
-        "Kent State is known for aeronautics and flight, fashion, architecture, journalism and health programmes, wide scholarships for international students and a large public university campus in northeast Ohio.",
-      ielts:
-        "Undergraduates need IELTS 6.0, TOEFL iBT 71 or Level 8 of the Kent State ESL Center with a 3.75 GPA, and conditional admission is possible. Graduate programmes set their own English scores, so check the programme page.",
-      fees:
-        "For 2026/27, undergraduate tuition and fees are $24,298 and graduate tuition and fees are $21,169, with the professional pilot programme at $44,298. The UG I-20 total is $42,593 including $14,360 living costs and $3,935 for insurance and books.",
-      intakes:
-        "You can start in fall (August) or spring (January). Fall 2027 classes begin on August 23, 2027, and spring 2027 classes begin on January 19, 2027. Third party sources list June 1 for fall and October 1 for spring, so confirm the dates.",
-    }),
-  },
-
-  // ── PDF row 117 ────────────────────────────────────────────────────────
-  {
-    name: "Los Medanos College",
-    city: "Pittsburg",
-    country: "United States",
-    institutionType: "Public community college",
-    website: "https://www.losmedanos.edu",
-    founded: 1974,
+    institutionType: "Public university",
+    website: "https://www.pnw.edu",
+    founded: 2016,
     upcomingIntake: "Jan 2027",
-    programs: ["Business", "Computer Science", "Engineering"],
+    programs: ["Computer Science", "Business", "Engineering Technology"],
     summary:
-      "A public community college in Pittsburg, California, about 70 km from San Francisco, with 16 international students from 12 countries, an honors programme with ten transfer partners including UCLA and no application fee.",
-    ieltsOverall: 5.5,
-    ieltsMinBand: 4.5,
-    ieltsAlternatives: ["TOEFL iBT 61", "Duolingo 95", "PTE 45", "iTEP 3.5"],
-    ieltsNote: CCCCD_ENGLISH_NOTE,
-    tuitionMin: 10728,
-    tuitionCurrency: "USD",
-    tuitionPeriod: "per year (2026/27, 24 units)",
-    tuitionNote: CCCCD_TUITION_NOTE,
-    overview:
-      "Los Medanos College is a public community college in Pittsburg, California, founded in 1974 and part of the Colleges of Contra Costa. International students work towards associate degrees and transfer to universities, and more than 500 students transfer to UC and CSU campuses each year. A second centre in Brentwood serves the east county.",
-    studentLife:
-      "The college has 33 student clubs and organizations, a Global Mentor Program for new international students and free bus tours to universities such as UC Davis, UC Berkeley and San Jose State. International students can apply for most scholarships after they enrol. Check the student life pages for current clubs and events.",
-    accommodation:
-      "The I-20 estimate assumes a homestay, and the district international office lists housing options in the East Bay. An on campus bus service links to the BART train, and students can also rent privately in Pittsburg and nearby cities. Check with the international office for current housing help and prices.",
-    library:
-      "The college library offers study spaces, computers and online resources, and free tutoring supports coursework. Check the library pages for opening hours and services.",
-    sports:
-      "LMC runs athletics teams including baseball, football, basketball and softball, and students can also join clubs and recreation on campus. Check the athletics pages for current teams.",
-    wikipediaTitle: "Los Medanos College",
-    ...seo("Los Medanos College", "Pittsburg, California"),
-    courses: [
-      ug("Associate in Science for Transfer, Business Administration", "Associate", "Business", "2 Years", "Jan 2027", "Fall and spring", 10728, "The main pathway to a business administration degree at a California State University."),
-      ug("Associate in Science for Transfer, Computer Science", "Associate", "Computer Science", "2 Years", "Jan 2027", "Fall and spring", 10728),
-      ug("Associate in Science, Engineering", "Associate", "Engineering", "2 Years", "Jan 2027", "Fall and spring", 10728, "Prepares students to move on to a four year engineering degree after transfer."),
-      ug("Associate in Arts for Transfer, Psychology", "Associate", "Psychology", "2 Years", "Jan 2027", "Fall and spring", 10728),
-    ],
-    campuses: [
-      {
-        name: "Pittsburg Campus",
-        city: "Pittsburg",
-        address: "2700 East Leland Road, Pittsburg, CA 94565",
-        description: "The main campus in the East Bay on about 120 acres, with teaching buildings, labs, the library and student services.",
-      },
-      {
-        name: "Brentwood Center",
-        city: "Brentwood",
-        address: "1351 Pioneer Square, Brentwood, CA 94513",
-        description: "A smaller centre in Brentwood that serves the far east of the county, so check which courses run there.",
-      },
-    ],
-    documents: {
-      Undergraduate: [
-        ["Identity", "Passport"],
-        ["Academic", "High school transcripts (required if under 18, recommended for everyone)"],
-        ["Academic", "English language test result"],
-        ["Financial", "Bank statement showing $30,495 in proof of funds"],
-        ["Financial", "Financial sponsor form (if you have a sponsor)"],
-        ["Visa", "Form I-20 issued by the college"],
-        ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
-      ],
-    },
-    faqs: usFaqs({
-      name: "Los Medanos College",
-      sector: "public",
-      place: "Pittsburg, California",
-      known:
-        "Los Medanos College is known for its transfer pathways to University of California and California State University campuses, an honors programme with UCLA and other partners, and small classes in the East Bay.",
-      ielts: CCCCD_ENGLISH_ANSWER,
-      fees: CCCCD_FEES_ANSWER,
-      intakes: CCCCD_INTAKES_ANSWER,
-    }),
-  },
-
-  // ── PDF row 118 ────────────────────────────────────────────────────────
-  {
-    name: "Miami University Ohio",
-    city: "Oxford",
-    country: "United States",
-    institutionType: "Public research university",
-    website: "https://www.miamioh.edu",
-    founded: 1809,
-    upcomingIntake: "Aug 2027",
-    programs: ["Business", "Engineering", "Computer Science"],
-    summary:
-      "A public research university in Oxford, Ohio, founded in 1809, with more than 120 undergraduate areas of study, a Tuition Promise that freezes costs for four years and international scholarships, including the full cost Presidential Fellows award.",
-    ieltsOverall: 6.5,
-    ieltsAlternatives: ["TOEFL iBT 80", "PTE 53", "Duolingo 110"],
+      "A public university in northwest Indiana, formed in 2016 from Purdue Calumet and Purdue North Central, with campuses in Hammond and Westville, more than 70 areas of study, students from about 50 countries and an English Language Program for those who need more English.",
+    ieltsAlternatives: ["Duolingo 100 to 110"],
     ieltsNote:
-      "UG: IELTS 6.5, TOEFL iBT 80, PTE 53 or Duolingo 110. Lower scores may lead to conditional admission through the American Culture and English Program.",
-    tuitionMin: 42882,
+      "PNW accepts Duolingo 100 to 110. Other test scores differ by programme, and the English Language Program offers a pathway. Confirm on pnw.edu.",
     tuitionCurrency: "USD",
-    tuitionPeriod: "per year (2026/27, non-Ohio resident)",
     tuitionNote:
-      "Non-Ohio resident tuition and fees $42,882 for two semesters (2026/27 viewbook), frozen for four years by the Tuition Promise. Confirm on miamioh.edu.",
+      "Charged per credit hour with a $155 international student fee each semester (2025/26 page). The 2026/27 rate is not stored, so confirm on pnw.edu/bursar.",
     overview:
-      "Miami University is a public research university in Oxford, Ohio, founded in 1809 and known as a Public Ivy. The Oxford campus offers bachelor's degrees in more than 120 areas of study plus graduate programmes, with about 16,800 undergraduates, and students come from more than 100 countries. Miami also runs regional campuses, a centre in West Chester and a campus in Luxembourg.",
+      "Purdue University Northwest is a public university in northwest Indiana, formed in 2016 when Purdue Calumet and Purdue North Central merged. It has campuses in Hammond and Westville and offers more than 70 areas of study, from accounting and computer information technology to engineering technology, nursing and graduate degrees such as the MBA. Students come from about 50 countries.",
     studentLife:
-      "International Student and Scholar Services runs orientation and support, the American Culture and English Program helps students build their English, and there are clubs with an international focus. Oxford is a university town about 35 miles north of Cincinnati with restaurants, shops and parks. Check the student life pages for current clubs and events.",
+      "International Student Services runs orientation and support, and students come from about 50 countries. Health insurance is mandatory for international students. Check the International Student Services pages for current clubs, events and advising.",
     accommodation:
-      "Housing and meal plans are run by the university and are covered by Miami's Tuition Promise cost freeze for each new undergraduate class, and many older students rent apartments in Oxford. Check the housing pages for current prices and booking dates, and apply early.",
+      "PNW has residence halls with live in staff, and many students also rent rooms or apartments near the Hammond and Westville campuses. Contact the International Office for housing advice. Check the housing pages for current prices and booking dates.",
     library:
-      "The University Libraries, including King Library, offer study spaces, online collections and research help, and academic advising and tutoring support coursework. Check the library pages for opening hours and services.",
+      "Each campus library offers study spaces, computers and online collections, and tutoring and writing help support coursework. Check the library pages for opening hours and services.",
     sports:
-      "Miami competes in NCAA Division I athletics as the RedHawks in the Mid-American Conference, and students can also use recreation programmes and the Goggin Ice Center. Check the athletics and recreation pages for current teams and memberships.",
-    wikipediaTitle: "Miami University",
-    ...seo("Miami University Ohio", "Oxford, Ohio"),
+      "PNW runs varsity athletics and recreation programmes, and students can also join clubs and campus activities. Check the athletics and recreation pages for current teams and memberships.",
+    wikipediaTitle: "Purdue University Northwest",
+    ...seo("Purdue University Northwest", "Hammond, Indiana"),
     courses: [
-      ug("BS Business, Finance", "BS", "Finance", "4 Years", "Aug 2027", "August and January", 42882, "A business degree from the Farmer School of Business with a finance major."),
-      ug("BS Mechanical Engineering", "BS", "Engineering", "4 Years", "Aug 2027", "August and January", 42882, "An engineering degree that carries an extra college fee each semester, so confirm the total with admissions."),
-      ug("BS Computer Science", "BS", "Computer Science", "4 Years", "Aug 2027", "August and January", 42882),
-      pg("Master of Business Administration (MBA)", "MBA", "Business", undefined, "Aug 2027", "August and January", undefined, "Graduate fees differ from undergraduate fees, so confirm the fee with graduate admission."),
-      pg("MS Computer Science and Software Engineering", "MS", "Computer Science", undefined, "Aug 2027", "August and January", undefined, "Graduate fees differ from undergraduate fees, so confirm the fee with graduate admission."),
+      ug("BS Computer Science, Artificial Intelligence concentration", "BS", "Computer Science", "4 Years", "Jan 2027", "August and January", undefined, "A computing degree with an artificial intelligence concentration. Tuition is charged per credit hour, so confirm the yearly cost with admissions."),
+      ug("BS Computer Information Technology", "BS", "Information Technology", "4 Years", "Jan 2027", "August and January"),
+      ug("BS Accounting", "BS", "Accounting", "4 Years", "Jan 2027", "August and January"),
+      ug("English Language Program", "Pathway", "English Language", undefined, "Jan 2027", "August and January", undefined, "A CEA accredited intensive English programme. Finishing Level Four lets undergraduates start without a TOEFL or IELTS score, and it is charged at its own rates."),
+      pg("Master of Business Administration (MBA)", "MBA", "Business", undefined, "Aug 2027", "August and January", undefined, "Graduate tuition is charged per credit hour, so confirm the fee with graduate admissions."),
+      pg("MS Applied Artificial Intelligence", "MS", "Computer Science", undefined, "Aug 2027", "August and January", undefined, "Graduate tuition is charged per credit hour, so confirm the fee with graduate admissions."),
     ],
     campuses: [
       {
-        name: "Oxford Campus",
-        city: "Oxford",
-        address: "501 East High Street, Oxford, OH 45056",
-        description: "The main campus, with most teaching, the University Libraries, residence halls and the Office of Admission.",
+        name: "Hammond Campus",
+        city: "Hammond",
+        address: "2200 169th Street, Hammond, IN 46323",
+        description: "The larger campus near Chicago, with teaching buildings, labs, the library, residence halls and the International Student Services office.",
       },
       {
-        name: "Luxembourg Campus",
-        city: "Differdange",
-        description: "The John E. Dolibois European Center in Differdange, Luxembourg, a study abroad campus that hosts nearly 300 Miami students a year.",
+        name: "Westville Campus",
+        city: "Westville",
+        address: "1401 South US Highway 421, Westville, IN 46391",
+        description: "A smaller, quieter campus in LaPorte County, so check which programmes run there before you apply.",
       },
     ],
     documents: US_DOCUMENTS,
     faqs: usFaqs({
-      name: "Miami University Ohio",
+      name: "Purdue University Northwest",
       sector: "public",
-      place: "Oxford, Ohio",
+      place: "Hammond, Indiana",
       known:
-        "Miami University is known for strong undergraduate teaching, the Farmer School of Business, engineering and computing, education and a traditional residential campus in a small Ohio college town.",
+        "PNW is known for hands on engineering technology, nursing, business and computing programmes on two campuses in northwest Indiana, and for carrying the Purdue name.",
       ielts:
-        "Undergraduates need IELTS 6.5, TOEFL iBT 80, PTE 53 or Duolingo 110. Applicants with lower scores may be offered conditional admission through the American Culture and English Program. Some programmes may ask for more.",
+        "PNW accepts a Duolingo score of 100 to 110 for undergraduates, and other accepted tests have programme specific scores, so confirm with admissions. Students who finish Level Four of the English Language Program can start undergraduate study without a TOEFL or IELTS.",
       fees:
-        "For 2026/27, non-Ohio resident tuition and fees are $42,882 for two semesters on the Oxford campus. The Tuition Promise freezes costs for four years for each incoming class, and international scholarships can reduce the bill.",
+        "Tuition is charged per credit hour, with a $155 international student fee each semester and mandatory health insurance of about $570 a semester. The application fee is $25 for first time undergraduates and $75 for international graduate applicants. Confirm the 2026/27 rates on the bursar page.",
       intakes:
-        "You can start in fall (August) or spring (January). First year international applicants who apply by Miami's December deadline are considered for the most scholarships, so check the dates for your term.",
+        "You can start in fall or spring, and undergraduate deadlines are June 1 for fall and October 15 for spring. PNW allows deferral between fall and spring, so check the dates for your term and apply early.",
     }),
   },
 
-  // ── PDF row 119 ────────────────────────────────────────────────────────
+  // ── PDF row 124 ────────────────────────────────────────────────────────
   {
-    name: "Miami University Ohio Regionals",
-    city: "Middletown",
+    name: "Sacred Heart University",
+    city: "Fairfield",
     country: "United States",
-    institutionType: "Public university regional campuses",
-    website: "https://miamioh.edu/regionals",
-    founded: 1966,
+    institutionType: "Private Catholic university",
+    website: "https://www.sacredheart.edu",
+    founded: 1963,
     upcomingIntake: "Jan 2027",
-    programs: ["General Studies", "Applied Business", "Applied Science"],
+    programs: ["Finance", "Computer Science", "Health Informatics"],
     summary:
-      "The regional campuses of Miami University in Middletown and Hamilton, Ohio, offering associate degrees and the start of four year degrees, an 18 to 1 student to faculty ratio, an English Language Center and tuition well below the Oxford campus.",
+      "A private Catholic university in Fairfield, Connecticut, with an AACSB accredited business school, more than 80 undergraduate, graduate and doctoral programmes, accelerated 4+1 master's options, an English Language Institute and a campus in Luxembourg.",
     ieltsOverall: 6.5,
-    ieltsAlternatives: ["TOEFL iBT 80", "PTE 53", "Duolingo 110"],
+    ieltsAlternatives: ["TOEFL iBT 80", "Duolingo 110", "PTE 62", "iTEP 5"],
     ieltsNote:
-      "Oxford UG scores apply: IELTS 6.5, TOEFL iBT 80, PTE 53 or Duolingo 110. Lower scores may start in the Middletown English Language Center. Confirm first.",
-    tuitionMin: MIAMI_REGIONALS_YEARLY,
+      "UG: IELTS 6.5, TOEFL iBT 80, Duolingo 110 (production 85), PTE 62 or iTEP 5. Provisional entry via English Language Institute. Confirm on sacredheart.edu.",
+    tuitionMin: 50084,
+    tuitionMax: 54170,
     tuitionCurrency: "USD",
-    tuitionPeriod: "per year (2026/27, non-Ohio resident, 24 credits)",
+    tuitionPeriod: "per year (undergraduate, agent listing)",
     tuitionNote:
-      "Per credit hour: tuition $300.17, fees $30.67 and non-resident surcharge $534.97, about $20,779 for 24 credits. Confirm on the Miami One Stop page.",
+      "UG tuition $50,084 to $54,170 a year from agent listings, so the year is unclear. Graduate fees differ. Confirm on sacredheart.edu/educationcost.",
     overview:
-      "Miami University Regionals are the Hamilton and Middletown campuses of Miami University, plus the Voice of America Learning Center in West Chester. Middletown opened in 1966, and more than 3,600 students study on the regional campuses, where associate degrees, bachelor's degrees and the start of most four year degrees are offered. About 135 international students were enrolled in 2024.",
+      "Sacred Heart University is a private Catholic university in Fairfield, Connecticut, founded in 1963. It offers more than 80 undergraduate, graduate and doctoral programmes, and many majors have an accelerated 4+1 master's option. Its business school holds AACSB accreditation, and the university also runs a campus in Luxembourg and an English Language Institute for students who need more English.",
     studentLife:
-      "Regional students can join clubs and use TRIO support programmes and career fairs, and international students who need more English can start in the Middletown English Language Center. Health insurance is mandatory for international students at Regionals. Check the Regionals pages for current events.",
+      "The international admissions team supports new students, and there are clubs and activities on a residential campus on the Connecticut coast, within reach of New York City. Provisional acceptance and the English Language Institute help students who need more English. Check the student life pages for current clubs and events.",
     accommodation:
-      "Hamilton and Middletown are commuter campuses, so students usually find rooms or apartments nearby, while residence halls are on the separate Oxford campus. Check with the Regionals admission office for current housing help and prices.",
+      "Sacred Heart runs residence halls on the Fairfield campus, and some older and graduate students rent apartments nearby. Check the housing pages for current prices and booking dates, and apply early.",
     library:
-      "Each regional campus has a library with study spaces, computers and online resources, and students also reach Miami's wider online collections. Check the library pages for opening hours and services.",
+      "The Ryan Matura Library offers study spaces, computers and online collections, and tutoring and writing support help with coursework. Check the library pages for opening hours and services.",
     sports:
-      "Miami Regionals run their own athletics and recreation programmes, and students can join activities on campus. Check the Regionals athletics and recreation pages for current teams and memberships.",
-    wikipediaTitle: "Miami University Middletown",
-    ...seo("Miami University Ohio Regionals", "Middletown and Hamilton, Ohio"),
+      "Sacred Heart competes in NCAA Division I athletics as the Pioneers, and students can also use recreation programmes and club sports. Check the athletics and recreation pages for current teams and memberships.",
+    wikipediaTitle: "Sacred Heart University",
+    ...seo("Sacred Heart University", "Fairfield, Connecticut"),
     courses: [
-      ug("Associate in Arts, General Studies", "Associate", "General Studies", "2 Years", "Jan 2027", "Fall and spring", MIAMI_REGIONALS_YEARLY, "A two year transfer degree that covers general education and can lead on to a bachelor's degree."),
-      ug("Associate of Applied Business", "Associate", "Business", "2 Years", "Jan 2027", "Fall and spring", MIAMI_REGIONALS_YEARLY),
-      ug("Associate in Applied Science", "Associate", "Applied Science", "2 Years", "Jan 2027", "Fall and spring", MIAMI_REGIONALS_YEARLY),
-      ug("Bachelor's degree start (continue at Oxford or Regionals)", "Pathway", "General Studies", undefined, "Jan 2027", "Fall and spring", MIAMI_REGIONALS_YEARLY, "Beginning coursework for most four year Miami degrees, with the option to continue at Oxford, so confirm the route with admissions."),
-      ug("English Language Center", "Pathway", "English Language", undefined, "Jan 2027", "Fall and spring", undefined, "An intensive English programme in Middletown for conditional admission students, charged at its own rates."),
+      ug("BS Finance", "BS", "Finance", "4 Years", "Jan 2027", "January and August", 50084, "A business degree in Fairfield from the AACSB accredited Jack Welch College of Business."),
+      ug("BS Computer Science", "BS", "Computer Science", "4 Years", "Jan 2027", "January and August", 50084),
+      ug("BA Global Affairs", "BA", "Global Affairs", "4 Years", "Jan 2027", "January and August", 50084, "An eight semester arts degree on world affairs, culture and global challenges."),
+      pg("Master of Business Administration (MBA)", "MBA", "Business", undefined, "Jan 2027", "January and August", undefined, "Graduate fees differ from undergraduate fees, so confirm the fee with graduate admissions."),
+      pg("MS Healthcare Informatics", "MS", "Health Informatics", undefined, "Jan 2027", "January and August", undefined, "Needs IELTS 6.5 with no band below 6.5 or an equal score. Graduate fees differ, so confirm the fee with admissions."),
+      pg("MS Cybersecurity", "MS", "Cyber Security", undefined, "Jan 2027", "January and August", undefined, "Graduate fees differ from undergraduate fees, so confirm the fee with graduate admissions."),
     ],
     campuses: [
       {
-        name: "Hamilton Campus",
-        city: "Hamilton",
-        address: "1601 University Boulevard, Hamilton, OH 45011",
-        description: "A compact commuter campus on the Great Miami River offering associate degrees, bachelor's degrees and beginning coursework.",
+        name: "Fairfield Campus",
+        city: "Fairfield",
+        address: "5151 Park Avenue, Fairfield, CT 06825",
+        description: "The main campus in Connecticut, with most teaching, the Ryan Matura Library, residence halls, athletics facilities and the international admissions office.",
       },
       {
-        name: "Middletown Campus",
-        city: "Middletown",
-        address: "4200 North University Boulevard, Middletown, OH 45042",
-        description: "A commuter campus on about 141 acres near I-75, opened in 1966, and home to the English Language Center.",
+        name: "Luxembourg Campus",
+        city: "Luxembourg",
+        description: "Sacred Heart's campus in Luxembourg offers study abroad and selected programmes, so check which courses run there.",
+      },
+    ],
+    documents: US_DOCUMENTS,
+    faqs: usFaqs({
+      name: "Sacred Heart University",
+      sector: "private",
+      place: "Fairfield, Connecticut",
+      known:
+        "Sacred Heart is known for business, health and nursing programmes, accelerated 4+1 master's options, Division I athletics and a residential campus in Connecticut within reach of New York City.",
+      ielts:
+        "Undergraduates need IELTS 6.5, TOEFL iBT 80 (4 on the new scale), Duolingo 110 with a production score of 85, PTE 62 or iTEP 5. MS Healthcare Informatics asks for IELTS 6.5 with no band below 6.5. Provisional acceptance is possible through the English Language Institute.",
+      fees:
+        "Agent listings show undergraduate tuition of about $50,084 to $54,170 a year, and it is not clear which year each figure belongs to. Graduate fees differ by programme, and room, board and insurance are extra, so confirm on sacredheart.edu/educationcost.",
+      intakes:
+        "You can start in fall (August or September) or spring (January). Sacred Heart prefers international applications by November 1 for January and March 1 for September, so check the dates for your term and apply early.",
+    }),
+  },
+
+  // ── PDF row 125 ────────────────────────────────────────────────────────
+  {
+    name: "Santa Monica College",
+    city: "Santa Monica",
+    country: "United States",
+    institutionType: "Public community college",
+    website: "https://www.smc.edu",
+    founded: 1929,
+    upcomingIntake: "Spring 2027",
+    programs: ["Business", "Computer Science", "Interaction Design"],
+    summary:
+      "A public community college in Santa Monica, California, close to Los Angeles, known as a leading California transfer college, with an Intensive English Program, a dedicated International Education Center and non-resident costs of about $486 per unit.",
+    ieltsNote:
+      "SMC asks for proof of English unless your first language is English or you join its Intensive English Program. Check accepted tests on smc.edu.",
+    tuitionMin: 11664,
+    tuitionCurrency: "USD",
+    tuitionPeriod: "per year (2026/27, 24 units)",
+    tuitionNote:
+      "$486 per unit all in, about $11,664 for 24 units, plus small fees. Fall 2026 to Spring 2027 estimate is $34,000. Confirm on smc.edu.",
+    overview:
+      "Santa Monica College is a public community college in Santa Monica, California, founded in 1929 and widely known as a leading transfer college in the state. International F-1 students must take at least 12 units a semester, and the college also offers an Intensive English Program and a bachelor's degree in Interaction Design. Students can apply for fall, winter, spring and summer terms.",
+    studentLife:
+      "The International Education Center gives dedicated counselling and support, and the Intensive English Program prepares students for credit classes. SMC presents itself as California's number one transfer college, and students can join clubs and activities on campus. Check the international pages for current events.",
+    accommodation:
+      "The SMC cost estimate assumes a homestay with two meals a day at about $1,541 a month, and students can also share apartments in and around Santa Monica. Check the International Education Center pages for current housing help and prices.",
+    library:
+      "The SMC library offers study spaces, computers and online resources, and tutoring and counselling support coursework and transfer plans. Check the library pages for opening hours and services.",
+    sports:
+      "SMC competes in athletics as the Corsairs, and students can also join clubs and recreation on campus. Check the athletics pages for current teams.",
+    wikipediaTitle: "Santa Monica College",
+    ...seo("Santa Monica College", "Santa Monica, California"),
+    courses: [
+      ug("Associate in Science for Transfer, Business Administration", "Associate", "Business", "2 Years", "Spring 2027", "Fall, winter, spring and summer", 11664, "The main pathway to a business administration degree at a California State University."),
+      ug("Associate in Science for Transfer, Computer Science", "Associate", "Computer Science", "2 Years", "Spring 2027", "Fall, winter, spring and summer", 11664),
+      ug("Bachelor of Science, Interaction Design", "BS", "Design", "2 Years", "Spring 2027", "Fall and spring", undefined, "An upper division degree with an extra $84 per unit surcharge on top of the normal per unit cost, so confirm the total with admissions."),
+      ug("Intensive English Program", "Pathway", "English Language", undefined, "Spring 2027", "Fall, winter, spring and summer", 1000, "A full time English programme with 20 contact hours a week that prepares students for credit classes.", "per month (2026/27)"),
+    ],
+    campuses: [
+      {
+        name: "Main Campus",
+        city: "Santa Monica",
+        address: "1900 Pico Boulevard, Santa Monica, CA 90405",
+        description: "The main campus, with teaching buildings, the library, the International Education Center, counselling and athletics facilities.",
       },
       {
-        name: "Voice of America Learning Center",
-        city: "West Chester",
-        address: "7847 VOA Park Drive, West Chester, OH 45069",
-        description: "A learning center between Cincinnati and Dayton offering selected undergraduate and graduate courses from the Regional and Oxford campuses.",
+        name: "Other Santa Monica Sites",
+        city: "Santa Monica",
+        description: "SMC also teaches at the Bundy Campus, the Airport Arts Campus and other sites, so check where your classes are held.",
       },
     ],
     documents: {
       Undergraduate: US_DOCUMENTS.Undergraduate,
     },
     faqs: usFaqs({
-      name: "Miami University Ohio Regionals",
+      name: "Santa Monica College",
       sector: "public",
-      place: "Middletown and Hamilton, Ohio",
+      place: "Santa Monica, California",
       known:
-        "Miami Regionals are known for low cost Miami degrees, small classes, associate degrees and an English Language Center, on commuter campuses in southwest Ohio.",
+        "SMC is known for its transfer pathways to University of California and California State University campuses, a large choice of programmes, an Intensive English Program and a location close to Los Angeles.",
       ielts:
-        "Miami's undergraduate scores are IELTS 6.5, TOEFL iBT 80, PTE 53 or Duolingo 110. Applicants with lower scores can be considered for conditional admission through the Middletown English Language Center, so confirm with Regionals admission.",
+        "SMC asks for proof of English unless your first language is English or you join its Intensive English Program, and the accepted tests and scores are listed by the International Education Center. Confirm the current scores before you apply.",
       fees:
-        "For 2026/27, a first time non-Ohio resident pays about $20,779 for 24 credits: tuition $300.17, fees $30.67 and a $534.97 non-resident surcharge per credit hour. The Tuition Promise freezes this rate for eight semesters.",
+        "For 2026/27, non-resident tuition and fees are $486 per unit, about $11,664 for 24 units, and F-1 students must take at least 12 units a semester. SMC estimates about $34,000 in total expenses for Fall 2026 to Spring 2027, including homestay costs of about $1,541 a month and insurance.",
       intakes:
-        "You can start in fall (August) or spring (January), and admission for new students is rolling, so apply early to leave time for your I-20 and visa. Check the Regionals admission page for the dates for your term.",
+        "You can start in fall, winter, spring or summer. For applicants outside the USA the deadlines are November 15, 2026 for winter 2027, January 5, 2027 for spring 2027 and May 15, 2027 for summer 2027. Apply early to leave time for your I-20 and visa.",
     }),
   },
 
-  // ── PDF row 120 ────────────────────────────────────────────────────────
+  // ── PDF row 126 ────────────────────────────────────────────────────────
   {
-    name: "Mt. San Antonio College",
-    city: "Walnut",
+    name: "North Seattle College",
+    city: "Seattle",
     country: "United States",
     institutionType: "Public community college",
-    website: "https://www.mtsac.edu",
-    founded: 1945,
-    upcomingIntake: "Feb 2027",
-    programs: ["Business", "Computer Science", "Engineering"],
+    website: "https://www.northseattle.edu",
+    founded: 1970,
+    upcomingIntake: "Jan 2027",
+    programs: ["University Transfer", "Business", "Computer Science"],
     summary:
-      "A public community college in Walnut, California, about 25 miles east of Los Angeles, with more than 400 degree and certificate programmes, transfer pathways to California universities, a $50 application fee and a low English entry of IELTS 4.5.",
-    ieltsOverall: 4.5,
-    ieltsAlternatives: ["TOEFL iBT 3.5 (new scale)", "Duolingo 75", "PTE 41", "iTEP 3.5"],
-    ieltsNote:
-      "IELTS 4.5, TOEFL iBT 3.5 (new scale), Duolingo 75, PTE 41, iTEP 3.5 or Oxford ELLT 4. Partner English schools such as ELS Level 109 also count.",
-    tuitionMin: 11520,
+      "A public community college in the north end of Seattle, Washington, part of the three college Seattle Colleges district, with university transfer degrees, applied bachelor's degrees, the Institute of English and no English test needed to apply.",
+    ieltsOverall: 6.0,
+    ieltsAlternatives: ["TOEFL iBT 64"],
+    ieltsNote: SEATTLE_ENGLISH_NOTE,
+    tuitionMin: 11283,
     tuitionCurrency: "USD",
-    tuitionPeriod: "per year (2026/27, 24 units)",
-    tuitionNote:
-      "Non-resident tuition $434 per unit plus enrollment fee $46 per unit, 24 units. I-20 total is $27,942 with insurance and living costs. Confirm on mtsac.edu.",
+    tuitionPeriod: "per year (2026/27, 9 months)",
+    tuitionNote: SEATTLE_TUITION_NOTE,
     overview:
-      "Mt. San Antonio College, known as Mt. SAC, is a public community college in Walnut, California, about 25 miles east of Los Angeles, and it began in 1945. It offers more than 400 degree and certificate programmes and is known as a strong transfer college to universities such as UCLA and USC. International F-1 students can apply for fall, spring and summer.",
+      "North Seattle College is a public community college in Seattle, Washington, and part of the Seattle Colleges district with Seattle Central and South Seattle. International students follow university transfer, career training and bachelor of applied science pathways, and the district Institute of English offers College Bridge and Intensive English for students who need more English.",
     studentLife:
-      "The International Student Center runs events and workshops and the Global Pals programme, and every F-1 student completes a mandatory orientation before classes. Student health insurance is mandatory for international students. Check the international student pages for current events.",
+      "The Seattle Colleges international office runs orientation and support, and students can join clubs and activities on campus. International students can also apply for district scholarships and tuition support awards. Check the North Seattle College and international pages for current clubs and events.",
     accommodation:
-      "The I-20 budget uses $9,500 a year for housing and $4,000 for food, and students arrange housing off campus. The international office has a housing and transportation page with current options and tips.",
+      "The colleges are commuter campuses, and the cost estimate budgets $13,338 for housing and food for nine months. Students usually rent rooms or apartments in Seattle, so ask the international office about current housing help and prices.",
     library:
-      "The Mt. SAC library offers study spaces, computers and online resources, and counselling and tutoring support coursework and transfer plans. Check the library pages for opening hours and services.",
+      "The college library offers study spaces, computers and online resources, and tutoring and writing help support coursework. Check the library pages for opening hours and services.",
     sports:
-      "Mt. SAC competes in athletics as the Mounties and hosts the well known Mt. SAC Relays track meet, and students can also join clubs and recreation on campus. Check the athletics pages for current teams.",
-    wikipediaTitle: "Mt. San Antonio College",
-    ...seo("Mt. San Antonio College", "Walnut, California"),
+      "The college offers student clubs and recreation, and athletics options differ between the three Seattle Colleges. Check the North Seattle College pages for current teams and clubs.",
+    wikipediaTitle: "North Seattle College",
+    ...seo("North Seattle College", "Seattle, Washington"),
     courses: [
-      ug("Associate in Science for Transfer, Business Administration", "Associate", "Business", "2 Years", "Feb 2027", "Fall and spring", 11520, "The main pathway to a business administration degree at a California State University."),
-      ug("Associate in Science for Transfer, Computer Science", "Associate", "Computer Science", "2 Years", "Feb 2027", "Fall and spring", 11520),
-      ug("Associate in Science, Engineering", "Associate", "Engineering", "2 Years", "Feb 2027", "Fall and spring", 11520, "Prepares students to move on to a four year engineering degree after transfer."),
-      ug("Associate in Arts for Transfer, Psychology", "Associate", "Psychology", "2 Years", "Feb 2027", "Fall and spring", 11520),
+      ug("Associate in Arts, Direct Transfer Agreement (AA-DTA)", "Associate", "University Transfer", "2 Years", "Jan 2027", "Fall, winter, spring and summer", 11283, "A two year transfer degree that prepares students to move on to a four year university in Washington."),
+      ug("Associate in Business, transfer pathway", "Associate", "Business", "2 Years", "Jan 2027", "Fall, winter, spring and summer", 11283),
+      ug("Bachelor of Applied Science (BAS), years 3 and 4", "BAS", "Applied Studies", "2 Years", "Jan 2027", "Fall, winter, spring and summer", 21783, "An applied bachelor's degree in selected fields, so confirm which BAS programmes are open to international students."),
+      ug("College Bridge", "Pathway", "English Language", undefined, "Jan 2027", "Fall, winter, spring and summer", 11283, "A pathway for students who plan to take full time college classes but still need to improve their English."),
+      ug("Intensive English", "Pathway", "English Language", undefined, "Jan 2027", "Fall, winter, spring and summer", 11694, "An English programme for beginner and high beginner students, run by the Seattle Colleges Institute of English."),
     ],
     campuses: [
       {
-        name: "Walnut Campus",
-        city: "Walnut",
-        address: "1100 North Grand Avenue, Walnut, CA 91789",
-        description: "The single main campus in the San Gabriel Valley, with teaching buildings, the library, the International Student Center and athletics facilities.",
+        name: "North Seattle Campus",
+        city: "Seattle",
+        address: "9600 College Way North, Seattle, WA 98103",
+        description: "The main campus in north Seattle, with teaching buildings, labs, the library and student services.",
       },
     ],
-    documents: {
-      Undergraduate: [
-        ["Identity", "Passport valid for at least 6 months beyond your arrival"],
-        ["Academic", "Proof of high school completion (required if under 18)"],
-        ["Academic", "English language test result (or an accepted exemption)"],
-        ["Financial", "Bank letter or statement with an official signature or seal, dated within six months"],
-        ["Visa", "Form I-20 issued by the college"],
-        ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
-        ["Visa", "Tuberculosis skin test dated within six months"],
-      ],
-    },
+    documents: SEATTLE_DOCUMENTS,
     faqs: usFaqs({
-      name: "Mt. San Antonio College",
+      name: "North Seattle College",
       sector: "public",
-      place: "Walnut, California",
+      place: "Seattle, Washington",
       known:
-        "Mt. SAC is known for its transfer pathways to University of California and California State University campuses, a very wide choice of programmes and a large campus near Los Angeles.",
-      ielts:
-        "You need IELTS 4.5, TOEFL iBT 3.5 on the new scale, Duolingo 75, PTE 41, iTEP 3.5 or Oxford ELLT 4. Citizens of some English speaking countries are exempt, and completing a partner English school level such as ELS 109 also counts.",
-      fees:
-        "For 2026/27, non-resident tuition is $434 per unit and the enrollment fee is $46 per unit, about $11,520 for 24 units. The I-20 total is $27,942 with insurance and living costs, and the application fee is $50.",
-      intakes:
-        "You can start in fall, spring or summer. For spring 2027 the application deadline is November 15, 2026 and classes begin on February 22, 2027. The fall deadline was June 15 for 2026, so expect a similar date for 2027.",
+        "North Seattle College is known for university transfer pathways, applied bachelor's degrees, small classes and the Institute of English that supports international students across the Seattle Colleges district.",
+      ielts: SEATTLE_ENGLISH_ANSWER,
+      fees: SEATTLE_FEES_ANSWER,
+      intakes: SEATTLE_INTAKES_ANSWER,
     }),
   },
 
-  // ── PDF row 121 ────────────────────────────────────────────────────────
+  // ── PDF row 127 ────────────────────────────────────────────────────────
   {
-    name: "New York Film Academy",
-    city: "New York",
+    name: "Seattle Central College",
+    city: "Seattle",
     country: "United States",
-    institutionType: "Private film and media arts school",
-    website: "https://www.nyfa.edu",
-    founded: 1992,
+    institutionType: "Public community college",
+    website: "https://www.seattlecentral.edu",
+    founded: 1966,
     upcomingIntake: "Jan 2027",
-    programs: ["Filmmaking", "Acting for Film", "Photography"],
+    programs: ["University Transfer", "Allied Health", "Culinary Arts"],
     summary:
-      "A private film and performing arts school with campuses in New York City and Los Angeles (Burbank), offering AFA, BFA and MFA degrees in filmmaking, acting, photography and more, with English entry from IELTS 6.0 and a $75 application fee.",
+      "A public community college on Capitol Hill near downtown Seattle, part of the Seattle Colleges district, home to the Institute of English, with university transfer degrees, allied health and culinary pathways and no English test needed to apply.",
     ieltsOverall: 6.0,
-    ieltsAlternatives: ["TOEFL iBT 68 (4 on the new scale)", "Duolingo 105", "MET 55"],
-    ieltsNote:
-      "UG and AFA: IELTS 6.0, TOEFL 68 (4 new scale), Duolingo 105. Master's: IELTS 6.5, TOEFL 79 (4.5), Duolingo 120. Pathway Track for lower scores.",
-    tuitionMin: 19500,
-    tuitionMax: 20500,
+    ieltsAlternatives: ["TOEFL iBT 64"],
+    ieltsNote: SEATTLE_ENGLISH_NOTE,
+    tuitionMin: 11283,
     tuitionCurrency: "USD",
-    tuitionPeriod: "per semester (Fall 2026 and Spring 2027)",
-    tuitionNote:
-      "Filmmaking tuition $19,500 per semester (MFA $20,500) plus a $2,000 departmental fee and smaller fees each semester. Confirm on nyfa.edu.",
+    tuitionPeriod: "per year (2026/27, 9 months)",
+    tuitionNote: SEATTLE_TUITION_NOTE,
     overview:
-      "New York Film Academy was founded in 1992 and teaches film, media and performing arts through hands on, project based study at campuses in New York City and Los Angeles, with a further campus in Florence, Italy. It awards AFA, BFA and MFA degrees as well as one and two year certificates, and its students come from more than 120 countries.",
+      "Seattle Central College is a public community college on Capitol Hill, close to downtown Seattle, and part of the Seattle Colleges district with North Seattle and South Seattle. It hosts the Seattle Colleges Institute of English, which serves students from all three colleges, and international students follow university transfer, career training and applied bachelor's pathways.",
     studentLife:
-      "Students learn by doing, writing, shooting and directing their own films, and the school runs a film festival department, career and alumni services and guest speaker events. International students who need more English can join the Pathway Track while earning degree credits. Check the student life pages for current activities.",
+      "The Seattle Colleges international office runs orientation and support, and the Institute of English on this campus helps students build their English. International students can apply for district scholarships and tuition support awards. Check the Seattle Central and international pages for current clubs and events.",
     accommodation:
-      "NYFA publishes student housing information on its housing page, and many students share apartments near the New York and Burbank campuses. Students also budget for their own production costs on top of tuition, so check the cost of attendance pages for current housing prices.",
+      "The colleges are commuter campuses, and the cost estimate budgets $13,338 for housing and food for nine months. Students usually rent rooms or apartments in Seattle, so ask the international office about current housing help and prices.",
     library:
-      "Each campus offers study and screening spaces and equipment support for productions, along with online resources for coursework. Check the NYFA pages for current opening hours and services.",
+      "The college library offers study spaces, computers and online resources, and tutoring and writing help support coursework. Check the library pages for opening hours and services.",
     sports:
-      "NYFA is a specialist arts school without varsity athletics, so student life centres on film projects, festivals and social events, while students can use gyms and recreation in New York and Los Angeles. Check the student life pages for current activities.",
-    wikipediaTitle: "New York Film Academy",
-    ...seo("New York Film Academy", "New York City and Burbank"),
+      "The college offers student clubs and recreation, and athletics options differ between the three Seattle Colleges. Check the Seattle Central pages for current teams and clubs.",
+    wikipediaTitle: "Seattle Central College",
+    ...seo("Seattle Central College", "Seattle, Washington"),
     courses: [
-      ug("BFA Filmmaking", "BFA", "Film and Media", "3 Years", "Jan 2027", "January, May and August", 19500, "A nine semester degree in New York or Los Angeles where students write, shoot and direct their own films.", "per semester (Fall 2026 and Spring 2027)"),
-      ug("BFA Acting for Film", "BFA", "Acting", "3 Years", "Jan 2027", "January, May and August", undefined, "An acting degree for film built on scene study, voice, movement and audition technique, so confirm the semester fee with admissions."),
-      ug("AFA Filmmaking", "AFA", "Film and Media", "2 Years", "Jan 2027", "January, May and August", 19500, "A six semester associate degree in Los Angeles in which students make several of their own short films.", "per semester (Fall 2026 and Spring 2027)"),
-      pg("MFA Filmmaking", "MFA", "Film and Media", "2 Years", "Jan 2027", "January and August", 20500, "A six semester graduate degree in Los Angeles covering directing, cinematography, editing, producing and sound.", "per semester (Fall 2026 and Spring 2027)"),
-      pg("MFA Photography", "MFA", "Photography", "2 Years", "Jan 2027", "January and August", undefined, "A graduate photography degree in Los Angeles, so confirm the semester fee with admissions."),
+      ug("Associate in Arts, Direct Transfer Agreement (AA-DTA)", "Associate", "University Transfer", "2 Years", "Jan 2027", "Fall, winter, spring and summer", 11283, "A two year transfer degree that prepares students to move on to a four year university in Washington."),
+      ug("Associate in Applied Science Transfer, Allied Health", "Associate", "Allied Health", "2 Years", "Jan 2027", "Fall, winter, spring and summer", 11283),
+      ug("Bachelor of Applied Science (BAS), years 3 and 4", "BAS", "Applied Studies", "2 Years", "Jan 2027", "Fall, winter, spring and summer", 21783, "An applied bachelor's degree in selected fields, so confirm which BAS programmes are open to international students."),
+      ug("College Bridge", "Pathway", "English Language", undefined, "Jan 2027", "Fall, winter, spring and summer", 11283, "A pathway for students who plan to take full time college classes but still need to improve their English."),
+      ug("Intensive English", "Pathway", "English Language", undefined, "Jan 2027", "Fall, winter, spring and summer", 11694, "An English programme for beginner and high beginner students, taught at Seattle Central by the Institute of English."),
     ],
     campuses: [
       {
-        name: "New York City Campus",
-        city: "New York",
-        address: "17 Battery Place, New York, NY 10004",
-        description: "The original campus near Battery Park in lower Manhattan, offering BFA and other programmes in film, media and performing arts.",
-      },
-      {
-        name: "Los Angeles Campus",
-        city: "Burbank",
-        address: "3300 Riverside Drive, Burbank, CA 91505",
-        description: "The Burbank campus near the major studios, where all NYFA degree levels are taught, including the AFA, BFA and MFA programmes.",
+        name: "Seattle Central Campus",
+        city: "Seattle",
+        address: "1701 Broadway, Seattle, WA 98122",
+        description: "The main campus on Capitol Hill near downtown, with teaching buildings, the library, student services and the Institute of English.",
       },
     ],
-    documents: {
-      Undergraduate: [
-        ["Identity", "Passport"],
-        ["Academic", "High school transcript, translated and evaluated if from outside the USA"],
-        ["Academic", "Narrative statement"],
-        ["Academic", "Two letters of recommendation"],
-        ["Academic", "Creative portfolio or audition"],
-        ["Academic", "English language test result"],
-        ["Financial", "Bank statement showing proof of funds"],
-        ["Visa", "Form I-20 issued by the school"],
-        ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
-      ],
-      Postgraduate: [
-        ["Identity", "Passport"],
-        ["Academic", "Degree certificate and transcripts, evaluated if from outside the USA"],
-        ["Academic", "Narrative statement"],
-        ["Academic", "Letters of recommendation"],
-        ["Academic", "CV or resume"],
-        ["Academic", "Creative portfolio or audition"],
-        ["Academic", "English language test result"],
-        ["Financial", "Bank statement showing proof of funds"],
-        ["Visa", "Form I-20 issued by the school"],
-        ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
-      ],
-    },
+    documents: SEATTLE_DOCUMENTS,
     faqs: usFaqs({
-      name: "New York Film Academy",
-      sector: "private",
-      place: "New York City and Burbank, California",
+      name: "Seattle Central College",
+      sector: "public",
+      place: "Seattle, Washington",
       known:
-        "NYFA is known for hands on, project based programmes in filmmaking, acting, photography, producing and media, where students make their own films from the first term.",
-      ielts:
-        "For associate and bachelor's programmes, NYFA prefers IELTS 6.0, TOEFL 68 (4 on the new scale) or Duolingo 105. For master's programmes it prefers IELTS 6.5, TOEFL 79 (4.5) or Duolingo 120. Students below these scores can join the Pathway Track.",
-      fees:
-        "For Fall 2026 and Spring 2027, Filmmaking AFA and BFA tuition is $19,500 per semester and MFA Filmmaking is $20,500, plus a $2,000 departmental fee and smaller activity, technology and wellness fees. Other programmes differ, so confirm your course fee.",
-      intakes:
-        "Most degrees start three times a year, in January, May and August, though some programmes start only in certain terms. The application fee is $75, and a deposit secures your place after admission, so apply early for your I-20 and visa.",
+        "Seattle Central College is known for university transfer pathways, allied health and culinary programmes, a city centre location on Capitol Hill and the Institute of English for international students.",
+      ielts: SEATTLE_ENGLISH_ANSWER,
+      fees: SEATTLE_FEES_ANSWER,
+      intakes: SEATTLE_INTAKES_ANSWER,
+    }),
+  },
+
+  // ── PDF row 128 ────────────────────────────────────────────────────────
+  {
+    name: "South Seattle College",
+    city: "Seattle",
+    country: "United States",
+    institutionType: "Public community college",
+    website: "https://southseattle.edu",
+    founded: 1970,
+    upcomingIntake: "Jan 2027",
+    programs: ["University Transfer", "Business", "Information Technology"],
+    summary:
+      "A public community college in southwest Seattle, part of the three college Seattle Colleges district, with university transfer degrees, career training, applied bachelor's degrees and the Institute of English, and no English test needed to apply.",
+    ieltsOverall: 6.0,
+    ieltsAlternatives: ["TOEFL iBT 64"],
+    ieltsNote: SEATTLE_ENGLISH_NOTE,
+    tuitionMin: 11283,
+    tuitionCurrency: "USD",
+    tuitionPeriod: "per year (2026/27, 9 months)",
+    tuitionNote: SEATTLE_TUITION_NOTE,
+    overview:
+      "South Seattle College is a public community college in southwest Seattle, and part of the Seattle Colleges district with North Seattle and Seattle Central. International students follow university transfer, career training and bachelor of applied science pathways, and the district Institute of English offers College Bridge and Intensive English for students who need more English.",
+    studentLife:
+      "The Seattle Colleges international office runs orientation and support, and students can join clubs and activities on campus. International students can also apply for district scholarships and tuition support awards. Check the South Seattle College and international pages for current clubs and events.",
+    accommodation:
+      "The colleges are commuter campuses, and the cost estimate budgets $13,338 for housing and food for nine months. Students usually rent rooms or apartments in Seattle, so ask the international office about current housing help and prices.",
+    library:
+      "The college library offers study spaces, computers and online resources, and tutoring and writing help support coursework. Check the library pages for opening hours and services.",
+    sports:
+      "The college offers student clubs and recreation, and athletics options differ between the three Seattle Colleges. Check the South Seattle College pages for current teams and clubs.",
+    wikipediaTitle: "South Seattle College",
+    ...seo("South Seattle College", "Seattle, Washington"),
+    courses: [
+      ug("Associate in Arts, Direct Transfer Agreement (AA-DTA)", "Associate", "University Transfer", "2 Years", "Jan 2027", "Fall, winter, spring and summer", 11283, "A two year transfer degree that prepares students to move on to a four year university in Washington."),
+      ug("Associate in Business, transfer pathway", "Associate", "Business", "2 Years", "Jan 2027", "Fall, winter, spring and summer", 11283),
+      ug("Bachelor of Applied Science (BAS), years 3 and 4", "BAS", "Applied Studies", "2 Years", "Jan 2027", "Fall, winter, spring and summer", 21783, "An applied bachelor's degree in selected fields, so confirm which BAS programmes are open to international students."),
+      ug("College Bridge", "Pathway", "English Language", undefined, "Jan 2027", "Fall, winter, spring and summer", 11283, "A pathway for students who plan to take full time college classes but still need to improve their English."),
+      ug("Intensive English", "Pathway", "English Language", undefined, "Jan 2027", "Fall, winter, spring and summer", 11694, "An English programme for beginner and high beginner students, run by the Seattle Colleges Institute of English."),
+    ],
+    campuses: [
+      {
+        name: "South Seattle Campus",
+        city: "Seattle",
+        address: "6000 16th Avenue SW, Seattle, WA 98106",
+        description: "The main campus in southwest Seattle, with teaching buildings, labs, the library and student services.",
+      },
+      {
+        name: "Georgetown Campus",
+        city: "Seattle",
+        description: "A second South Seattle College site that is used for trades and apprenticeship training, so check which courses run there.",
+      },
+    ],
+    documents: SEATTLE_DOCUMENTS,
+    faqs: usFaqs({
+      name: "South Seattle College",
+      sector: "public",
+      place: "Seattle, Washington",
+      known:
+        "South Seattle College is known for university transfer pathways, hands on career training, applied bachelor's degrees and the Institute of English that supports international students across the Seattle Colleges district.",
+      ielts: SEATTLE_ENGLISH_ANSWER,
+      fees: SEATTLE_FEES_ANSWER,
+      intakes: SEATTLE_INTAKES_ANSWER,
     }),
   },
 ];

@@ -1,22 +1,19 @@
 //src/app/portal/page.tsx
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight } from "lucide-react";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { getPortalCounsellor } from "@/lib/portal-counsellor";
 import { TerminalCard } from "@/components/portal/terminal-card";
 import { ContinueList } from "@/components/portal/continue-list";
 import { CounsellorCard } from "@/components/portal/counsellor-card";
+import { HeroBanner } from "@/components/portal/hero-banner";
 import { computeOverallProgress, groupFieldsByStep, mapApplicationFields } from "@/components/portal/types";
 import { CoursesPreview, InstitutionsPreview } from "@/components/dashboard/catalog-lists";
-import { elevation1, filledButton } from "@/components/dashboard/styles";
-import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 // The portal's first page is the one place that shows everything:
-//   greeting and matches banner -> applications (continue + terminals)
+//   hero banner (greeting + find a course) -> applications (continue + terminals)
 //   -> courses strip -> institutions strip
 // The two strips are swipeable previews. "Show all" opens /portal/courses and
 // /portal/institutions, which hold the full lists.
@@ -69,20 +66,9 @@ export default async function PortalDashboardPage() {
 
   return (
     <div className="space-y-12">
-      {/* Greeting + matches banner */}
+      {/* Hero banner: greeting, find a course, start an application */}
       <section>
-        <h1 className="font-display text-3xl font-semibold leading-tight text-ink sm:text-4xl">
-          We&apos;ve personalised your space{firstName ? "," : ""}{" "}
-          {firstName && <span className="text-ruby-600">{firstName}</span>}
-        </h1>
-
-        <div className={cn("mt-6 rounded-3xl border border-ruby-100 bg-ruby-50 p-6", elevation1)}>
-          <h2 className="text-xl font-semibold text-ink">Not sure what you qualify for?</h2>
-          <p className="mt-1 text-neutral-600">Get your best-fit options in 30 seconds.</p>
-          <Link href="/portal/courses" className={cn(filledButton, "mt-5")}>
-            Show my matches <ArrowRight size={18} />
-          </Link>
-        </div>
+        <HeroBanner firstName={firstName} />
 
         {/* On a phone the sidebar is hidden, so the counsellor sits here instead. */}
         <div className="mt-4 lg:hidden">
