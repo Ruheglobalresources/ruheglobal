@@ -307,7 +307,8 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
         aria-label="Chat with your counsellor"
         inert={!chatOpen}
         className={cn(
-          "fixed bottom-0 right-0 top-16 z-40 flex w-full flex-col border-l border-neutral-200 bg-white lg:z-20 lg:w-[var(--portal-chat-width)]",
+          // lg:top-0 is the change: there is no desktop top bar, so the chat starts at the very top
+          "fixed bottom-0 right-0 top-16 z-40 flex w-full flex-col border-l border-neutral-200 bg-white lg:top-0 lg:z-20 lg:w-[var(--portal-chat-width)]",
           chatOpen ? "translate-x-0" : "invisible translate-x-full",
           ready && !dragging && "transition-[translate,visibility] duration-200 ease-out"
         )}

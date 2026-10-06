@@ -19,6 +19,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 export const LEFT_EXPANDED = 248; // px (was 288)
@@ -26,6 +27,13 @@ export const LEFT_COLLAPSED = 72; // px (was 76): one 48px icon slot plus 12px p
 export const CHAT_MIN = 300; // px (was 320)
 export const CHAT_DEFAULT = CHAT_MIN; // the chat starts at its smallest width; people can drag it wider
 export const CHAT_MAX = 760;
+
+// Space kept on the right of the page. While the chat is open the page ends at the
+// chat's border, so a normal gutter is enough. While it is closed, the "open chat"
+// tab floats on the right edge (44px wide), so the page keeps room for it instead
+// of sliding underneath.
+const GUTTER = "1.5rem";
+const GUTTER_WITH_TAB = "3.75rem";
 
 const KEY_LEFT = "portal:left-collapsed";
 const KEY_OPEN = "portal:chat-open";
@@ -147,6 +155,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
     "--portal-left": `${leftCollapsed ? LEFT_COLLAPSED : LEFT_EXPANDED}px`,
     "--portal-right": `${chatOpen ? chatWidth : 0}px`,
     "--portal-chat-width": `${chatWidth}px`,
+    "--portal-right-gutter": chatOpen ? GUTTER : GUTTER_WITH_TAB,
   } as CSSProperties;
 
   return (
@@ -158,22 +167,33 @@ export function PortalShell({ children }: { children: ReactNode }) {
   );
 }
 
-// The page area. On desktop it leaves room for whichever sidebars are showing.
+// Pages that are a form (the application wizard at /portal/<terminal>/<application>)
+// read best at a fixed width. Everything else (dashboard, courses, institutions,
+// a terminal's application list) is a grid or a strip of cards and fills the space.
+const isFormPage = (pathname: string) =>
+  /^\/portal\/(?!courses(\/|$)|institutions(\/|$))[^/]+\/[^/]+/.test(pathname);
+
+// The page area. On desktop it leaves room for whichever sidebars are showing and
+// uses ALL of the rest: collapse the menu or the chat and the page grows into the
+// freed space (there used to be a centred max-w-5xl box here, which turned that
+// space into empty margins).
 // There is no top bar on desktop any more, so it starts near the top (lg:pt-8);
 // phones and tablets still have the top bar, hence pt-24 below lg.
 // The left space follows the pinned width only, so hovering a collapsed rail
 // opens it over the page without pushing anything.
 export function PortalMain({ children }: { children: ReactNode }) {
   const { ready, dragging } = usePortalShell();
+  const pathname = usePathname();
 
   return (
     <main
       className={cn(
-        "px-4 pb-28 pt-24 sm:px-6 lg:pb-12 lg:pl-[calc(var(--portal-left)+1.5rem)] lg:pr-[calc(var(--portal-right)+1.5rem)] lg:pt-8",
+        "px-4 pb-28 pt-24 sm:px-6 lg:pb-12 lg:pl-[calc(var(--portal-left)+1.5rem)] lg:pr-[calc(var(--portal-right)+var(--portal-right-gutter))] lg:pt-8",
         ready && !dragging && "lg:transition-[padding] lg:duration-150 lg:ease-out motion-reduce:lg:transition-none"
       )}
     >
-      <div className="mx-auto max-w-5xl">{children}</div>
+      {/* min-w-0 lets the card strips shrink with the page instead of pushing it wider */}
+      <div className={cn("w-full min-w-0", isFormPage(pathname) && "mx-auto max-w-5xl")}>{children}</div>
     </main>
   );
 }
