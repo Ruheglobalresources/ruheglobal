@@ -1,93 +1,114 @@
-// prisma/institutionBatches/batch08.ts
+// prisma/institutionBatches/batch21.ts
 //
-// Batch 08: rows 39 to 43 of RGR University List new.pdf (all United Kingdom).
-//   39  University of Greenwich
-//   40  Heriot-Watt University
-//   41  University of Hertfordshire
-//   42  University of Huddersfield
-//   43  University of Hull
+// Batch 21: rows 115 to 121 of RGR University List new.pdf (all USA).
+//   115  Hult International Business School
+//   116  Kent State University
+//   117  Los Medanos College (CCCCD)
+//   118  Miami University Ohio (Oxford)
+//   119  Miami University Ohio Regionals (Middletown and Hamilton)
+//   120  Mt. San Antonio College
+//   121  New York Film Academy
 //
-// That gives 5 institutions from 5 PDF rows. Nothing needed merging, no countries needed
-// correcting, and none of these PDF lines were joined by a parsing error.
-// Batch 07 ended at row 38, so this batch carries on from row 39.
+// That gives 7 institutions from 7 PDF rows, nothing merged. Batch 20 ended at row 114 and Colorado Mesa
+// University (row 154) is already done, so skip it later. The next batch starts at row 122 (New York
+// Institute of Technology).
 //
-// This file is self contained. Save it as batch08.ts and run with 08. The engine only
-// cares that the file exports INSTITUTIONS.
+// Country is written as "United States" for every entry, because the engine rejects "USA".
+//
+// HEADS UP FOR THE NEXT BATCH (rows 122 to 128): New York Institute of Technology (University) (a different
+// school from NYIT Vancouver, row 268, Canada), Purdue University Northwest, Sacred Heart University, Santa
+// Monica College (also row 228), North Seattle College, Seattle Central College and South Seattle College (the
+// three Seattle Colleges share one district, so check whether they share one cost and English table the way
+// the Contra Costa colleges do).
+//
+// OTHER PDF ROWS TO WATCH LATER (repeats or odd rows, nothing to do in this batch):
+//   Baylor University is rows 177 and 223. University of Massachusetts Amherst is rows 175 and 205. UMass
+//   Boston is rows 185 and 206. Trinity Western University is row 178 (listed as USA) and row 312 (Canada), and
+//   it is a Canadian university, so check the country. Saint Louis University is row 170 (USA) and row 340
+//   (Madrid, Spain). Long Island University is rows 164, 165 and 218 (Brooklyn, Post and the main entry).
+//
+// This file is self contained. Paste it over batch01.ts and run: npm run seed:institutions
+// (or save it as batch21.ts and run with 21). The engine only cares that the file exports INSTITUTIONS.
 //
 // HOW SURE EACH NUMBER IS (confirm the flagged ones before this reaches students):
-//   Greenwich   : Official gre.ac.uk: the IELTS 6.5 (5.5 each skill) for BA English Language
-//                 and ELT, the 8.0 (7.5 each skill) for Speech and Language Therapy, the three
-//                 campuses, the 2,400 rooms and the Stockwell Street building (the campus page
-//                 is an older one, so recheck). The Greenwich and Kent group (LASEUG, from 1
-//                 August 2026) is from gre.ac.uk, kent.ac.uk and the Office for Students.
-//                 Agent sites only (Collegedunia, quoting gre.ac.uk): UG 17,975, PG 18,700,
-//                 MSc International Business 19,450, MBA 20,800, January 2027 starts. General
-//                 IELTS 6.0 UG and 6.5 PG is from an aggregator. Founded is LEFT OUT because
-//                 sources give 1992 and 1993 and the roots go back to 1890. The Park Row
-//                 address is from a third party page. BSc Computer Science is general knowledge.
-//   Heriot-Watt : Official hw.ac.uk: founded 1821, the campuses, 380 acres, the guaranteed
-//                 accommodation line, UG IELTS 6.0 (actuarial science and languages 6.5,
-//                 translation 7.0) from the Scotland English requirements PDF. Agent sites
-//                 only: UG 18,432 to 26,296 and PG 24,952 to 26,296 (Collegedunia), January
-//                 2027 starts for two MSc courses. Another agent page shows much higher UG fees
-//                 and an older page shows 18,704 to 24,048, so the range is flagged. MSc
-//                 Interpreting 7.0 and MSc Analytical Science 6.5 are from IDP. MBA fee not
-//                 listed. UG course durations were not confirmed so they are left out.
-//   Hertfordshire: UG 17,450, PG 17,950 to 22,450, MSc International Business 17,950 and the
-//                 up to 4,000 scholarship are from Collegedunia quoting herts.ac.uk (the herts
-//                 fees page returned an error). IELTS 6.0 UG and 6.5 PG with 5.5 each band is
-//                 from an aggregator, and a herts.ac.uk course page confirms 6.0 with 5.5.
-//                 Campuses, shuttle, first year room guarantee and the 22 minute train time
-//                 are from herts.ac.uk pages. Founded 1992 is the university title date from an
-//                 aggregator (the roots go back to 1952). Student numbers and the 90 countries
-//                 are from an aggregator. UG course names are general knowledge.
-//   Huddersfield: All tuition fees are from hud.ac.uk (international fees page, 2026/27) and
-//                 london.hud.ac.uk. The September 2026, January 2027 and May 2027 intakes are
-//                 from hud.ac.uk. IELTS 6.0 with 5.5 in each element is from IDP course pages
-//                 (agent), because the official page does not show the numbers in text.
-//                 Founded is LEFT OUT because no reliable year was found. Student Central,
-//                 the library and HudLets are from hud.ac.uk student pages (older pages).
-//   Hull        : Official hull.ac.uk: founded 1927 is from Wikipedia (the university site
-//                 says almost a century), campus, library, 2,300 rooms, TEF Gold, the January
-//                 2027 enrolment and the 2,000 UG fee waivers. IELTS 6.0 with 5.5 each skill
-//                 is from UCAS pages for hull.ac.uk courses. The only fee found, 18,945 for BA
-//                 Music, is from an aggregator, so tuitionMax is left out. PG waivers differ
-//                 between sources (4,500 and 5,000) so no figure is given in the file.
-//   Left out on purpose: acceptance rate and ranking (no university published them), social
-//   links for all except Hull (only Hull's own footer was seen), and anything unconfirmed.
+//   Hult           : Master's fees of $60,500 (finance, business analytics, marketing) and $63,000
+//                    (management) for Boston in 2026/27 are from the official hult.edu fees page. The $59,600 BBA
+//                    figure is an IDP listing, so confirm. The English scores (IELTS 6.0, TOEFL iBT 80, Duolingo 110)
+//                    come from Hult's own exchange programme fact sheet, and the master's scores (IELTS 6.5 with
+//                    5.5 in each part, TOEFL iBT 90, Duolingo 120) from a partner university's page, so confirm
+//                    both with admissions. Agent sites list TOEFL 74 for the BBA. Founded 1964 is the year the
+//                    Boston school began, per Hult's fact sheet (some sites say 2003 for the Hult name). The master's
+//                    start months (January, April, September) are from an agent listing. The MBA fee is not stored.
+//   Kent State     : Official kent.edu international tuition page for 2026/27: UG tuition and fees $24,298, graduate
+//                    $21,169, aeronautics with professional pilot $44,298, living costs $14,360, insurance and
+//                    books $3,935, I-20 total $42,593. English table (TOEFL iBT 71, IELTS 6.0, ESL Level 8 with a
+//                    3.75 GPA) is official, and graduate programmes set their own scores. Fall 2027 classes start
+//                    August 23, 2027 and spring 2027 classes start January 19, 2027 (official). The June 1 and
+//                    October 1 international deadlines and the $70 fee are from a third party, so confirm. The
+//                    October 1 spring date has already passed for Jan 2027, so the entry is set to Aug 2027.
+//                    Founded 1910 is general knowledge. Course names are programmes that normally exist.
+//   Los Medanos    : Same Contra Costa district figures as batch 20 (official intl.4cd.edu, checked October 2026).
+//                    The 16 international students from 12 countries (Spring 2026), 33 clubs, UC Berkeley concurrent
+//                    enrollment and honors programme facts are from the official district page. The four degrees
+//                    are confirmed on the official losmedanos.edu degree list. Founded 1974 and both addresses
+//                    are official.
+//   Miami Oxford   : 2026/27 non-Ohio resident tuition and fees of $42,882 are from the official 2026/27 international
+//                    viewbook. The English scores (IELTS 6.5, TOEFL iBT 80, PTE 53, Duolingo 110) are from the official
+//                    graduate page and a college guide for undergraduates, so confirm. Founded 1809 and the "Public
+//                    Ivy" wording are official. Course names are programmes that normally exist, not all checked.
+//   Miami Regionals: The official 2027 cohort page (entered 2026/27) gives per credit hour tuition $300.17, fees
+//                    $30.67 and a non-resident surcharge of $534.97. For 24 credits that is about $20,779, worked out
+//                    here, so confirm. The English minimum for the regional campuses is not published separately,
+//                    so the Oxford undergraduate scores are used, and conditional admission through the Middletown
+//                    English Language Center is official. The 135 international students and 18 to 1 ratio are
+//                    official. Middletown opened in 1966 (official). Degree names are from the official bulletin.
+//   Mt. SAC        : Official mtsac.edu pages: $434 per unit non-resident tuition and $46 per unit enrollment fee for 24
+//                    units, the $27,942 I-20 total, the $50 fee, the English table and the spring 2027 dates
+//                    (deadline November 15, 2026, classes February 22, 2027). The application page asks for proof of
+//                    $26,926 while the tuition page shows $27,942, so confirm which one the I-20 uses. Founded 1945
+//                    is general knowledge. Course names are programmes that normally exist, not all checked.
+//   NYFA           : Official nyfa.edu pages: the English table, the $75 fee, and 2026/27 Los Angeles and New York
+//                    filmmaking tuition of $19,500 per semester (MFA $20,500) plus a $2,000 departmental fee. The
+//                    fee is per semester and there are three semesters a year, so the entry says per semester.
+//                    Founded 1992 is from a college guide. The BFA January start is not on the programme page, so
+//                    confirm it. The street addresses are from memory, so confirm. Acting and photography fees
+//                    are not stored because the pages seen were out of date.
+//   Left out on purpose: acceptance rate, ranking, social links, and anything unconfirmed.
+//   Library, sports and student life paragraphs are kept general on purpose, and each one says to check
+//   the university pages for current details.
 //
-// Run:  npm run seed:institutions -- 08 --dry
-//       npm run seed:institutions -- 08
+// Run:  npm run seed:institutions
 
 import type { CourseInput, DocumentRow, FaqInput, InstitutionInput } from "./types";
 
-// ── Shared UK helpers ────────────────────────────────────────────────────
+// ── Shared USA helpers ───────────────────────────────────────────────────
 
-// General UK student visa application pack. Confirm anything specific with the
-// admissions team of each university.
-const UK_DOCUMENTS: Record<string, DocumentRow[]> = {
+// General F-1 student visa pack for the USA. Confirm anything specific with the
+// international office of each university.
+const US_DOCUMENTS: Record<string, DocumentRow[]> = {
   Undergraduate: [
     ["Identity", "Passport"],
-    ["Academic", "Academic transcripts and certificates"],
-    ["Academic", "Personal statement"],
-    ["Academic", "Reference letter"],
+    ["Academic", "High school transcripts and certificates"],
     ["Academic", "English language test result"],
-    ["Financial", "Bank statement"],
-    ["Visa", "Tuberculosis test certificate (if required for your country)"],
+    ["Financial", "Bank statement showing proof of funds"],
+    ["Financial", "Affidavit of financial support"],
+    ["Visa", "Form I-20 issued by the university"],
+    ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
   ],
   Postgraduate: [
     ["Identity", "Passport"],
     ["Academic", "Degree certificate and transcripts"],
-    ["Academic", "Personal statement"],
-    ["Academic", "CV"],
-    ["Academic", "Reference letter"],
+    ["Academic", "Statement of purpose"],
+    ["Academic", "CV or resume"],
+    ["Academic", "Reference letters"],
     ["Academic", "English language test result"],
-    ["Financial", "Bank statement"],
-    ["Visa", "Tuberculosis test certificate (if required for your country)"],
+    ["Financial", "Bank statement showing proof of funds"],
+    ["Visa", "Form I-20 issued by the university"],
+    ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
   ],
 };
 
-function ukFaqs(o: {
+function usFaqs(o: {
   name: string;
   sector: "public" | "private";
   place: string;
@@ -99,10 +120,10 @@ function ukFaqs(o: {
   return [
     {
       question: `Is ${o.name} a public or private university?`,
-      answer: `It is a ${o.sector} university in ${o.place}.`,
+      answer: `It is a ${o.sector} institution in ${o.place}.`,
     },
     { question: `What is ${o.name} known for?`, answer: o.known },
-    { question: `What IELTS score do I need for ${o.name}?`, answer: o.ielts },
+    { question: `What English score do I need for ${o.name}?`, answer: o.ielts },
     { question: `How much are tuition fees for international students at ${o.name}?`, answer: o.fees },
     { question: `When can I start at ${o.name}?`, answer: o.intakes },
   ];
@@ -123,7 +144,8 @@ function ug(
   nextIntake: string | undefined,
   intakes: string | undefined,
   tuitionAmount?: number,
-  description?: string
+  description?: string,
+  period: string = "per year (2026/27)"
 ): CourseInput {
   return {
     name,
@@ -134,8 +156,8 @@ function ug(
     nextIntake,
     intakes,
     tuitionAmount,
-    tuitionCurrency: "GBP",
-    tuitionPeriod: "per year (2026/27)",
+    tuitionCurrency: "USD",
+    tuitionPeriod: period,
     description,
   };
 }
@@ -148,7 +170,8 @@ function pg(
   nextIntake: string | undefined,
   intakes: string | undefined,
   tuitionAmount?: number,
-  description?: string
+  description?: string,
+  period: string = "per year (2026/27)"
 ): CourseInput {
   return {
     name,
@@ -159,368 +182,599 @@ function pg(
     nextIntake,
     intakes,
     tuitionAmount,
-    tuitionCurrency: "GBP",
-    tuitionPeriod: "per year (2026/27)",
+    tuitionCurrency: "USD",
+    tuitionPeriod: period,
     description,
   };
 }
 
-const SEP_JAN = "September, with January starts on some courses";
+// Contra Costa Community College District (Contra Costa College, Diablo Valley College and Los Medanos
+// College) shares one international office, one cost table and one English table.
+const CCCCD_ENGLISH_NOTE =
+  "IELTS Academic 5.5 with no band below 4.5, TOEFL iBT 61, Duolingo 95, PTE 45 or iTEP 3.5. Partner English programmes can give conditional admission.";
+const CCCCD_TUITION_NOTE =
+  "Tuition and fees $10,728 at $447 per unit for 24 units. The I-20 funds estimate is $30,495 with homestay, books and insurance. Confirm on intl.4cd.edu.";
+const CCCCD_ENGLISH_ANSWER =
+  "You need IELTS Academic 5.5 with no band below 4.5, TOEFL iBT 61, Duolingo 95, PTE 45 or iTEP 3.5. Students who finish a partner English programme such as ELS Level 109 can get conditional admission.";
+const CCCCD_FEES_ANSWER =
+  "For 2026/27, tuition and fees are about $10,728 for 24 units at $447 per unit. The I-20 total is $30,495, which includes homestay, books, transport, personal costs and mandatory insurance. There is no application fee.";
+const CCCCD_INTAKES_ANSWER =
+  "You can start in fall (August) or spring (January). Overseas applicants apply by July 1 for fall and December 1 for spring, and spring 2027 classes begin on January 25, 2027.";
+
+// Per credit hour tuition for Miami University Ohio Regionals, 2026/27, non-Ohio resident, 24 credits a year:
+// (300.17 + 30.67 + 534.97) x 24 = 20,779.44
+const MIAMI_REGIONALS_YEARLY = 20779;
 
 export const INSTITUTIONS: InstitutionInput[] = [
-  // ── PDF row 39 ─────────────────────────────────────────────────────────
+  // ── PDF row 115 ────────────────────────────────────────────────────────
   {
-    name: "University of Greenwich",
-    city: "Greenwich",
-    country: "United Kingdom",
-    institutionType: "Public university",
-    website: "https://www.gre.ac.uk",
+    name: "Hult International Business School",
+    city: "Cambridge",
+    country: "United States",
+    institutionType: "Private business school",
+    website: "https://www.hult.edu",
+    founded: 1964,
     upcomingIntake: "Jan 2027",
-    programs: ["Business", "Computing", "Health"],
+    programs: ["Business Administration", "Finance", "Marketing"],
     summary:
-      "A public university in south east London and Kent, with campuses at Greenwich, Avery Hill and Medway. It teaches business, computing, health, education, engineering and creative subjects, and is now part of the London and South East University Group with the University of Kent.",
+      "A private business school with US campuses in Boston, San Francisco and New York, offering a four year BBA, one year master's degrees and MBAs, with AACSB, AMBA and EQUIS accreditation and optional dual degrees.",
     ieltsOverall: 6.0,
-    ieltsNote: "Most UG courses ask for IELTS 6.0 and PG 6.5, per an agent site. BA English Language and ELT needs 6.5. Check your course page.",
-    tuitionMin: 17975,
-    tuitionMax: 20800,
-    tuitionCurrency: "GBP",
-    tuitionPeriod: "per year (2026/27)",
-    tuitionNote: "UG £17,975, PG £18,700, MSc International Business £19,450, MBA £20,800, per an agent site quoting Greenwich. Confirm on gre.ac.uk.",
+    ieltsAlternatives: ["TOEFL iBT 80", "Duolingo 110"],
+    ieltsNote:
+      "UG: IELTS 6.0, TOEFL iBT 80 or Duolingo 110. Master's: IELTS 6.5, TOEFL iBT 90 or Duolingo 120. Some programmes ask for more. Confirm on hult.edu.",
+    tuitionMin: 59600,
+    tuitionMax: 63000,
+    tuitionCurrency: "USD",
+    tuitionPeriod: "per year (2026/27, Boston)",
+    tuitionNote:
+      "BBA about $59,600 (IDP listing). Boston master's $60,500 to $63,000 (official hult.edu, 2026/27). Dual degree and MBA fees differ. Confirm on hult.edu.",
     overview:
-      "The University of Greenwich has three campuses: the Old Royal Naval College in Greenwich, Avery Hill in Eltham and Medway in Kent. It teaches architecture, business, computing, health, education, engineering and more. From August 2026 it forms part of the London and South East University Group alongside the University of Kent.",
+      "Hult International Business School is a private, non profit business school with its main US campus in Cambridge, Massachusetts, and further campuses in San Francisco and New York. It is part of the EF Education First group and holds AACSB, AMBA and EQUIS accreditation. It teaches a four year BBA, one year master's degrees in management, finance, marketing and business analytics, and a global one year MBA.",
     studentLife:
-      "Students can choose a historic riverside setting in Greenwich, a parkland campus at Avery Hill or a campus at Medway in Kent. Free buses link Avery Hill and Greenwich, and central London is a short train ride from Avery Hill. The students' union runs clubs and societies.",
+      "Hult teaches through team projects and live business challenges, and students work with classmates from many countries. Students can spend time on other Hult campuses, including London and Dubai, and the school gives career support and international admissions help. Check the Hult student life pages for current clubs and events.",
     accommodation:
-      "The university has said it offers around 2,400 rooms on or near its campuses, with the Student Village at Avery Hill home to many students. Check the accommodation pages for current prices, guarantee conditions and booking dates.",
+      "Hult House is student housing run by the school near the Boston campus, and many graduate students also rent apartments or share housing in Cambridge and Boston. Check the Hult housing pages for current prices and booking dates, and apply early.",
     library:
-      "The Stockwell Street building at Greenwich houses a library alongside film and television studios, and libraries also serve the other campuses. Check the library pages for opening hours and services.",
+      "The Boston campus offers study spaces, group rooms and online business collections, with academic and career support for coursework. Check the Hult pages for opening hours and services.",
     sports:
-      "Avery Hill has the main sports facilities, including a sports hall, outdoor pitches and a gym, and there is also a gym at Medway. Students can join exercise classes such as yoga and Zumba. Check the sport pages for current offers.",
-    wikipediaTitle: "University of Greenwich",
-    ...seo("University of Greenwich", "London and Kent"),
+      "Hult is a specialist business school rather than a varsity sports university, so students usually join student clubs and activities or use gyms and facilities around Cambridge and Boston. Check the Hult pages for current options.",
+    wikipediaTitle: "Hult International Business School",
+    ...seo("Hult International Business School", "Cambridge, Massachusetts"),
     courses: [
-      ug("BA English Language and English Language Teaching", "BA", "English", undefined, "Sep 2027", "September and January", 17975),
-      ug("BSc Computer Science", "BSc", "Computer Science", undefined, "Sep 2027", "September and January", 17975),
-      ug("BSc Speech and Language Therapy", "BSc", "Health", undefined, "Sep 2027", "September", undefined, "A health course with a much higher English requirement, IELTS 8.0 overall with 7.5 in each skill. Check the fee with Greenwich."),
-      pg("MSc International Business", "MSc", "Business", "1 Year", "Jan 2027", "September and January", 19450),
-      pg("MBA", "MBA", "Business", undefined, "Jan 2027", "September and January", 20800),
+      ug("Bachelor of Business Administration (BBA)", "BBA", "Business", "4 Years", "Jan 2027", "January and September", 59600, "A four year business degree taught in Boston with specialisations such as marketing, finance and business analytics.", "per year (2026)"),
+      pg("Master's in Management", "Master's", "Business", "1 Year", "Jan 2027", "January, April and September", 63000, "A one year management degree for graduates, taught in Boston at the 2026/27 fee."),
+      pg("Master's in Finance", "Master's", "Finance", "1 Year", "Jan 2027", "January, April and September", 60500),
+      pg("Master's in Business Analytics", "Master's", "Business Analytics", "1 Year", "Jan 2027", "January, April and September", 60500),
+      pg("Master's in Marketing", "Master's", "Marketing", "1 Year", "Jan 2027", "January, April and September", 60500),
+      pg("Global One Year MBA", "MBA", "Business", "1 Year", "Jan 2027", "January and September", undefined, "A one year MBA with scholarships linked to GMAT or GRE results, so confirm the fee with admissions."),
     ],
     campuses: [
       {
-        name: "Greenwich Campus",
-        city: "Greenwich",
-        address: "Old Royal Naval College, Park Row, London SE10 9LS",
-        description: "The largest campus, in the historic Old Royal Naval College, a World Heritage Site beside the River Thames.",
+        name: "Boston Campus",
+        city: "Cambridge",
+        address: "1 Education Street, Cambridge, MA 02141",
+        description: "The main US campus, on the Charles River in Cambridge, with classrooms, the admissions team and nearby Hult House housing.",
       },
       {
-        name: "Avery Hill Campus",
-        city: "Eltham",
-        description: "A purpose built campus beside Avery Hill Park, with sports facilities and the student village. A free bus links it to Greenwich.",
+        name: "San Francisco Campus",
+        city: "San Francisco",
+        description: "A Hult campus in the San Francisco Bay Area for selected master's and MBA programmes, so check which courses run there.",
       },
       {
-        name: "Medway Campus",
-        city: "Chatham Maritime",
-        description: "A campus in Chatham Maritime, Kent, with teaching and living spaces within a short walk of each other.",
+        name: "New York Campus",
+        city: "New York",
+        description: "A Hult campus in New York City that supports graduate study, including finance pathways with Boston, so check which programmes run there.",
       },
     ],
-    documents: UK_DOCUMENTS,
-    faqs: ukFaqs({
-      name: "the University of Greenwich",
-      sector: "public",
-      place: "south east London and Kent, England",
+    documents: {
+      Undergraduate: [
+        ["Identity", "Passport"],
+        ["Academic", "High school transcript and diploma"],
+        ["Academic", "English language test result"],
+        ["Financial", "Bank statement showing proof of funds"],
+        ["Visa", "Form I-20 issued by the school"],
+        ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
+      ],
+      Postgraduate: [
+        ["Identity", "Passport"],
+        ["Academic", "Bachelor's degree certificate and transcripts in English"],
+        ["Academic", "CV or resume"],
+        ["Academic", "English language test result"],
+        ["Financial", "Bank statement showing proof of funds"],
+        ["Visa", "Form I-20 issued by the school"],
+        ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
+      ],
+    },
+    faqs: usFaqs({
+      name: "Hult International Business School",
+      sector: "private",
+      place: "Cambridge, Massachusetts",
       known:
-        "Greenwich is known for business, computing, architecture, health and education courses, three campuses in London and Kent, and a historic riverside campus in a World Heritage Site.",
+        "Hult is known for one year master's degrees and MBAs, hands on team projects, AACSB, AMBA and EQUIS accreditation, and campuses in several global cities.",
       ielts:
-        "An agent site shows IELTS 6.0 for most undergraduate courses and 6.5 for postgraduate courses. BA English Language and ELT needs 6.5, and Speech and Language Therapy needs 8.0, so check your course.",
+        "Undergraduates need about IELTS 6.0, TOEFL iBT 80 or Duolingo 110. Master's applicants need IELTS 6.5 with 5.5 in each part, TOEFL iBT 90 or Duolingo 120. Some programmes ask for more, so confirm with admissions.",
       fees:
-        "An agent site quoting Greenwich lists 2026/27 fees of £17,975 for undergraduate courses, £18,700 for most postgraduate courses, £19,450 for MSc International Business and £20,800 for the MBA. Confirm with Greenwich.",
+        "For 2026/27, Boston master's tuition is $60,500 for finance, business analytics and marketing, and $63,000 for management. BBA tuition is about $59,600. Scholarships are available, and living costs and fees are extra.",
       intakes:
-        "Courses start in September and January. Check your course page for exact dates and deadlines.",
+        "Master's programmes start in January, April and September, and the BBA starts in September and January. Hult runs several admission rounds before each start, so check the dates for your term and apply early.",
     }),
   },
 
-  // ── PDF row 40 ─────────────────────────────────────────────────────────
+  // ── PDF row 116 ────────────────────────────────────────────────────────
   {
-    name: "Heriot-Watt University",
-    city: "Edinburgh",
-    country: "United Kingdom",
+    name: "Kent State University",
+    city: "Kent",
+    country: "United States",
     institutionType: "Public research university",
-    website: "https://www.hw.ac.uk",
-    founded: 1821,
-    upcomingIntake: "Jan 2027",
-    programs: ["Engineering", "Business", "Computer Science"],
+    website: "https://www.kent.edu",
+    founded: 1910,
+    upcomingIntake: "Aug 2027",
+    programs: ["Aeronautics", "Business", "Computer Science"],
     summary:
-      "A public research university in Edinburgh, Scotland, with its main campus at Riccarton and further campuses in the Scottish Borders and Orkney. It is known for engineering, business, computing, science and design, and it also has campuses in Dubai and Malaysia.",
+      "A public research university in Kent, Ohio, with international students from about 100 countries, more than 375 programmes, a professional pilot programme and scholarships worth up to $68,000 over four years for international undergraduates.",
     ieltsOverall: 6.0,
-    ieltsNote: "UG courses usually need IELTS 6.0, while actuarial science and languages need 6.5 or more. PG needs vary by course. Check your course page.",
-    tuitionMin: 18432,
-    tuitionMax: 26296,
-    tuitionCurrency: "GBP",
+    ieltsAlternatives: ["TOEFL iBT 71", "ESL Center Level 8 (3.75 GPA)"],
+    ieltsNote:
+      "UG: IELTS 6.0, TOEFL iBT 71 or ESL Level 8 (3.75 GPA). Graduate programmes set their own scores. UG conditional admission possible. Confirm on kent.edu.",
+    tuitionMin: 24298,
+    tuitionMax: 44298,
+    tuitionCurrency: "USD",
     tuitionPeriod: "per year (2026/27)",
-    tuitionNote: "UG £18,432 to £26,296 and PG £24,952 to £26,296 from an agent site, but other agent sites differ. The MBA costs more. Confirm on hw.ac.uk.",
+    tuitionNote:
+      "UG tuition and fees $24,298 ($44,298 professional pilot), graduate $21,169. The UG I-20 total is $42,593 with living costs and insurance. Confirm on kent.edu.",
     overview:
-      "Heriot-Watt University is a public research university in Edinburgh with roots in 1821. Its main campus sits in 380 acres of parkland at Riccarton, and it also has campuses in the Scottish Borders and Orkney, and in Dubai and Malaysia. It teaches engineering, business, computing, science, design and languages.",
+      "Kent State University is a public research university in Kent, Ohio, founded in 1910, with 375 or more programmes at certificate, undergraduate, master's and PhD level. It also runs regional campuses across northeast Ohio, and international students come from about 100 countries. Most scholarships are open to international students, and a strong academic record can lead to awards of up to $68,000 over four years.",
     studentLife:
-      "The Edinburgh campus is a green parkland site on the edge of the city, with the Scottish capital close by for culture and events. Students can also study at the Scottish Borders campus, which focuses on textiles and design, and the Go Global option lets students spend time at the Dubai or Malaysia campuses.",
+      "International Admissions and the international student services team run orientation and support, and every international student takes the university health insurance plan unless a waiver applies. Kent has many student organizations and a lively campus around the town of Kent. Check the student life pages for current clubs and events.",
     accommodation:
-      "Heriot-Watt says all new entrants are guaranteed a place in university managed accommodation, with options at the Edinburgh and Borders campuses. Check the accommodation pages for current prices, conditions and booking dates.",
+      "Housing and dining on campus are run by the university, and the 2026/27 I-20 budget assumes $14,360 a year for living costs. Many older students and graduates rent apartments in and around Kent. Check the housing pages for current prices and booking dates.",
     library:
-      "The Edinburgh campus library offers study spaces, computers and a large online collection of journals and ebooks. Check the library pages for opening hours and services.",
+      "The University Libraries offer study spaces, computers and online collections, and tutoring, writing help and peer mentoring support coursework. Check the library pages for opening hours and services.",
     sports:
-      "Students can use the campus sport and fitness facilities and join clubs through the students' union. Check the sport pages for current memberships.",
-    wikipediaTitle: "Heriot-Watt University",
-    ...seo("Heriot-Watt University", "Edinburgh, Scotland"),
+      "Kent State competes in NCAA Division I athletics as the Golden Flashes, and students can also join recreation and club sports. Check the athletics and recreation pages for current teams and memberships.",
+    wikipediaTitle: "Kent State University",
+    ...seo("Kent State University", "Kent, Ohio"),
     courses: [
-      ug("MA (Hons) International Business Management", "MA", "Business", undefined, "Sep 2027", "September", 18432),
-      ug("BSc (Hons) Computer Science", "BSc", "Computer Science", undefined, "Sep 2027", "September"),
-      pg("MSc International Business Management", "MSc", "Business", "1 Year", "Jan 2027", SEP_JAN, 24952),
-      pg("MSc Data Science", "MSc", "Data Science", "1 Year", "Jan 2027", SEP_JAN, 25720),
-      pg("MSc Interpreting", "MSc", "Languages", "1 Year", "Sep 2027", "September", undefined, "Needs IELTS 7.0 overall with at least 6.5 in every skill, plus strong command of English and other languages. Check the fee and language strands with Heriot-Watt."),
-      pg("MSc Analytical Science for the Biosciences Industries", "MSc", "Science", undefined, "Sep 2027", "September", undefined, "Needs IELTS 6.5 overall with at least 6.0 in each element, and a good degree in a life science, physical science or engineering subject."),
+      ug("BS Computer Science", "BS", "Computer Science", "4 Years", "Aug 2027", "August and January", 24298),
+      ug("BBA Business Management", "BBA", "Business", "4 Years", "Aug 2027", "August and January", 24298),
+      ug("BS Aeronautics, Professional Pilot concentration", "BS", "Aeronautics", "4 Years", "Aug 2027", "August and January", 44298, "A flight programme with a higher fee that covers flight training, so confirm the fee and entry rules with admissions."),
+      pg("Master of Business Administration (MBA)", "MBA", "Business", undefined, "Aug 2027", "August and January", 21169),
+      pg("MS Computer Science", "MS", "Computer Science", undefined, "Aug 2027", "August and January", 21169),
     ],
     campuses: [
       {
-        name: "Edinburgh Campus",
-        city: "Edinburgh",
-        description: "The main campus, set in 380 acres of parkland in the Riccarton area of Edinburgh, home to most schools.",
+        name: "Kent Campus",
+        city: "Kent",
+        address: "1025 Risman Drive, Kent, OH 44242",
+        description: "The main campus in northeast Ohio, with most teaching, the University Libraries, residence halls and the international admissions office.",
       },
       {
-        name: "Scottish Borders Campus",
-        city: "Galashiels",
-        description: "A campus in Galashiels that is home to the School of Textiles and Design, for fashion, design and textiles.",
-      },
-      {
-        name: "Orkney Campus",
-        city: "Stromness",
-        description: "A campus in Stromness, Orkney, offering postgraduate study in marine and environmental science.",
-      },
-      {
-        name: "Dubai Campus",
-        city: "Dubai",
-        description: "A campus in Dubai, UAE, in a seven storey building opened in 2021, with subjects such as architecture, computer science, engineering and finance.",
-      },
-      {
-        name: "Malaysia Campus",
-        city: "Putrajaya",
-        description: "A campus in Putrajaya, near Kuala Lumpur, Malaysia. Its fees are set separately in Malaysian ringgit and are not covered here.",
+        name: "Regional Campuses",
+        description: "Kent State also runs regional campuses in Ashtabula, East Liverpool, Geauga, Salem, Stark, Trumbull and Tuscarawas, so confirm where your course is taught.",
       },
     ],
-    documents: UK_DOCUMENTS,
-    faqs: ukFaqs({
-      name: "Heriot-Watt University",
+    documents: {
+      Undergraduate: [
+        ["Identity", "Passport"],
+        ["Academic", "High school transcripts and certificates"],
+        ["Academic", "English language test result"],
+        ["Financial", "Bank statement showing proof of funds"],
+        ["Financial", "Kent State Affidavit of Financial Support, if you have a sponsor"],
+        ["Visa", "Form I-20 issued by the university"],
+        ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
+      ],
+      Postgraduate: [
+        ["Identity", "Passport"],
+        ["Academic", "Degree certificate and transcripts"],
+        ["Academic", "English language test result"],
+        ["Financial", "Kent State Financial Information Worksheet"],
+        ["Financial", "Bank statement showing proof of funds"],
+        ["Visa", "Form I-20 issued by the university"],
+        ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
+      ],
+    },
+    faqs: usFaqs({
+      name: "Kent State University",
       sector: "public",
-      place: "Edinburgh, Scotland, with further campuses in Scotland, Dubai and Malaysia",
+      place: "Kent, Ohio",
       known:
-        "Heriot-Watt is known for engineering, business, computing, science, design and languages, with a green parkland campus in Edinburgh and a specialist textiles and design campus in the Scottish Borders.",
+        "Kent State is known for aeronautics and flight, fashion, architecture, journalism and health programmes, wide scholarships for international students and a large public university campus in northeast Ohio.",
       ielts:
-        "Most undergraduate courses ask for IELTS 6.0, while actuarial science and languages ask for 6.5 or more. Postgraduate scores vary, for example 6.5 for analytical science and 7.0 for interpreting.",
+        "Undergraduates need IELTS 6.0, TOEFL iBT 71 or Level 8 of the Kent State ESL Center with a 3.75 GPA, and conditional admission is possible. Graduate programmes set their own English scores, so check the programme page.",
       fees:
-        "Agent sites quoting 2026/27 rates show undergraduate fees from about £18,432 to £26,296 and master's fees from about £24,952 to £26,296, but sources differ. A merit scholarship of up to £5,000 may apply. Confirm with Heriot-Watt.",
+        "For 2026/27, undergraduate tuition and fees are $24,298 and graduate tuition and fees are $21,169, with the professional pilot programme at $44,298. The UG I-20 total is $42,593 including $14,360 living costs and $3,935 for insurance and books.",
       intakes:
-        "Undergraduate courses start in September. Many master's courses start in September, and an agent site shows January 2027 starts for some. Check your course page for exact dates.",
+        "You can start in fall (August) or spring (January). Fall 2027 classes begin on August 23, 2027, and spring 2027 classes begin on January 19, 2027. Third party sources list June 1 for fall and October 1 for spring, so confirm the dates.",
     }),
   },
 
-  // ── PDF row 41 ─────────────────────────────────────────────────────────
+  // ── PDF row 117 ────────────────────────────────────────────────────────
   {
-    name: "University of Hertfordshire",
-    city: "Hatfield",
-    country: "United Kingdom",
-    institutionType: "Public university",
-    website: "https://www.herts.ac.uk",
+    name: "Los Medanos College",
+    city: "Pittsburg",
+    country: "United States",
+    institutionType: "Public community college",
+    website: "https://www.losmedanos.edu",
+    founded: 1974,
+    upcomingIntake: "Jan 2027",
+    programs: ["Business", "Computer Science", "Engineering"],
+    summary:
+      "A public community college in Pittsburg, California, about 70 km from San Francisco, with 16 international students from 12 countries, an honors programme with ten transfer partners including UCLA and no application fee.",
+    ieltsOverall: 5.5,
+    ieltsMinBand: 4.5,
+    ieltsAlternatives: ["TOEFL iBT 61", "Duolingo 95", "PTE 45", "iTEP 3.5"],
+    ieltsNote: CCCCD_ENGLISH_NOTE,
+    tuitionMin: 10728,
+    tuitionCurrency: "USD",
+    tuitionPeriod: "per year (2026/27, 24 units)",
+    tuitionNote: CCCCD_TUITION_NOTE,
+    overview:
+      "Los Medanos College is a public community college in Pittsburg, California, founded in 1974 and part of the Colleges of Contra Costa. International students work towards associate degrees and transfer to universities, and more than 500 students transfer to UC and CSU campuses each year. A second centre in Brentwood serves the east county.",
+    studentLife:
+      "The college has 33 student clubs and organizations, a Global Mentor Program for new international students and free bus tours to universities such as UC Davis, UC Berkeley and San Jose State. International students can apply for most scholarships after they enrol. Check the student life pages for current clubs and events.",
+    accommodation:
+      "The I-20 estimate assumes a homestay, and the district international office lists housing options in the East Bay. An on campus bus service links to the BART train, and students can also rent privately in Pittsburg and nearby cities. Check with the international office for current housing help and prices.",
+    library:
+      "The college library offers study spaces, computers and online resources, and free tutoring supports coursework. Check the library pages for opening hours and services.",
+    sports:
+      "LMC runs athletics teams including baseball, football, basketball and softball, and students can also join clubs and recreation on campus. Check the athletics pages for current teams.",
+    wikipediaTitle: "Los Medanos College",
+    ...seo("Los Medanos College", "Pittsburg, California"),
+    courses: [
+      ug("Associate in Science for Transfer, Business Administration", "Associate", "Business", "2 Years", "Jan 2027", "Fall and spring", 10728, "The main pathway to a business administration degree at a California State University."),
+      ug("Associate in Science for Transfer, Computer Science", "Associate", "Computer Science", "2 Years", "Jan 2027", "Fall and spring", 10728),
+      ug("Associate in Science, Engineering", "Associate", "Engineering", "2 Years", "Jan 2027", "Fall and spring", 10728, "Prepares students to move on to a four year engineering degree after transfer."),
+      ug("Associate in Arts for Transfer, Psychology", "Associate", "Psychology", "2 Years", "Jan 2027", "Fall and spring", 10728),
+    ],
+    campuses: [
+      {
+        name: "Pittsburg Campus",
+        city: "Pittsburg",
+        address: "2700 East Leland Road, Pittsburg, CA 94565",
+        description: "The main campus in the East Bay on about 120 acres, with teaching buildings, labs, the library and student services.",
+      },
+      {
+        name: "Brentwood Center",
+        city: "Brentwood",
+        address: "1351 Pioneer Square, Brentwood, CA 94513",
+        description: "A smaller centre in Brentwood that serves the far east of the county, so check which courses run there.",
+      },
+    ],
+    documents: {
+      Undergraduate: [
+        ["Identity", "Passport"],
+        ["Academic", "High school transcripts (required if under 18, recommended for everyone)"],
+        ["Academic", "English language test result"],
+        ["Financial", "Bank statement showing $30,495 in proof of funds"],
+        ["Financial", "Financial sponsor form (if you have a sponsor)"],
+        ["Visa", "Form I-20 issued by the college"],
+        ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
+      ],
+    },
+    faqs: usFaqs({
+      name: "Los Medanos College",
+      sector: "public",
+      place: "Pittsburg, California",
+      known:
+        "Los Medanos College is known for its transfer pathways to University of California and California State University campuses, an honors programme with UCLA and other partners, and small classes in the East Bay.",
+      ielts: CCCCD_ENGLISH_ANSWER,
+      fees: CCCCD_FEES_ANSWER,
+      intakes: CCCCD_INTAKES_ANSWER,
+    }),
+  },
+
+  // ── PDF row 118 ────────────────────────────────────────────────────────
+  {
+    name: "Miami University Ohio",
+    city: "Oxford",
+    country: "United States",
+    institutionType: "Public research university",
+    website: "https://www.miamioh.edu",
+    founded: 1809,
+    upcomingIntake: "Aug 2027",
+    programs: ["Business", "Engineering", "Computer Science"],
+    summary:
+      "A public research university in Oxford, Ohio, founded in 1809, with more than 120 undergraduate areas of study, a Tuition Promise that freezes costs for four years and international scholarships, including the full cost Presidential Fellows award.",
+    ieltsOverall: 6.5,
+    ieltsAlternatives: ["TOEFL iBT 80", "PTE 53", "Duolingo 110"],
+    ieltsNote:
+      "UG: IELTS 6.5, TOEFL iBT 80, PTE 53 or Duolingo 110. Lower scores may lead to conditional admission through the American Culture and English Program.",
+    tuitionMin: 42882,
+    tuitionCurrency: "USD",
+    tuitionPeriod: "per year (2026/27, non-Ohio resident)",
+    tuitionNote:
+      "Non-Ohio resident tuition and fees $42,882 for two semesters (2026/27 viewbook), frozen for four years by the Tuition Promise. Confirm on miamioh.edu.",
+    overview:
+      "Miami University is a public research university in Oxford, Ohio, founded in 1809 and known as a Public Ivy. The Oxford campus offers bachelor's degrees in more than 120 areas of study plus graduate programmes, with about 16,800 undergraduates, and students come from more than 100 countries. Miami also runs regional campuses, a centre in West Chester and a campus in Luxembourg.",
+    studentLife:
+      "International Student and Scholar Services runs orientation and support, the American Culture and English Program helps students build their English, and there are clubs with an international focus. Oxford is a university town about 35 miles north of Cincinnati with restaurants, shops and parks. Check the student life pages for current clubs and events.",
+    accommodation:
+      "Housing and meal plans are run by the university and are covered by Miami's Tuition Promise cost freeze for each new undergraduate class, and many older students rent apartments in Oxford. Check the housing pages for current prices and booking dates, and apply early.",
+    library:
+      "The University Libraries, including King Library, offer study spaces, online collections and research help, and academic advising and tutoring support coursework. Check the library pages for opening hours and services.",
+    sports:
+      "Miami competes in NCAA Division I athletics as the RedHawks in the Mid-American Conference, and students can also use recreation programmes and the Goggin Ice Center. Check the athletics and recreation pages for current teams and memberships.",
+    wikipediaTitle: "Miami University",
+    ...seo("Miami University Ohio", "Oxford, Ohio"),
+    courses: [
+      ug("BS Business, Finance", "BS", "Finance", "4 Years", "Aug 2027", "August and January", 42882, "A business degree from the Farmer School of Business with a finance major."),
+      ug("BS Mechanical Engineering", "BS", "Engineering", "4 Years", "Aug 2027", "August and January", 42882, "An engineering degree that carries an extra college fee each semester, so confirm the total with admissions."),
+      ug("BS Computer Science", "BS", "Computer Science", "4 Years", "Aug 2027", "August and January", 42882),
+      pg("Master of Business Administration (MBA)", "MBA", "Business", undefined, "Aug 2027", "August and January", undefined, "Graduate fees differ from undergraduate fees, so confirm the fee with graduate admission."),
+      pg("MS Computer Science and Software Engineering", "MS", "Computer Science", undefined, "Aug 2027", "August and January", undefined, "Graduate fees differ from undergraduate fees, so confirm the fee with graduate admission."),
+    ],
+    campuses: [
+      {
+        name: "Oxford Campus",
+        city: "Oxford",
+        address: "501 East High Street, Oxford, OH 45056",
+        description: "The main campus, with most teaching, the University Libraries, residence halls and the Office of Admission.",
+      },
+      {
+        name: "Luxembourg Campus",
+        city: "Differdange",
+        description: "The John E. Dolibois European Center in Differdange, Luxembourg, a study abroad campus that hosts nearly 300 Miami students a year.",
+      },
+    ],
+    documents: US_DOCUMENTS,
+    faqs: usFaqs({
+      name: "Miami University Ohio",
+      sector: "public",
+      place: "Oxford, Ohio",
+      known:
+        "Miami University is known for strong undergraduate teaching, the Farmer School of Business, engineering and computing, education and a traditional residential campus in a small Ohio college town.",
+      ielts:
+        "Undergraduates need IELTS 6.5, TOEFL iBT 80, PTE 53 or Duolingo 110. Applicants with lower scores may be offered conditional admission through the American Culture and English Program. Some programmes may ask for more.",
+      fees:
+        "For 2026/27, non-Ohio resident tuition and fees are $42,882 for two semesters on the Oxford campus. The Tuition Promise freezes costs for four years for each incoming class, and international scholarships can reduce the bill.",
+      intakes:
+        "You can start in fall (August) or spring (January). First year international applicants who apply by Miami's December deadline are considered for the most scholarships, so check the dates for your term.",
+    }),
+  },
+
+  // ── PDF row 119 ────────────────────────────────────────────────────────
+  {
+    name: "Miami University Ohio Regionals",
+    city: "Middletown",
+    country: "United States",
+    institutionType: "Public university regional campuses",
+    website: "https://miamioh.edu/regionals",
+    founded: 1966,
+    upcomingIntake: "Jan 2027",
+    programs: ["General Studies", "Applied Business", "Applied Science"],
+    summary:
+      "The regional campuses of Miami University in Middletown and Hamilton, Ohio, offering associate degrees and the start of four year degrees, an 18 to 1 student to faculty ratio, an English Language Center and tuition well below the Oxford campus.",
+    ieltsOverall: 6.5,
+    ieltsAlternatives: ["TOEFL iBT 80", "PTE 53", "Duolingo 110"],
+    ieltsNote:
+      "Oxford UG scores apply: IELTS 6.5, TOEFL iBT 80, PTE 53 or Duolingo 110. Lower scores may start in the Middletown English Language Center. Confirm first.",
+    tuitionMin: MIAMI_REGIONALS_YEARLY,
+    tuitionCurrency: "USD",
+    tuitionPeriod: "per year (2026/27, non-Ohio resident, 24 credits)",
+    tuitionNote:
+      "Per credit hour: tuition $300.17, fees $30.67 and non-resident surcharge $534.97, about $20,779 for 24 credits. Confirm on the Miami One Stop page.",
+    overview:
+      "Miami University Regionals are the Hamilton and Middletown campuses of Miami University, plus the Voice of America Learning Center in West Chester. Middletown opened in 1966, and more than 3,600 students study on the regional campuses, where associate degrees, bachelor's degrees and the start of most four year degrees are offered. About 135 international students were enrolled in 2024.",
+    studentLife:
+      "Regional students can join clubs and use TRIO support programmes and career fairs, and international students who need more English can start in the Middletown English Language Center. Health insurance is mandatory for international students at Regionals. Check the Regionals pages for current events.",
+    accommodation:
+      "Hamilton and Middletown are commuter campuses, so students usually find rooms or apartments nearby, while residence halls are on the separate Oxford campus. Check with the Regionals admission office for current housing help and prices.",
+    library:
+      "Each regional campus has a library with study spaces, computers and online resources, and students also reach Miami's wider online collections. Check the library pages for opening hours and services.",
+    sports:
+      "Miami Regionals run their own athletics and recreation programmes, and students can join activities on campus. Check the Regionals athletics and recreation pages for current teams and memberships.",
+    wikipediaTitle: "Miami University Middletown",
+    ...seo("Miami University Ohio Regionals", "Middletown and Hamilton, Ohio"),
+    courses: [
+      ug("Associate in Arts, General Studies", "Associate", "General Studies", "2 Years", "Jan 2027", "Fall and spring", MIAMI_REGIONALS_YEARLY, "A two year transfer degree that covers general education and can lead on to a bachelor's degree."),
+      ug("Associate of Applied Business", "Associate", "Business", "2 Years", "Jan 2027", "Fall and spring", MIAMI_REGIONALS_YEARLY),
+      ug("Associate in Applied Science", "Associate", "Applied Science", "2 Years", "Jan 2027", "Fall and spring", MIAMI_REGIONALS_YEARLY),
+      ug("Bachelor's degree start (continue at Oxford or Regionals)", "Pathway", "General Studies", undefined, "Jan 2027", "Fall and spring", MIAMI_REGIONALS_YEARLY, "Beginning coursework for most four year Miami degrees, with the option to continue at Oxford, so confirm the route with admissions."),
+      ug("English Language Center", "Pathway", "English Language", undefined, "Jan 2027", "Fall and spring", undefined, "An intensive English programme in Middletown for conditional admission students, charged at its own rates."),
+    ],
+    campuses: [
+      {
+        name: "Hamilton Campus",
+        city: "Hamilton",
+        address: "1601 University Boulevard, Hamilton, OH 45011",
+        description: "A compact commuter campus on the Great Miami River offering associate degrees, bachelor's degrees and beginning coursework.",
+      },
+      {
+        name: "Middletown Campus",
+        city: "Middletown",
+        address: "4200 North University Boulevard, Middletown, OH 45042",
+        description: "A commuter campus on about 141 acres near I-75, opened in 1966, and home to the English Language Center.",
+      },
+      {
+        name: "Voice of America Learning Center",
+        city: "West Chester",
+        address: "7847 VOA Park Drive, West Chester, OH 45069",
+        description: "A learning center between Cincinnati and Dayton offering selected undergraduate and graduate courses from the Regional and Oxford campuses.",
+      },
+    ],
+    documents: {
+      Undergraduate: US_DOCUMENTS.Undergraduate,
+    },
+    faqs: usFaqs({
+      name: "Miami University Ohio Regionals",
+      sector: "public",
+      place: "Middletown and Hamilton, Ohio",
+      known:
+        "Miami Regionals are known for low cost Miami degrees, small classes, associate degrees and an English Language Center, on commuter campuses in southwest Ohio.",
+      ielts:
+        "Miami's undergraduate scores are IELTS 6.5, TOEFL iBT 80, PTE 53 or Duolingo 110. Applicants with lower scores can be considered for conditional admission through the Middletown English Language Center, so confirm with Regionals admission.",
+      fees:
+        "For 2026/27, a first time non-Ohio resident pays about $20,779 for 24 credits: tuition $300.17, fees $30.67 and a $534.97 non-resident surcharge per credit hour. The Tuition Promise freezes this rate for eight semesters.",
+      intakes:
+        "You can start in fall (August) or spring (January), and admission for new students is rolling, so apply early to leave time for your I-20 and visa. Check the Regionals admission page for the dates for your term.",
+    }),
+  },
+
+  // ── PDF row 120 ────────────────────────────────────────────────────────
+  {
+    name: "Mt. San Antonio College",
+    city: "Walnut",
+    country: "United States",
+    institutionType: "Public community college",
+    website: "https://www.mtsac.edu",
+    founded: 1945,
+    upcomingIntake: "Feb 2027",
+    programs: ["Business", "Computer Science", "Engineering"],
+    summary:
+      "A public community college in Walnut, California, about 25 miles east of Los Angeles, with more than 400 degree and certificate programmes, transfer pathways to California universities, a $50 application fee and a low English entry of IELTS 4.5.",
+    ieltsOverall: 4.5,
+    ieltsAlternatives: ["TOEFL iBT 3.5 (new scale)", "Duolingo 75", "PTE 41", "iTEP 3.5"],
+    ieltsNote:
+      "IELTS 4.5, TOEFL iBT 3.5 (new scale), Duolingo 75, PTE 41, iTEP 3.5 or Oxford ELLT 4. Partner English schools such as ELS Level 109 also count.",
+    tuitionMin: 11520,
+    tuitionCurrency: "USD",
+    tuitionPeriod: "per year (2026/27, 24 units)",
+    tuitionNote:
+      "Non-resident tuition $434 per unit plus enrollment fee $46 per unit, 24 units. I-20 total is $27,942 with insurance and living costs. Confirm on mtsac.edu.",
+    overview:
+      "Mt. San Antonio College, known as Mt. SAC, is a public community college in Walnut, California, about 25 miles east of Los Angeles, and it began in 1945. It offers more than 400 degree and certificate programmes and is known as a strong transfer college to universities such as UCLA and USC. International F-1 students can apply for fall, spring and summer.",
+    studentLife:
+      "The International Student Center runs events and workshops and the Global Pals programme, and every F-1 student completes a mandatory orientation before classes. Student health insurance is mandatory for international students. Check the international student pages for current events.",
+    accommodation:
+      "The I-20 budget uses $9,500 a year for housing and $4,000 for food, and students arrange housing off campus. The international office has a housing and transportation page with current options and tips.",
+    library:
+      "The Mt. SAC library offers study spaces, computers and online resources, and counselling and tutoring support coursework and transfer plans. Check the library pages for opening hours and services.",
+    sports:
+      "Mt. SAC competes in athletics as the Mounties and hosts the well known Mt. SAC Relays track meet, and students can also join clubs and recreation on campus. Check the athletics pages for current teams.",
+    wikipediaTitle: "Mt. San Antonio College",
+    ...seo("Mt. San Antonio College", "Walnut, California"),
+    courses: [
+      ug("Associate in Science for Transfer, Business Administration", "Associate", "Business", "2 Years", "Feb 2027", "Fall and spring", 11520, "The main pathway to a business administration degree at a California State University."),
+      ug("Associate in Science for Transfer, Computer Science", "Associate", "Computer Science", "2 Years", "Feb 2027", "Fall and spring", 11520),
+      ug("Associate in Science, Engineering", "Associate", "Engineering", "2 Years", "Feb 2027", "Fall and spring", 11520, "Prepares students to move on to a four year engineering degree after transfer."),
+      ug("Associate in Arts for Transfer, Psychology", "Associate", "Psychology", "2 Years", "Feb 2027", "Fall and spring", 11520),
+    ],
+    campuses: [
+      {
+        name: "Walnut Campus",
+        city: "Walnut",
+        address: "1100 North Grand Avenue, Walnut, CA 91789",
+        description: "The single main campus in the San Gabriel Valley, with teaching buildings, the library, the International Student Center and athletics facilities.",
+      },
+    ],
+    documents: {
+      Undergraduate: [
+        ["Identity", "Passport valid for at least 6 months beyond your arrival"],
+        ["Academic", "Proof of high school completion (required if under 18)"],
+        ["Academic", "English language test result (or an accepted exemption)"],
+        ["Financial", "Bank letter or statement with an official signature or seal, dated within six months"],
+        ["Visa", "Form I-20 issued by the college"],
+        ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
+        ["Visa", "Tuberculosis skin test dated within six months"],
+      ],
+    },
+    faqs: usFaqs({
+      name: "Mt. San Antonio College",
+      sector: "public",
+      place: "Walnut, California",
+      known:
+        "Mt. SAC is known for its transfer pathways to University of California and California State University campuses, a very wide choice of programmes and a large campus near Los Angeles.",
+      ielts:
+        "You need IELTS 4.5, TOEFL iBT 3.5 on the new scale, Duolingo 75, PTE 41, iTEP 3.5 or Oxford ELLT 4. Citizens of some English speaking countries are exempt, and completing a partner English school level such as ELS 109 also counts.",
+      fees:
+        "For 2026/27, non-resident tuition is $434 per unit and the enrollment fee is $46 per unit, about $11,520 for 24 units. The I-20 total is $27,942 with insurance and living costs, and the application fee is $50.",
+      intakes:
+        "You can start in fall, spring or summer. For spring 2027 the application deadline is November 15, 2026 and classes begin on February 22, 2027. The fall deadline was June 15 for 2026, so expect a similar date for 2027.",
+    }),
+  },
+
+  // ── PDF row 121 ────────────────────────────────────────────────────────
+  {
+    name: "New York Film Academy",
+    city: "New York",
+    country: "United States",
+    institutionType: "Private film and media arts school",
+    website: "https://www.nyfa.edu",
     founded: 1992,
     upcomingIntake: "Jan 2027",
-    programs: ["Business", "Computing", "Engineering"],
+    programs: ["Filmmaking", "Acting for Film", "Photography"],
     summary:
-      "A public university in Hatfield, Hertfordshire, about 35 km north of London, with two campuses linked by a free shuttle bus. It teaches business, computing, engineering, health, law, psychology and creative subjects to students from nearly 90 countries.",
+      "A private film and performing arts school with campuses in New York City and Los Angeles (Burbank), offering AFA, BFA and MFA degrees in filmmaking, acting, photography and more, with English entry from IELTS 6.0 and a $75 application fee.",
     ieltsOverall: 6.0,
-    ieltsMinBand: 5.5,
-    ieltsNote: "UG usually needs IELTS 6.0 with 5.5 in each band, and PG 6.5 with 5.5, per an agent site. Check your course page.",
-    tuitionMin: 17450,
-    tuitionMax: 22450,
-    tuitionCurrency: "GBP",
-    tuitionPeriod: "per year (2026/27)",
-    tuitionNote: "UG £17,450 and PG £17,950 to £22,450 from an agent page quoting Hertfordshire. A scholarship of up to £4,000 may apply. Confirm on herts.ac.uk.",
+    ieltsAlternatives: ["TOEFL iBT 68 (4 on the new scale)", "Duolingo 105", "MET 55"],
+    ieltsNote:
+      "UG and AFA: IELTS 6.0, TOEFL 68 (4 new scale), Duolingo 105. Master's: IELTS 6.5, TOEFL 79 (4.5), Duolingo 120. Pathway Track for lower scores.",
+    tuitionMin: 19500,
+    tuitionMax: 20500,
+    tuitionCurrency: "USD",
+    tuitionPeriod: "per semester (Fall 2026 and Spring 2027)",
+    tuitionNote:
+      "Filmmaking tuition $19,500 per semester (MFA $20,500) plus a $2,000 departmental fee and smaller fees each semester. Confirm on nyfa.edu.",
     overview:
-      "The University of Hertfordshire is a public university in Hatfield, close to London, with roots in a technical college founded in 1952 and university status since 1992. Its two campuses, College Lane and de Havilland, are linked by a free shuttle bus, and it has more than 25,000 students.",
+      "New York Film Academy was founded in 1992 and teaches film, media and performing arts through hands on, project based study at campuses in New York City and Los Angeles, with a further campus in Florence, Italy. It awards AFA, BFA and MFA degrees as well as one and two year certificates, and its students come from more than 120 countries.",
     studentLife:
-      "Hatfield sits on the main rail line into London, with a typical journey of about 22 minutes to King's Cross, and close to Hertfordshire countryside. Students can join sports teams that compete in British Universities and Colleges Sport leagues, and both campuses have cafes and social spaces.",
+      "Students learn by doing, writing, shooting and directing their own films, and the school runs a film festival department, career and alumni services and guest speaker events. International students who need more English can join the Pathway Track while earning degree credits. Check the student life pages for current activities.",
     accommodation:
-      "Modern accommodation is available on campus, and the university guarantees a room in the first year for students who meet application deadlines and personal requirements. Private student housing is also close to campus. Check the accommodation pages for current prices.",
+      "NYFA publishes student housing information on its housing page, and many students share apartments near the New York and Burbank campuses. Students also budget for their own production costs on top of tuition, so check the cost of attendance pages for current housing prices.",
     library:
-      "Libraries and learning spaces on the campuses offer study areas, computers and a large online collection of journals and ebooks. Check the library pages for opening hours and services.",
+      "Each campus offers study and screening spaces and equipment support for productions, along with online resources for coursework. Check the NYFA pages for current opening hours and services.",
     sports:
-      "The Hertfordshire Sports Village on the de Havilland campus has a 25 metre pool, sports halls, a fitness suite and outdoor pitches, and there is a smaller gym on College Lane. The village is open to the local community too.",
-    wikipediaTitle: "University of Hertfordshire",
-    ...seo("University of Hertfordshire", "Hatfield, Hertfordshire"),
+      "NYFA is a specialist arts school without varsity athletics, so student life centres on film projects, festivals and social events, while students can use gyms and recreation in New York and Los Angeles. Check the student life pages for current activities.",
+    wikipediaTitle: "New York Film Academy",
+    ...seo("New York Film Academy", "New York City and Burbank"),
     courses: [
-      ug("BSc (Hons) Computer Science", "BSc", "Computer Science", "3 Years", "Sep 2027", "September", 17450),
-      ug("BA (Hons) Psychology", "BA", "Psychology", "3 Years", "Sep 2027", "September", 17450),
-      ug("LLB (Hons) Law", "LLB", "Law", "3 Years", "Sep 2027", "September", 17450),
-      pg("MSc International Business", "MSc", "Business", "1 Year", "Jan 2027", SEP_JAN, 17950),
-      pg("MSc Computer Science", "MSc", "Computer Science", "1 Year", "Jan 2027", SEP_JAN),
+      ug("BFA Filmmaking", "BFA", "Film and Media", "3 Years", "Jan 2027", "January, May and August", 19500, "A nine semester degree in New York or Los Angeles where students write, shoot and direct their own films.", "per semester (Fall 2026 and Spring 2027)"),
+      ug("BFA Acting for Film", "BFA", "Acting", "3 Years", "Jan 2027", "January, May and August", undefined, "An acting degree for film built on scene study, voice, movement and audition technique, so confirm the semester fee with admissions."),
+      ug("AFA Filmmaking", "AFA", "Film and Media", "2 Years", "Jan 2027", "January, May and August", 19500, "A six semester associate degree in Los Angeles in which students make several of their own short films.", "per semester (Fall 2026 and Spring 2027)"),
+      pg("MFA Filmmaking", "MFA", "Film and Media", "2 Years", "Jan 2027", "January and August", 20500, "A six semester graduate degree in Los Angeles covering directing, cinematography, editing, producing and sound.", "per semester (Fall 2026 and Spring 2027)"),
+      pg("MFA Photography", "MFA", "Photography", "2 Years", "Jan 2027", "January and August", undefined, "A graduate photography degree in Los Angeles, so confirm the semester fee with admissions."),
     ],
     campuses: [
       {
-        name: "College Lane Campus",
-        city: "Hatfield",
-        address: "College Lane, Hatfield AL10 9AB",
-        description: "A main campus in Hatfield with teaching buildings, accommodation, cafes and a smaller gym.",
+        name: "New York City Campus",
+        city: "New York",
+        address: "17 Battery Place, New York, NY 10004",
+        description: "The original campus near Battery Park in lower Manhattan, offering BFA and other programmes in film, media and performing arts.",
       },
       {
-        name: "de Havilland Campus",
-        city: "Hatfield",
-        address: "Hatfield AL10 9EU",
-        description: "A campus on the site of the former Hatfield aerodrome, home to the Sports Village, a restaurant and student accommodation.",
+        name: "Los Angeles Campus",
+        city: "Burbank",
+        address: "3300 Riverside Drive, Burbank, CA 91505",
+        description: "The Burbank campus near the major studios, where all NYFA degree levels are taught, including the AFA, BFA and MFA programmes.",
       },
     ],
-    documents: UK_DOCUMENTS,
-    faqs: ukFaqs({
-      name: "the University of Hertfordshire",
-      sector: "public",
-      place: "Hatfield, Hertfordshire, England",
+    documents: {
+      Undergraduate: [
+        ["Identity", "Passport"],
+        ["Academic", "High school transcript, translated and evaluated if from outside the USA"],
+        ["Academic", "Narrative statement"],
+        ["Academic", "Two letters of recommendation"],
+        ["Academic", "Creative portfolio or audition"],
+        ["Academic", "English language test result"],
+        ["Financial", "Bank statement showing proof of funds"],
+        ["Visa", "Form I-20 issued by the school"],
+        ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
+      ],
+      Postgraduate: [
+        ["Identity", "Passport"],
+        ["Academic", "Degree certificate and transcripts, evaluated if from outside the USA"],
+        ["Academic", "Narrative statement"],
+        ["Academic", "Letters of recommendation"],
+        ["Academic", "CV or resume"],
+        ["Academic", "Creative portfolio or audition"],
+        ["Academic", "English language test result"],
+        ["Financial", "Bank statement showing proof of funds"],
+        ["Visa", "Form I-20 issued by the school"],
+        ["Visa", "F-1 visa interview appointment and SEVIS fee receipt"],
+      ],
+    },
+    faqs: usFaqs({
+      name: "New York Film Academy",
+      sector: "private",
+      place: "New York City and Burbank, California",
       known:
-        "Hertfordshire is known for business, computing, engineering, health, law and psychology courses, a Sports Village, and two campuses in Hatfield close to London.",
+        "NYFA is known for hands on, project based programmes in filmmaking, acting, photography, producing and media, where students make their own films from the first term.",
       ielts:
-        "Undergraduate courses usually ask for IELTS 6.0 with no band below 5.5, and postgraduate courses usually ask for 6.5 with 5.5 in each band. Check your course page for the exact score.",
+        "For associate and bachelor's programmes, NYFA prefers IELTS 6.0, TOEFL 68 (4 on the new scale) or Duolingo 105. For master's programmes it prefers IELTS 6.5, TOEFL 79 (4.5) or Duolingo 120. Students below these scores can join the Pathway Track.",
       fees:
-        "An agent page quoting Hertfordshire lists 2026/27 fees of £17,450 for undergraduate courses and £17,950 to £22,450 for taught master's courses. A scholarship of up to £4,000 may apply, so confirm with Hertfordshire.",
+        "For Fall 2026 and Spring 2027, Filmmaking AFA and BFA tuition is $19,500 per semester and MFA Filmmaking is $20,500, plus a $2,000 departmental fee and smaller activity, technology and wellness fees. Other programmes differ, so confirm your course fee.",
       intakes:
-        "Undergraduate courses start in September. Many master's courses start in September or January. An agent page gives a 27 November 2026 application deadline, so check your course page.",
-    }),
-  },
-
-  // ── PDF row 42 ─────────────────────────────────────────────────────────
-  {
-    name: "University of Huddersfield",
-    city: "Huddersfield",
-    country: "United Kingdom",
-    institutionType: "Public university",
-    website: "https://www.hud.ac.uk",
-    upcomingIntake: "Jan 2027",
-    programs: ["Business", "Computing", "Engineering"],
-    summary:
-      "A public university in Huddersfield, West Yorkshire, with a town centre campus at Queensgate and a London campus. It teaches business, computing, engineering, health, art and design and media courses, with a pathway centre for students who need extra preparation.",
-    ieltsOverall: 6.0,
-    ieltsMinBand: 5.5,
-    ieltsNote: "Many courses ask for IELTS 6.0 with no band below 5.5, per course pages on an agent site. Check your course page for the exact score.",
-    tuitionMin: 17600,
-    tuitionMax: 21000,
-    tuitionCurrency: "GBP",
-    tuitionPeriod: "per year (2026/27)",
-    tuitionNote: "UG £17,600, most MA and MSc £18,700, MBA £19,690, some health courses up to £21,000, from hud.ac.uk. Placement year £3,300.",
-    overview:
-      "The University of Huddersfield is a public university whose main campus at Queensgate sits in the town centre, with the Huddersfield Narrow Canal running through it. It also runs a London campus offering international business courses, and a separate International Study Centre offers pathway programmes for students who need extra preparation.",
-    studentLife:
-      "Huddersfield is a West Yorkshire town at the foot of the Pennines with good road and rail links. Student Central is the campus hub, bringing together the students' union, a shop, the library and computer suites, and the town centre is a short walk away.",
-    accommodation:
-      "Students can find university halls and private housing, and the students' union runs an accommodation office called HudLets that works with halls and private landlords. Check the accommodation pages for current prices and booking dates.",
-    library:
-      "The library sits in the heart of the campus within the Student Central building, with study spaces, computer suites and online collections. Check the library pages for opening hours and services.",
-    sports:
-      "Students can use the campus gym and sports facilities and join clubs through the students' union. Check the sport pages for current memberships.",
-    wikipediaTitle: "University of Huddersfield",
-    ...seo("University of Huddersfield", "Huddersfield and London"),
-    courses: [
-      ug("BA (Hons) International Business", "BA", "Business", undefined, "Jan 2027", "September, January and May", 17600, "Offered at the London campus, where the 2026/27 international fee is the same as the main undergraduate rate."),
-      ug("BSc (Hons) Computer Science", "BSc", "Computer Science", undefined, "Jan 2027", "September, January and May", 17600),
-      ug("BA (Hons) Media and Communications", "BA", "Media", undefined, "Jan 2027", "September, January and May", 17600),
-      pg("MSc International Business", "MSc", "Business", "1 Year", "Jan 2027", "September, January and May", 18700),
-      pg("MSc Electronic and Automotive Engineering", "MSc", "Engineering", "1 Year", "Jan 2027", "September, January and May", 18700),
-      pg("MBA", "MBA", "Business", undefined, "Jan 2027", "September, January and May", 19690),
-    ],
-    campuses: [
-      {
-        name: "Queensgate Campus",
-        city: "Huddersfield",
-        address: "Queensgate, Huddersfield HD1 3DH",
-        description: "The main campus in the town centre, with the library, students' union, teaching buildings and the Barbara Hepworth Building for art and design.",
-      },
-      {
-        name: "University of Huddersfield London",
-        city: "London",
-        description: "A London campus for international students, offering selected business courses with its own fees and entry requirements.",
-      },
-    ],
-    documents: UK_DOCUMENTS,
-    faqs: ukFaqs({
-      name: "the University of Huddersfield",
-      sector: "public",
-      place: "Huddersfield, West Yorkshire, England, with a campus in London",
-      known:
-        "Huddersfield is known for business, computing, engineering, health, music, art and design and media courses, a compact town centre campus and clear published fees for international students.",
-      ielts:
-        "Many courses ask for IELTS 6.0 overall with no element below 5.5, according to course pages on an agent site. Some courses ask for more, so check your course page for the exact score.",
-      fees:
-        "For 2026/27, Huddersfield lists £17,600 for undergraduate courses, £18,700 for most MA and MSc courses and £19,690 for the MBA. Some health and pharmacy courses cost more, and a placement year is £3,300.",
-      intakes:
-        "The 2026/27 year includes September 2026, January 2027 and May 2027 starts. Check your course page for which of these your course offers.",
-    }),
-  },
-
-  // ── PDF row 43 ─────────────────────────────────────────────────────────
-  {
-    name: "University of Hull",
-    city: "Hull",
-    country: "United Kingdom",
-    institutionType: "Public research university",
-    website: "https://www.hull.ac.uk",
-    founded: 1927,
-    upcomingIntake: "Jan 2027",
-    programs: ["Computing", "Business", "Health"],
-    summary:
-      "A public research university in Hull, East Riding of Yorkshire, on one compact campus on Cottingham Road. It teaches health, business, law, science, computing, arts and engineering, and runs the Hull York Medical School with the University of York.",
-    ieltsOverall: 6.0,
-    ieltsMinBand: 5.5,
-    ieltsNote: "UG courses ask for IELTS 6.0 overall with 5.5 in each skill. Some PG courses ask for 6.5. Check your course page.",
-    tuitionMin: 18945,
-    tuitionCurrency: "GBP",
-    tuitionPeriod: "per year (2026/27)",
-    tuitionNote: "Only one UG fee was found, £18,945 for BA Music from an aggregator site. Confirm all fees on hull.ac.uk before quoting.",
-    overview:
-      "The University of Hull began in 1927 as University College Hull and is based on a single campus on Cottingham Road. It describes itself as England's 14th oldest university and holds a Gold rating in the Teaching Excellence Framework 2023. It teaches business, health, science, computing, law and arts, and OnCampus Hull offers preparation programmes.",
-    studentLife:
-      "The university says students can reach lectures from their room in under 10 minutes on one safe campus. It describes Hull as the UK's most affordable city, with rent below half of London levels, and the campus has bars, cafes and support services.",
-    accommodation:
-      "New on campus accommodation provides rooms for more than 2,300 students, with wifi and bills included in the rent. Check the accommodation pages for current prices, guarantee conditions and booking dates.",
-    library:
-      "The seven storey Brynmor Jones Library holds over a million books and digital resources, with silent zones, group rooms, a family room, a cafe and views from its top floor.",
-    sports:
-      "The campus has an all new sports centre and gym, and students can join clubs through the students' union. Check the sport pages for current memberships.",
-    wikipediaTitle: "University of Hull",
-    facebookUrl: "https://www.facebook.com/UniversityOfHull",
-    instagramUrl: "https://www.instagram.com/universityofhull",
-    linkedinUrl: "https://uk.linkedin.com/school/university-of-hull",
-    ...seo("University of Hull", "Hull, Yorkshire"),
-    courses: [
-      ug("BSc (Hons) Computer Science", "BSc", "Computer Science", "3 Years", "Sep 2027", "September"),
-      ug("BSc (Hons) Computer Science (Artificial Intelligence)", "BSc", "Computer Science", undefined, "Sep 2027", "September"),
-      ug("BA (Hons) Music", "BA", "Music", "3 Years", "Sep 2027", "September", 18945),
-      ug("BA (Hons) English", "BA", "English", undefined, "Sep 2027", "September"),
-      ug("BEng (Hons) Civil Engineering", "BEng", "Engineering", undefined, "Sep 2027", "September"),
-      pg("MSc Artificial Intelligence and Data Science", "MSc", "Computer Science", "1 Year", undefined, undefined),
-    ],
-    campuses: [
-      {
-        name: "Hull Campus",
-        city: "Hull",
-        address: "Cottingham Road, Hull HU6 7RX",
-        description: "The single main campus, with the Brynmor Jones Library, a sports centre, the Allam Medical Building and on campus accommodation.",
-      },
-    ],
-    documents: UK_DOCUMENTS,
-    faqs: ukFaqs({
-      name: "the University of Hull",
-      sector: "public",
-      place: "Hull, East Riding of Yorkshire, England",
-      known:
-        "Hull is known for its single compact campus, a Gold rating in the Teaching Excellence Framework 2023, the Hull York Medical School and courses in business, health, computing, law and arts.",
-      ielts:
-        "Undergraduate courses ask for IELTS 6.0 overall with at least 5.5 in each skill. Some postgraduate courses ask for 6.5, so check your course page for the exact score.",
-      fees:
-        "Only one fee was found, £18,945 a year for BA Music from an aggregator site. Hull offers a £2,000 a year fee waiver to undergraduates from listed countries, and postgraduate waivers exist. Confirm all fees with Hull.",
-      intakes:
-        "Hull lists September 2026, January 2027 and May 2027 enrolment for its fee waivers. Most undergraduate courses start in September, so check your course page for exact dates.",
+        "Most degrees start three times a year, in January, May and August, though some programmes start only in certain terms. The application fee is $75, and a deposit secures your place after admission, so apply early for your I-20 and visa.",
     }),
   },
 ];

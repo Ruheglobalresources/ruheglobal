@@ -6,6 +6,7 @@
 // Menu items without an href are pages that are not built yet. They show a
 // "Soon" tag instead of a link, so nothing leads to a 404. Give one an href
 // when its page exists.
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -25,11 +26,10 @@ import {
   User,
   type LucideIcon,
 } from "lucide-react";
-import { elevation1 } from "@/components/dashboard/styles";
 import type { PortalCounsellor } from "@/lib/portal-counsellor";
 import { cn } from "@/lib/utils";
 import { CounsellorCard } from "./counsellor-card";
-import { usePortalShell } from "./portal-shell";
+import { LEFT_EXPANDED, usePortalShell } from "./portal-shell";
 import { ProfileCard } from "./profile-card";
 
 type MenuItem = {
@@ -71,6 +71,13 @@ const BOTTOM: MenuItem[] = [
   },
 ];
 
+// Thin ruby bar on the screen edge next to the active item. The offset matches
+// the aside's padding (p-3 expanded, p-2 collapsed) so the bar touches the edge.
+const accentBar = (offset: string) =>
+  `before:absolute before:top-1/2 before:h-5 before:w-1 before:-translate-y-1/2 before:rounded-r-full before:bg-ruby-500 ${
+    offset === "-left-2" ? "before:-left-2" : "before:-left-3"
+  }`;
+
 type PortalNavProps = {
   user: { name: string | null; email: string | null };
   counsellor: PortalCounsellor | null;
@@ -78,18 +85,28 @@ type PortalNavProps = {
 
 export function PortalNav({ user, counsellor }: PortalNavProps) {
   const pathname = usePathname();
-  const { ready, dragging, leftCollapsed: collapsed, toggleLeft, setChatOpen, unread } = usePortalShell();
+  const { ready, dragging, leftCollapsed: userCollapsed, toggleLeft, setChatOpen, unread } = usePortalShell();
 
-  const toggleLabel = collapsed ? "Expand sidebar" : "Collapse sidebar";
-  const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
+  // Hover-peek: only when the user has closed the panel. Hovering the icon rail
+  // shows the full sidebar over the page; leaving it closes it again. If the
+  // user has the panel open, hover does nothing. `collapsed` is what gets drawn.
+  const [hovered, setHovered] = useState(false);
+  const peek = userCollapsed && hovered;
+  const collapsed = userCollapsed && !hovered;
+
+  const toggleLabel = userCollapsed ? "Expand sidebar" : "Collapse sidebar";
+  const ToggleIcon = userCollapsed ? PanelLeftOpen : PanelLeftClose;
   const toggle = (
     <button
       type="button"
-      onClick={toggleLeft}
+      onClick={() => {
+        setHovered(false); // closing collapses right away, even with the cursor still over it
+        toggleLeft();
+      }}
       aria-label={toggleLabel}
-      aria-expanded={!collapsed}
+      aria-expanded={!userCollapsed}
       title={toggleLabel}
-      className="grid size-9 shrink-0 place-items-center rounded-full text-neutral-500 outline-none transition hover:bg-neutral-100 hover:text-ink focus-visible:ring-2 focus-visible:ring-ruby-500/50"
+      className="grid size-9 shrink-0 place-items-center rounded-full text-white/70 outline-none transition hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-ruby-500/60"
     >
       <ToggleIcon size={20} />
     </button>
@@ -100,18 +117,38 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
       {/* Sidebar (desktop): full menu, or an icon rail when collapsed */}
       <aside
         className={cn(
-          "fixed bottom-0 left-0 top-16 z-20 hidden overflow-y-auto overflow-x-hidden border-r border-neutral-100 bg-white lg:block",
-          collapsed ? "p-3" : "p-4",
+          "fixed inset-y-0 left-0 z-20 hidden overflow-y-auto overflow-x-hidden bg-ink [scrollbar-color:rgba(255,255,255,0.2)_transparent] [scrollbar-width:thin] lg:block",
+          collapsed ? "p-2" : "p-3",
+          peek && "shadow-[8px_0_24px_rgba(16,27,45,0.3)]",
           ready && !dragging && "transition-[width] duration-200 ease-out"
         )}
-        style={{ width: "var(--portal-left)" }}
+        // While peeking, the aside grows over the page. --portal-left stays at the
+        // rail width, so the page content does not move.
+        style={{ width: peek ? `${LEFT_EXPANDED}px` : "var(--portal-left)" }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
       >
-        <div className={cn("space-y-4", collapsed && "flex flex-col items-center")}>
+        <div className={cn("space-y-3", collapsed && "flex flex-col items-center")}>
           {collapsed ? (
-            toggle
+            <>
+              <Link
+                href="/portal"
+                aria-label="Ruhe Global Resources"
+                title="Ruhe Global Resources"
+                className="grid size-10 place-items-center rounded-xl bg-ruby-500 font-display text-lg font-semibold text-white outline-none transition hover:bg-ruby-600 focus-visible:ring-2 focus-visible:ring-ruby-500/60"
+              >
+                R
+              </Link>
+              {toggle}
+            </>
           ) : (
-            <div className="flex items-center justify-between pl-1">
-              <span className="text-sm font-semibold text-ink">Menu</span>
+            <div className="flex h-10 items-center justify-between gap-2 pl-1">
+              <Link
+                href="/portal"
+                className="min-w-0 truncate font-display text-lg font-semibold tracking-tight text-ruby-400 outline-none focus-visible:ring-2 focus-visible:ring-ruby-500/60"
+              >
+                Ruhe<span className="text-white"> Global Resources</span>
+              </Link>
               {toggle}
             </div>
           )}
@@ -124,17 +161,17 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
               onClick={() => setChatOpen(true)}
               aria-label={counsellor?.name ? `Message ${counsellor.name}` : "Message your counsellor"}
               title={counsellor?.name ? `Message ${counsellor.name}` : "Message your counsellor"}
-              className="relative grid size-11 place-items-center rounded-full outline-none transition hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-ruby-500/50"
+              className="relative grid size-10 place-items-center rounded-full outline-none transition hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ruby-500/60"
             >
               {counsellor?.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={counsellor.image} alt="" className="size-10 rounded-full object-cover" />
+                <img src={counsellor.image} alt="" className="size-9 rounded-full object-cover" />
               ) : counsellor ? (
-                <span className="grid size-10 place-items-center rounded-full bg-ruby-50 text-base font-semibold text-ruby-700">
+                <span className="grid size-9 place-items-center rounded-full bg-ruby-50 text-base font-semibold text-ruby-700">
                   {(counsellor.name ?? "C").charAt(0).toUpperCase()}
                 </span>
               ) : (
-                <MessageCircle size={22} className="text-neutral-600" />
+                <MessageCircle size={20} className="text-white/70" />
               )}
               {unread > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-ruby-500 px-1 text-[11px] font-semibold leading-5 text-white">
@@ -144,7 +181,7 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
             </button>
           ) : (
             <div>
-              <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-neutral-500">Your counsellor</p>
+              <p className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wider text-white/50">Your counsellor</p>
               <CounsellorCard counsellor={counsellor} />
             </div>
           )}
@@ -154,14 +191,15 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
             className={cn(
               collapsed
                 ? "flex flex-col items-center gap-1"
-                : cn("overflow-hidden rounded-3xl border border-neutral-200 bg-white p-1.5", elevation1)
+                : "space-y-0.5 pt-1"
             )}
           >
             {MENU.map(({ label, icon: Icon, href, match, highlight }) => {
               const active = href && match ? match(pathname) : false;
 
               if (collapsed) {
-                const rail = "grid size-11 place-items-center rounded-2xl outline-none transition focus-visible:ring-2 focus-visible:ring-ruby-500/50";
+                const rail =
+                  "relative grid size-10 place-items-center rounded-xl outline-none transition focus-visible:ring-2 focus-visible:ring-ruby-500/60";
                 if (!href) {
                   return (
                     <div
@@ -169,7 +207,7 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
                       aria-disabled="true"
                       aria-label={`${label} (coming soon)`}
                       title={`${label} (coming soon)`}
-                      className={cn(rail, "cursor-not-allowed select-none", highlight ? "bg-ruby-50 text-ruby-700" : "text-neutral-300")}
+                      className={cn(rail, "cursor-not-allowed select-none", highlight ? "bg-ruby-500/20 text-ruby-200" : "text-white/30")}
                     >
                       <Icon size={20} />
                     </div>
@@ -182,14 +220,14 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
                     aria-label={label}
                     title={label}
                     aria-current={active ? "page" : undefined}
-                    className={cn(rail, active ? "bg-ruby-50 text-ruby-600" : "text-neutral-500 hover:bg-neutral-100")}
+                    className={cn(rail, active ? cn("bg-white/10 text-white", accentBar("-left-2")) : "text-white/65 hover:bg-white/10 hover:text-white")}
                   >
                     <Icon size={20} />
                   </Link>
                 );
               }
 
-              const base = "flex h-12 items-center gap-3 rounded-2xl px-3.5 text-[15px] font-medium transition";
+              const base = "relative flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium transition";
 
               if (!href) {
                 return (
@@ -197,11 +235,11 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
                     key={label}
                     aria-disabled="true"
                     title="Coming soon"
-                    className={cn(base, "cursor-not-allowed select-none", highlight ? "bg-gradient-to-r from-ruby-50 to-ruby-100/70 text-ruby-700" : "text-neutral-400")}
+                    className={cn(base, "cursor-not-allowed select-none", highlight ? "bg-ruby-500/20 text-ruby-200" : "text-white/35")}
                   >
                     <Icon size={20} />
                     <span className="flex-1">{label}</span>
-                    <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                    <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white/60">
                       Soon
                     </span>
                   </div>
@@ -213,11 +251,11 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
                   key={label}
                   href={href}
                   aria-current={active ? "page" : undefined}
-                  className={cn(base, active ? "bg-ruby-50 text-ruby-700" : "text-neutral-600 hover:bg-neutral-100")}
+                  className={cn(base, active ? cn("bg-white/10 text-white", accentBar("-left-3")) : "text-white/70 hover:bg-white/10 hover:text-white")}
                 >
-                  <Icon size={20} className={active ? "text-ruby-600" : "text-neutral-500"} />
+                  <Icon size={20} className={active ? "text-ruby-400" : "text-white/55"} />
                   <span className="flex-1">{label}</span>
-                  <ChevronRight size={18} className={active ? "text-ruby-600" : "text-neutral-400"} />
+                  <ChevronRight size={18} className={active ? "text-ruby-400" : "text-white/35"} />
                 </Link>
               );
             })}

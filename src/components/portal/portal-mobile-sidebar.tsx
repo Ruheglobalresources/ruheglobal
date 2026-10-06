@@ -1,9 +1,6 @@
 "use client";
 
 // src/components/portal/portal-mobile-sidebar.tsx
-// The portal sidebar for phones and tablets (below lg). Same Sheet component
-// the homepage MobileNavSheet uses, but sliding in from the left. The trigger
-// is the hamburger in the portal top bar.
 import { useEffect, useState } from "react";
 import { Menu } from "lucide-react";
 import {
@@ -25,8 +22,6 @@ type PortalMobileSidebarProps = {
 export function PortalMobileSidebar({ user, counsellor }: PortalMobileSidebarProps) {
   const [open, setOpen] = useState(false);
 
-  // If the window grows to desktop width while the sheet is open, the fixed
-  // sidebar takes over, so close the sheet instead of leaving its overlay behind.
   useEffect(() => {
     const query = window.matchMedia("(min-width: 1024px)");
     const onChange = (event: MediaQueryListEvent) => {
@@ -48,15 +43,18 @@ export function PortalMobileSidebar({ user, counsellor }: PortalMobileSidebarPro
         </button>
       </SheetTrigger>
 
-      <SheetContent side="left" className="h-dvh w-[88%] max-w-sm gap-0 bg-white p-0 sm:max-w-sm lg:hidden">
-        <SheetHeader className="shrink-0 border-b border-neutral-100 py-4 pl-4 pr-12">
-          <SheetTitle className="font-display text-xl font-semibold tracking-tight text-ruby-600">
-            Ruhe<span className="text-ink"> Global Resources</span>
+      <SheetContent
+        side="left"
+        className="h-dvh w-[88%] max-w-sm gap-0 border-white/10 bg-ink p-0 sm:max-w-sm lg:hidden [&>button]:text-white/70 [&>button]:hover:text-white"
+      >
+        <SheetHeader className="shrink-0 border-b border-white/10 py-4 pl-4 pr-12">
+          <SheetTitle className="font-display text-xl font-semibold tracking-tight text-ruby-400">
+            Ruhe<span className="text-white"> Global Resources</span>
           </SheetTitle>
           <SheetDescription className="sr-only">Portal navigation</SheetDescription>
         </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        <div className="flex-1 overflow-y-auto p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] [scrollbar-color:rgba(255,255,255,0.2)_transparent] [scrollbar-width:thin]">
           <PortalSidebarContent user={user} counsellor={counsellor} onNavigate={() => setOpen(false)} />
         </div>
       </SheetContent>
