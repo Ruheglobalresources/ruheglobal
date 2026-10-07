@@ -188,7 +188,7 @@ export function PortalMain({ children }: { children: ReactNode }) {
   return (
     <main
       className={cn(
-        "px-4 pb-28 pt-24 sm:px-6 lg:pb-12 lg:pl-[calc(var(--portal-left)+1.5rem)] lg:pr-[calc(var(--portal-right)+var(--portal-right-gutter))] lg:pt-8",
+        "px-4 pb-28 pt-4 sm:px-6 lg:pb-12 lg:pl-[calc(var(--portal-left)+1.5rem)] lg:pr-[calc(var(--portal-right)+var(--portal-right-gutter))] lg:pt-8",
         ready && !dragging && "lg:transition-[padding] lg:duration-150 lg:ease-out motion-reduce:lg:transition-none"
       )}
     >
