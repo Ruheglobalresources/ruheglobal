@@ -13,8 +13,19 @@ export type SchoolTab = { id: string; label: string };
  * It publishes --nav-offset (its height while showing, 0px while hidden), so
  * this bar sits directly under the navbar when it is showing and moves up to
  * the top of the viewport when the navbar hides.
+ *
+ * Used by the school page (defaults) and the institution page
+ * (ariaLabel="Institution sections" + compact).
  */
-export function SchoolTabs({ tabs }: { tabs: SchoolTab[] }) {
+export function SchoolTabs({
+  tabs,
+  ariaLabel = "School sections",
+  compact = false,
+}: {
+  tabs: SchoolTab[];
+  ariaLabel?: string;
+  compact?: boolean;
+}) {
   const [active, setActive] = useState(tabs[0]?.id ?? "");
   const barRef = useRef<HTMLElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
@@ -89,12 +100,15 @@ export function SchoolTabs({ tabs }: { tabs: SchoolTab[] }) {
   return (
     <nav
       ref={barRef}
-      aria-label="School sections"
+      aria-label={ariaLabel}
       className="sticky top-[var(--nav-offset,0px)] z-20 border-b border-ink/10 bg-white/95 backdrop-blur transition-[top] duration-300 ease-out motion-reduce:transition-none"
     >
       <div
         ref={stripRef}
-        className="relative mx-auto flex max-w-7xl overflow-x-auto px-2 [scrollbar-width:none] sm:px-8 lg:justify-center [&::-webkit-scrollbar]:hidden"
+        className={cn(
+          "relative mx-auto flex overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+          compact ? "max-w-6xl px-1 sm:px-4 lg:px-6" : "max-w-7xl px-2 sm:px-8 lg:justify-center"
+        )}
       >
         {tabs.map((t) => (
           <a key={t.id}
@@ -105,7 +119,8 @@ export function SchoolTabs({ tabs }: { tabs: SchoolTab[] }) {
             onClick={(e) => go(e, t.id)}
             aria-current={active === t.id ? "true" : undefined}
             className={cn(
-              "flex h-14 shrink-0 items-center whitespace-nowrap border-b-2 px-4 text-sm font-medium transition-colors lg:px-6",
+              "flex shrink-0 items-center whitespace-nowrap border-b-2 text-sm font-medium transition-colors",
+              compact ? "h-10 px-3.5 lg:px-5" : "h-14 px-4 lg:px-6",
               active === t.id
                 ? "border-ruby text-ruby"
                 : "border-transparent text-ink/60 hover:text-ink"
