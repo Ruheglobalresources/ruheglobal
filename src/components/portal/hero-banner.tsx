@@ -67,36 +67,34 @@ export function HeroBanner({
       {/* Content */}
       <div className="relative z-10 flex min-h-[190px] items-start px-5 pt-4 sm:min-h-[210px] sm:px-6 sm:pt-5 md:min-h-[230px] md:px-7 md:pt-5 lg:min-h-[240px] lg:px-8 lg:pt-5">
         <div className="max-w-[58%] min-w-0">
+
           {/* Greeting */}
           <p className="flex items-center gap-2 text-sm font-semibold text-ink sm:text-base">
             Hi, {firstName ?? "there"} <WavingHand />
           </p>
 
-          {/* Mobile headline */}
-          <h1 className="mt-1.5 font-display text-2xl font-semibold leading-tight text-ruby-600 md:hidden">
-            Not sure where
-            <span className="block">to start?</span>
+          {/* Mobile heading */}
+          <h1 className="mt-4 font-display text-xl font-semibold leading-tight text-ruby-600 md:hidden">
+            Not sure what to study?
+           
           </h1>
 
-          {/* Desktop / tablet headline */}
+          {/* Tablet + desktop heading */}
           <h1 className="mt-1.5 hidden font-display text-2xl font-semibold leading-tight text-ruby-600 md:block lg:text-3xl">
             Not sure what you can
             <span className="block">study abroad?</span>
           </h1>
 
-          {/* Mobile description */}
-          <p className="mt-1.5 text-xs leading-5 text-neutral-600 md:hidden">
-            Let&apos;s find your best-fit options.
-          </p>
+          
 
-          {/* Desktop / tablet description */}
+          {/* Tablet + desktop description */}
           <p className="mt-3 hidden max-w-md text-xs leading-5 text-neutral-600 md:block sm:text-sm sm:leading-5">
             Let&apos;s help you find courses and institutions that fit your
             background.
           </p>
 
           {/* Buttons */}
-          <div className="md:mt-4  flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             <Link
               href="/portal/courses"
               className={cn(filledButton, "text-xs sm:text-sm")}
@@ -109,7 +107,7 @@ export function HeroBanner({
               href="#applications"
               className={cn(
                 outlinedButton,
-                "hidden text-xs md:inline-flex sm:text-sm"
+                "hidden text-xs sm:inline-flex sm:text-sm"
               )}
             >
               Book Your Consultation
