@@ -19,7 +19,7 @@ export function HighlightsTabs({ items }: { items: HighlightItem[] }) {
       <div
         role="tablist"
         aria-label="Highlights"
-        className="flex overflow-x-auto border-b border-ink/10 px-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex overflow-x-auto border-b border-ink/10 px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {items.map((i) => (
           <button
@@ -31,7 +31,7 @@ export function HighlightsTabs({ items }: { items: HighlightItem[] }) {
             aria-controls={`highlight-panel-${i.id}`}
             onClick={() => setActive(i.id)}
             className={cn(
-              "h-9 shrink-0 whitespace-nowrap border-b-2 px-3 text-[13px] font-semibold transition-colors",
+              "h-12 shrink-0 whitespace-nowrap border-b-2 px-4 text-sm font-semibold transition-colors",
               active === i.id ? "border-ruby text-ruby" : "border-transparent text-ink/60 hover:text-ink"
             )}
           >
@@ -44,10 +44,10 @@ export function HighlightsTabs({ items }: { items: HighlightItem[] }) {
         role="tabpanel"
         id={`highlight-panel-${current.id}`}
         aria-labelledby={`highlight-tab-${current.id}`}
-        className="space-y-2.5 p-3.5"
+        className="space-y-4 p-5"
       >
         {paragraphs(current.text).map((p, idx) => (
-          <p key={idx} className="whitespace-pre-line text-sm leading-6 text-ink/80">
+          <p key={idx} className="whitespace-pre-line text-base leading-7 text-ink/75">
             {p}
           </p>
         ))}

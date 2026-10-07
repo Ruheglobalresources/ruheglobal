@@ -12,8 +12,8 @@ const base =
   "inline-flex items-center justify-center gap-2 rounded-md font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ruby/40 focus-visible:ring-offset-1";
 
 const sizes = {
-  sm: "h-8 px-3 text-[13px]",
-  md: "h-10 px-5 text-sm",
+  sm: "h-9 px-4 text-sm",
+  md: "h-11 px-6 text-sm",
   lg: "h-12 px-8 text-base", // the big "View courses" buttons
 } as const;
 

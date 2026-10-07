@@ -10,11 +10,12 @@ import { btn, card } from "./ui";
 
 /* ------------------------------- basics -------------------------------- */
 
+/** Same reading size as the school page: 16px text, 28px line height. */
 export function Prose({ text }: { text: string }) {
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-4">
       {paragraphs(text).map((p, i) => (
-        <p key={i} className="whitespace-pre-line text-sm leading-6 text-ink/80">
+        <p key={i} className="whitespace-pre-line text-base leading-7 text-ink/75">
           {p}
         </p>
       ))}
@@ -22,7 +23,7 @@ export function Prose({ text }: { text: string }) {
   );
 }
 
-/** A white card with a light grey header bar. Compact on purpose: 14px body, 14px padding. */
+/** A white card with a light grey header bar. */
 export function Card({
   id,
   title,
@@ -37,12 +38,12 @@ export function Card({
   bodyClassName?: string;
 }) {
   return (
-    <section id={id} className={cn(card, "scroll-mt-14 overflow-hidden")}>
-      <header className="flex items-center justify-between gap-3 border-b border-ink/10 bg-neutral-50 px-3.5 py-2">
-        <h2 className="text-[15px] font-semibold text-ink">{title}</h2>
+    <section id={id} className={cn(card, "scroll-mt-16 overflow-hidden")}>
+      <header className="flex items-center justify-between gap-3 border-b border-ink/10 bg-neutral-50 px-5 py-3">
+        <h2 className="font-display text-xl font-semibold text-ink">{title}</h2>
         {aside}
       </header>
-      <div className={cn("p-3.5", bodyClassName)}>{children}</div>
+      <div className={cn("p-5", bodyClassName)}>{children}</div>
     </section>
   );
 }
@@ -63,12 +64,12 @@ export function StatStrip({ items }: { items: Stat[] }) {
       {items.map(({ icon: Icon, label, value }) => (
         <div
           key={label}
-          className="flex items-center gap-2.5 bg-white px-3 py-2.5 [&:last-child:nth-child(odd)]:col-span-2 sm:[&:last-child:nth-child(odd)]:col-span-1"
+          className="flex items-center gap-3 bg-white px-4 py-4 [&:last-child:nth-child(odd)]:col-span-2 sm:[&:last-child:nth-child(odd)]:col-span-1"
         >
-          <Icon size={18} className="shrink-0 text-ruby" />
+          <Icon size={22} className="shrink-0 text-ruby" />
           <div className="min-w-0">
-            <dd className="truncate text-[15px] font-semibold leading-5 text-ink">{value}</dd>
-            <dt className="text-xs text-ink/55">{label}</dt>
+            <dd className="truncate text-lg font-semibold leading-6 text-ink">{value}</dd>
+            <dt className="text-sm text-ink/55">{label}</dt>
           </div>
         </div>
       ))}
@@ -78,12 +79,12 @@ export function StatStrip({ items }: { items: Stat[] }) {
 
 export function SubjectChips({ items }: { items: string[] }) {
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-ink/10 pt-3">
+    <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-ink/10 pt-4">
       <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-ink/55">Subjects</span>
       {items.map((s) => (
         <span
           key={s}
-          className="rounded-sm border border-ink/15 bg-neutral-50 px-2 py-0.5 text-xs font-medium text-ink/80"
+          className="rounded-sm border border-ink/15 bg-neutral-50 px-3 py-1 text-sm font-medium text-ink/80"
         >
           {s}
         </span>
@@ -106,11 +107,11 @@ export type SocialLinks = Partial<Record<(typeof SOCIALS)[number]["key"], string
 
 function Fact({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: ReactNode }) {
   return (
-    <div className="flex items-start gap-2.5 px-3.5 py-2.5">
-      <Icon size={17} className="mt-0.5 shrink-0 text-ruby" />
+    <div className="flex items-start gap-3 px-5 py-3.5">
+      <Icon size={20} className="mt-0.5 shrink-0 text-ruby" />
       <div className="min-w-0">
-        <dt className="text-xs text-ink/55">{label}</dt>
-        <dd className="mt-0.5 text-sm font-medium leading-5 text-ink">{children}</dd>
+        <dt className="text-sm text-ink/55">{label}</dt>
+        <dd className="mt-0.5 text-base font-medium leading-6 text-ink">{children}</dd>
       </div>
     </div>
   );
@@ -143,9 +144,9 @@ export function QuickFacts({
 
   return (
     <aside aria-label="Quick facts" className="order-first lg:order-none">
-      <div className="lg:sticky lg:top-[calc(var(--nav-offset,0px)_+_3.25rem)] lg:transition-[top] lg:duration-300 lg:ease-out motion-reduce:transition-none">
+      <div className="lg:sticky lg:top-[calc(var(--nav-offset,0px)_+_4.5rem)] lg:transition-[top] lg:duration-300 lg:ease-out motion-reduce:transition-none">
         <div className={cn(card, "overflow-hidden")}>
-          <h2 className="bg-ink px-3.5 py-2 text-sm font-semibold text-white">Quick facts</h2>
+          <h2 className="bg-ink px-5 py-3 font-display text-lg font-semibold text-white">Quick facts</h2>
 
           {hasFacts && (
             <dl className="divide-y divide-ink/10">
@@ -157,7 +158,7 @@ export function QuickFacts({
               {tuition && (
                 <Fact icon={Banknote} label="Tuition fee">
                   {tuition}
-                  {tuitionNote && <span className="mt-0.5 block text-xs font-normal text-ink/60">{tuitionNote}</span>}
+                  {tuitionNote && <span className="mt-0.5 block text-sm font-normal text-ink/60">{tuitionNote}</span>}
                 </Fact>
               )}
               {english.lines.length > 0 && (
@@ -167,13 +168,13 @@ export function QuickFacts({
                       {l}
                     </span>
                   ))}
-                  {english.note && <span className="mt-0.5 block text-xs font-normal text-ink/60">{english.note}</span>}
+                  {english.note && <span className="mt-0.5 block text-sm font-normal text-ink/60">{english.note}</span>}
                 </Fact>
               )}
             </dl>
           )}
 
-          <div className={cn("space-y-2 bg-neutral-50 p-3", hasFacts && "border-t border-ink/10")}>
+          <div className={cn("space-y-3 bg-neutral-50 p-4", hasFacts && "border-t border-ink/10")}>
             <Link href={applyUrl} className={cn(btn("primary"), "w-full")}>
               Start your application
             </Link>
@@ -183,8 +184,8 @@ export function QuickFacts({
           </div>
 
           {links.length > 0 && (
-            <div className="flex items-center gap-1.5 border-t border-ink/10 px-3.5 py-2.5">
-              <span className="mr-1 text-xs text-ink/55">Follow</span>
+            <div className="flex items-center gap-2 border-t border-ink/10 px-5 py-3">
+              <span className="mr-1 text-sm text-ink/55">Follow</span>
               {links.map(({ key, label, href, Icon }) => (
                 <a
                   key={key}
@@ -192,9 +193,9 @@ export function QuickFacts({
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="grid size-8 place-items-center rounded-md border border-ink/15 text-ink/70 transition-colors hover:border-ruby hover:bg-ruby hover:text-white"
+                  className="grid size-9 place-items-center rounded-md border border-ink/15 text-ink/70 transition-colors hover:border-ruby hover:bg-ruby hover:text-white"
                 >
-                  <Icon size={14} />
+                  <Icon size={15} />
                 </a>
               ))}
             </div>
@@ -225,7 +226,7 @@ export function CampusList({
   country: string | null;
 }) {
   return (
-    <ul className="grid gap-2.5 sm:grid-cols-2">
+    <ul className="grid gap-4 sm:grid-cols-2">
       {campuses.map((c) => {
         // plain Google Maps search link, no API key needed
         const query = (
@@ -237,23 +238,23 @@ export function CampusList({
           .join(", ");
 
         return (
-          <li key={c.id} className="rounded-md border border-ink/15 p-3">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="text-sm font-semibold leading-snug text-ink">{c.name}</h3>
+          <li key={c.id} className="rounded-md border border-ink/15 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-base font-semibold leading-snug text-ink">{c.name}</h3>
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-ruby hover:underline"
+                className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-ruby hover:underline"
               >
-                <MapPin size={13} />
+                <MapPin size={15} />
                 Map
               </a>
             </div>
             {(c.city || c.address) && (
-              <p className="mt-0.5 text-xs text-ink/55">{[c.city, c.address].filter(Boolean).join(" · ")}</p>
+              <p className="mt-1 text-sm text-ink/55">{[c.city, c.address].filter(Boolean).join(" · ")}</p>
             )}
-            {c.description && <p className="mt-1.5 text-[13px] leading-5 text-ink/75">{c.description}</p>}
+            {c.description && <p className="mt-2 text-sm leading-6 text-ink/75">{c.description}</p>}
           </li>
         );
       })}
@@ -271,14 +272,14 @@ export function FaqList({ faqs }: { faqs: Faq[] }) {
     <div className="divide-y divide-ink/10">
       {faqs.map((f) => (
         <details key={f.id} className="group">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3.5 py-2.5 text-sm font-medium text-ink hover:bg-neutral-50 [&::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-3.5 text-base font-medium text-ink hover:bg-neutral-50 [&::-webkit-details-marker]:hidden">
             {f.question}
             <ChevronDown
-              size={16}
+              size={18}
               className="shrink-0 text-ink/50 transition-transform group-open:rotate-180"
             />
           </summary>
-          <div className="px-3.5 pb-3">
+          <div className="px-5 pb-4">
             <Prose text={f.answer} />
           </div>
         </details>

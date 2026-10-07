@@ -159,83 +159,84 @@ export default async function InstitutionPage({ params }: PageProps) {
   };
 
   return (
-    <div className="bg-cloud pb-6 text-ink">
+    <div className="bg-cloud pb-10 text-ink">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
 
-      {/* HERO: ink band, kept short */}
+      {/* HERO: same size and padding as the school page */}
       <header className="relative isolate overflow-hidden bg-ink text-white">
         {photo && (
-          <div aria-hidden="true" className="absolute inset-y-0 right-0 -z-10 w-full lg:w-1/2">
+          <div aria-hidden="true" className="absolute inset-y-0 right-0 -z-10 w-full lg:w-3/5">
             {/* plain img on purpose: the photo can come from a host next/image is not configured for */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photo} alt="" className="h-full w-full object-cover opacity-20" />
-            <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/80 to-ink/30" />
+            <img src={photo} alt="" className="h-full w-full object-cover opacity-25" />
+            <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/85 to-ink/30" />
           </div>
         )}
 
-        <div className="mx-auto max-w-6xl px-3 py-3 sm:px-4 sm:py-4 lg:px-6">
-          <nav aria-label="Breadcrumb" className="text-xs text-white/65">
+        <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-12">
+          <nav aria-label="Breadcrumb" className="text-sm text-white/70">
             <Link href="/search" className="hover:text-white">
               Institutions
             </Link>
-            <span className="mx-1.5">/</span>
+            <span className="mx-2">/</span>
             <span className="text-white">{inst.name}</span>
           </nav>
 
-          <div className="mt-2.5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="flex min-w-0 items-center gap-3">
-              {logo && (
-                <div className="flex size-14 shrink-0 items-center justify-center rounded-md border border-white/20 bg-white p-1.5 sm:size-16">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={logo} alt={`${inst.name} logo`} className="max-h-full max-w-full object-contain" />
+          <div className="mt-8 flex flex-col gap-8 md:flex-row md:items-start">
+            {logo && (
+              <div className="flex size-24 shrink-0 items-center justify-center rounded-xl bg-white p-4 sm:size-32">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={logo} alt={`${inst.name} logo`} className="max-h-full max-w-full object-contain" />
+              </div>
+            )}
+
+            <div className="min-w-0">
+              <h1 className="font-display text-3xl font-semibold leading-tight sm:text-5xl">{inst.name}</h1>
+
+              <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-medium">
+                {place && (
+                  <span className="inline-flex items-center gap-2">
+                    <MapPin size={18} className="text-gold" />
+                    {place}
+                  </span>
+                )}
+                {inst.institutionType && (
+                  <span className="rounded border border-white/30 px-2.5 py-0.5 text-xs">{inst.institutionType}</span>
+                )}
+                {website && (
+                  <a
+                    href={website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 underline underline-offset-4 hover:text-gold"
+                  >
+                    <Globe size={18} className="text-gold" />
+                    Visit website
+                  </a>
+                )}
+              </div>
+
+              {courseCount > 0 && (
+                <div className="mt-7">
+                  <Link href={coursesHref} className={cn(btn("primary", "lg"), "w-full sm:w-auto")}>
+                    View courses
+                    <ArrowRight size={18} />
+                  </Link>
                 </div>
               )}
-
-              <div className="min-w-0">
-                <h1 className="font-display text-xl font-semibold leading-tight sm:text-3xl">{inst.name}</h1>
-                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-white/80">
-                  {place && (
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin size={14} className="text-gold" />
-                      {place}
-                    </span>
-                  )}
-                  {inst.institutionType && (
-                    <span className="rounded-sm border border-white/30 px-1.5 py-px text-xs">{inst.institutionType}</span>
-                  )}
-                  {website && (
-                    <a
-                      href={website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-gold"
-                    >
-                      <Globe size={14} className="text-gold" />
-                      Visit website
-                    </a>
-                  )}
-                </div>
-              </div>
             </div>
-
-            {courseCount > 0 && (
-              <Link href={coursesHref} className={cn(btn("primary", "lg"), "w-full md:w-auto")}>
-                View courses
-                <ArrowRight size={18} />
-              </Link>
-            )}
           </div>
         </div>
       </header>
 
-      {tabs.length > 1 && <SchoolTabs tabs={tabs} ariaLabel="Institution sections" compact />}
+      {tabs.length > 1 && <SchoolTabs tabs={tabs} ariaLabel="Institution sections" />}
 
-      <div className="mx-auto grid max-w-6xl gap-3 px-3 py-3 sm:px-4 lg:grid-cols-[minmax(0,1fr)_300px] lg:px-6">
-        <div className="min-w-0 space-y-3">
-          <div id="overview" className="scroll-mt-14 space-y-3">
+      <div className="mx-auto grid max-w-7xl gap-6 px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-8 lg:px-12">
+        <div className="min-w-0 space-y-6">
+          <div id="overview" className="scroll-mt-16 space-y-6">
             {stats.length > 0 && <StatStrip items={stats} />}
             <Card title={`About ${inst.name}`}>
               <Prose text={inst.summary} />
@@ -248,7 +249,7 @@ export default async function InstitutionPage({ params }: PageProps) {
               id="courses"
               title="Courses"
               aside={
-                <Link href={coursesHref} className="text-xs font-semibold text-ruby hover:underline">
+                <Link href={coursesHref} className="text-sm font-semibold text-ruby hover:underline">
                   View all {courseCount}
                 </Link>
               }

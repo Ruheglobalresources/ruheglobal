@@ -1,7 +1,7 @@
 "use client";
 
 // src/components/institutions/detail/InstitutionCourses.tsx
-// Compact course cards in the Edvoy style: name, degree badge, a 2x2 grid of facts
+// Course cards in the Edvoy style: name, degree badge, a 2x2 grid of facts
 // (Fee / Duration / Next intake / Study level), "View details" and "Proceed to apply".
 // The detail page only sends the first batch of courses; the big button at the bottom
 // goes to the full courses page.
@@ -31,7 +31,7 @@ const uniq = (list: (string | null)[]) =>
   Array.from(new Set(list.filter((x): x is string => !!x))).sort((a, b) => a.localeCompare(b));
 
 const selectClass =
-  "h-9 rounded-md border border-ink/20 bg-white px-2.5 text-sm text-ink outline-none focus:border-ruby";
+  "h-11 rounded-md border border-ink/20 bg-white px-3 text-sm text-ink outline-none focus:border-ruby";
 
 export function InstitutionCourses({
   courses,
@@ -68,9 +68,9 @@ export function InstitutionCourses({
 
   return (
     <div>
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <div className="relative sm:flex-1">
-          <Search size={15} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink/40" />
+          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink/40" />
           <input
             value={q}
             onChange={(e) => {
@@ -79,7 +79,7 @@ export function InstitutionCourses({
             }}
             placeholder="Search courses, degrees or subjects"
             aria-label="Search courses"
-            className="h-9 w-full rounded-md border border-ink/20 bg-white pl-8 pr-3 text-sm text-ink outline-none placeholder:text-ink/40 focus:border-ruby"
+            className="h-11 w-full rounded-md border border-ink/20 bg-white pl-9 pr-3 text-sm text-ink outline-none placeholder:text-ink/40 focus:border-ruby"
           />
         </div>
         {levels.length > 1 && (
@@ -108,7 +108,7 @@ export function InstitutionCourses({
               setSubject(e.target.value);
               setShown(PAGE);
             }}
-            className={cn(selectClass, "sm:max-w-48")}
+            className={cn(selectClass, "sm:max-w-56")}
           >
             <option value="All">All subjects</option>
             {subjects.map((s) => (
@@ -120,20 +120,20 @@ export function InstitutionCourses({
         )}
       </div>
 
-      <p className="mt-2 text-xs text-ink/55" aria-live="polite">
+      <p className="mt-3 text-sm text-ink/55" aria-live="polite">
         {filtered.length} {filtered.length === 1 ? "course" : "courses"}
         {total > courses.length && ` shown of ${total}`}
       </p>
 
       {filtered.length === 0 ? (
-        <p className="mt-2 rounded-md border border-ink/15 bg-neutral-50 p-3 text-sm text-ink/65">
+        <p className="mt-3 rounded-md border border-ink/15 bg-neutral-50 p-4 text-sm text-ink/65">
           No courses match that search here.{" "}
           <Link href={coursesHref} className="font-semibold text-ruby hover:underline">
             Browse all {total} courses
           </Link>
         </p>
       ) : (
-        <ul className="mt-2 grid gap-2.5 md:grid-cols-2">
+        <ul className="mt-3 grid gap-4 md:grid-cols-2">
           {filtered.slice(0, shown).map((c) => {
             const facts = [
               c.fee && { label: "Fee", value: c.fee },
@@ -147,33 +147,33 @@ export function InstitutionCourses({
 
             return (
               <li key={c.id} className="flex flex-col rounded-md border border-ink/15 bg-white">
-                <div className="p-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-ink">{c.name}</h3>
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="line-clamp-2 text-base font-semibold leading-snug text-ink">{c.name}</h3>
                     {c.degree && (
-                      <span className="shrink-0 rounded-sm bg-ruby/10 px-1.5 py-0.5 text-[11px] font-semibold text-ruby">
+                      <span className="shrink-0 rounded-sm bg-ruby/10 px-2 py-0.5 text-xs font-semibold text-ruby">
                         {c.degree}
                       </span>
                     )}
                   </div>
-                  {c.subject && <p className="mt-0.5 text-xs text-ink/55">{c.subject}</p>}
+                  {c.subject && <p className="mt-1 text-sm text-ink/55">{c.subject}</p>}
 
                   {facts.length > 0 && (
-                    <dl className="mt-2.5 grid grid-cols-2 gap-px overflow-hidden rounded border border-ink/10 bg-ink/10">
+                    <dl className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded border border-ink/10 bg-ink/10">
                       {facts.map((f) => (
                         <div
                           key={f.label}
-                          className="bg-white px-2 py-1.5 [&:last-child:nth-child(odd)]:col-span-2"
+                          className="bg-white px-3 py-2.5 [&:last-child:nth-child(odd)]:col-span-2"
                         >
-                          <dd className="text-[13px] font-semibold leading-4 text-ink">{f.value}</dd>
-                          <dt className="text-[11px] text-ink/50">{f.label}</dt>
+                          <dd className="text-sm font-semibold leading-5 text-ink">{f.value}</dd>
+                          <dt className="text-xs text-ink/50">{f.label}</dt>
                         </div>
                       ))}
                     </dl>
                   )}
 
                   {isOpen && (
-                    <div className="mt-2.5 space-y-1.5 border-t border-ink/10 pt-2.5 text-xs leading-5 text-ink/75">
+                    <div className="mt-3 space-y-2 border-t border-ink/10 pt-3 text-sm leading-6 text-ink/75">
                       {c.intakes && (
                         <p>
                           <span className="font-semibold text-ink">Intakes:</span> {c.intakes}
@@ -184,7 +184,7 @@ export function InstitutionCourses({
                   )}
                 </div>
 
-                <div className="mt-auto flex gap-2 border-t border-ink/10 p-2.5">
+                <div className="mt-auto flex gap-3 border-t border-ink/10 p-3">
                   {hasDetails && (
                     <button
                       type="button"
@@ -206,9 +206,9 @@ export function InstitutionCourses({
         </ul>
       )}
 
-      <div className="mt-3 flex flex-col items-center justify-center gap-2 sm:flex-row">
+      <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
         {shown < filtered.length && (
-          <button type="button" onClick={() => setShown((n) => n + PAGE)} className={btn("secondary")}>
+          <button type="button" onClick={() => setShown((n) => n + PAGE)} className={btn("secondary", "lg")}>
             Show more ({filtered.length - shown} left)
           </button>
         )}
