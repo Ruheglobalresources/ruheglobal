@@ -14,6 +14,7 @@ import {
   targetWhere,
   type ApplyTargetInput,
 } from "@/lib/application-target";
+import { isEditableStatus } from "@/constants/submission-status";
 
 export const dynamic = "force-dynamic";
 
@@ -105,7 +106,7 @@ export default async function ApplicationPage({
     ])
   );
 
-  const editable = !submission || submission.status === "DRAFT" || submission.status === "IN_PROGRESS";
+  const editable = !submission || isEditableStatus(submission.status);
   let lockedFieldIds: string[] = [];
 
   if (isSchoolFlow && resolved && editable) {

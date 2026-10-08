@@ -11,6 +11,7 @@ import { WizardStepper } from "./wizard-stepper";
 import { AutosaveStatus } from "./autosave-status";
 import type { WizardStep, WizardAnswer, AutosaveState, ApplicationStatus } from "./types";
 import type { ApplyTargetInput } from "@/lib/application-target";
+import { STATUS_LABELS, isEditableStatus, isUnsubmittedStatus } from "@/constants/submission-status";
 import { ArrowLeft, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
 
 interface ApplicationWizardProps {
@@ -52,7 +53,9 @@ export function ApplicationWizard({
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isLocked = status !== "DRAFT" && status !== "IN_PROGRESS";
+  // a submitted application stays editable, only the closed statuses lock it
+  const isLocked = !isEditableStatus(status);
+  const hasBeenSubmitted = !isUnsubmittedStatus(status);
   const step = steps.find((s) => s.stepNumber === currentStep) ?? steps[0];
   const isLastStep = currentStep >= steps.length;
 
@@ -165,9 +168,10 @@ export function ApplicationWizard({
       return;
     }
 
-    setStatus("SUBMITTED");
-    toast.success("Application submitted!");
-    router.refresh();
+    setStatus((prev) => (isUnsubmittedStatus(prev) ? "SUBMITTED" : prev));
+    toast.success(hasBeenSubmitted ? "Application updated" : "Application submitted!");
+    // the applicant lands on the list where every application can be tracked
+    router.push("/profile/applications");
   }
 
   if (!step) {
@@ -187,9 +191,10 @@ export function ApplicationWizard({
       {isLocked && (
         <div className="flex items-center gap-2 rounded-lg border border-[color:var(--color-teal)]/30 bg-[color:var(--color-teal)]/5 px-3 py-2.5 text-sm text-[color:var(--color-teal)]">
           <CheckCircle2 size={16} />
-          This application has been submitted and is now read-only.
+          This application is {(STATUS_LABELS[status] ?? status).toLowerCase()} and can no longer be edited.
         </div>
       )}
+
 
       <WizardStepper
         steps={steps}

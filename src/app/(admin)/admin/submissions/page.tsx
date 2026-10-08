@@ -23,6 +23,7 @@ export default async function AdminSubmissionsPage({
       user: { select: { name: true, email: true } },
       counselor: { select: { name: true } },
       application: { select: { name: true, terminal: { select: { name: true } } } },
+      _count: { select: { versions: true } },
     },
   });
 
@@ -85,7 +86,12 @@ export default async function AdminSubmissionsPage({
                     </div>
                   )}
                 </td>
-                <td className="px-4 py-3"><StatusBadge status={s.status} /></td>
+                <td className="px-4 py-3">
+                  <StatusBadge status={s.status} />
+                  {s._count.versions > 1 && (
+                    <div className="mt-1 text-xs text-neutral-400">Sent {s._count.versions} times</div>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-neutral-500">{s.counselor?.name ?? s.counselorRequestName ?? "—"}</td>
                 <td className="px-4 py-3 text-neutral-500">{s.updatedAt.toLocaleDateString()}</td>
                 <td className="px-4 py-3 text-right">

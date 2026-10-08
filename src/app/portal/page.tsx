@@ -1,4 +1,5 @@
 //src/app/portal/page.tsx
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
@@ -85,9 +86,14 @@ export default async function PortalDashboardPage() {
 
       {/* Applications: where you left off, then every terminal */}
       <section id="applications" className="scroll-mt-24">
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold text-ink">Applications</h2>
-          <p className="text-sm text-neutral-500">Pick up where you left off, or choose a terminal to start something new.</p>
+        <div className="mb-4 flex items-end justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold text-ink">Applications</h2>
+            <p className="text-sm text-neutral-500">Pick up where you left off, or choose a terminal to start something new.</p>
+          </div>
+          <Link href="/profile/applications" className="shrink-0 text-sm font-medium text-[color:var(--color-teal)] hover:underline">
+            My applications
+          </Link>
         </div>
 
         <ContinueList items={continueItems} />

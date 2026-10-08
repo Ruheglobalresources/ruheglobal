@@ -2,9 +2,11 @@
 
 import * as z from "zod";
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/require-user";
 import { SaveSubmissionStepSchema } from "@/schemas";
+import { isEditableStatus, isUnsubmittedStatus } from "@/constants/submission-status";
 import {
   ApplyTargetInputSchema,
   LOCKED_TARGET_KEYS,
@@ -61,8 +63,9 @@ export async function saveSubmissionStep(values: SaveSubmissionStepInput): Promi
   if (submission && submission.userId !== user.id) {
     return { success: false, error: "You don't have access to this application" };
   }
-  if (submission && submission.status !== "DRAFT" && submission.status !== "IN_PROGRESS") {
-    return { success: false, error: "This application has already been submitted and can no longer be edited" };
+  // a submitted application stays editable; only the closed statuses lock it
+  if (submission && !isEditableStatus(submission.status)) {
+    return { success: false, error: "This application is closed and can no longer be edited" };
   }
 
   // School application, first save: the submission needs its target. A student who already
@@ -81,8 +84,8 @@ export async function saveSubmissionStep(values: SaveSubmissionStepInput): Promi
     });
 
     if (existing) {
-      if (existing.status !== "DRAFT" && existing.status !== "IN_PROGRESS") {
-        return { success: false, error: "This application has already been submitted and can no longer be edited" };
+      if (!isEditableStatus(existing.status)) {
+        return { success: false, error: "This application is closed and can no longer be edited" };
       }
       submission = existing;
     } else {
@@ -183,8 +186,8 @@ export async function submitApplication(applicationId: string, submissionId: str
   if (submission.userId !== user.id) {
     return { success: false, error: "You don't have access to this application" };
   }
-  if (submission.status !== "DRAFT" && submission.status !== "IN_PROGRESS") {
-    return { success: false, error: "This application has already been submitted" };
+  if (!isEditableStatus(submission.status)) {
+    return { success: false, error: "This application is closed and can no longer be updated" };
   }
 
   const requiredFields = await db.applicationField.findMany({
@@ -213,14 +216,53 @@ export async function submitApplication(applicationId: string, submissionId: str
     _max: { stepNumber: true },
   });
 
-  await db.applicationSubmission.update({
-    where: { id: submission.id },
-    data: {
-      status: "SUBMITTED",
-      submittedAt: new Date(),
-      currentStep: totalSteps._max.stepNumber ?? submission.currentStep,
-    },
+  // Every submit is kept as a version: a frozen copy of ALL answers at this moment. The
+  // student can keep editing afterwards, and the admin can still see what was sent each time.
+  const allFields = await db.applicationField.findMany({
+    where: { applicationId },
+    orderBy: [{ stepNumber: "asc" }, { order: "asc" }],
+    select: { id: true, stepNumber: true, order: true, fieldDefinition: { select: { label: true, type: true } } },
   });
+
+  const snapshot = allFields.flatMap((field) => {
+    const answer = answered.get(field.id);
+    if (!answer || (!answer.value?.trim() && !answer.fileUrl)) return [];
+    return [
+      {
+        applicationFieldId: field.id,
+        label: field.fieldDefinition.label,
+        type: field.fieldDefinition.type,
+        stepNumber: field.stepNumber,
+        order: field.order,
+        value: answer.value,
+        fileUrl: answer.fileUrl,
+      },
+    ];
+  });
+
+  const lastVersion = await db.submissionVersion.aggregate({
+    where: { submissionId: submission.id },
+    _max: { version: true },
+  });
+
+  await db.$transaction([
+    db.submissionVersion.create({
+      data: {
+        submissionId: submission.id,
+        version: (lastVersion._max.version ?? 0) + 1,
+        answers: snapshot as Prisma.InputJsonValue,
+      },
+    }),
+    db.applicationSubmission.update({
+      where: { id: submission.id },
+      data: {
+        // first submit moves it to SUBMITTED; a resubmit keeps whatever status the admin has set
+        status: isUnsubmittedStatus(submission.status) ? "SUBMITTED" : submission.status,
+        submittedAt: submission.submittedAt ?? new Date(),
+        currentStep: totalSteps._max.stepNumber ?? submission.currentStep,
+      },
+    }),
+  ]);
 
   const application = await db.application.findUnique({
     where: { id: applicationId },
@@ -228,7 +270,9 @@ export async function submitApplication(applicationId: string, submissionId: str
   });
 
   revalidatePath("/portal");
+  revalidatePath("/profile/applications");
   revalidatePath("/admin/submissions");
+  revalidatePath(`/admin/submissions/${submissionId}`);
   if (application) {
     revalidatePath(`/portal/${application.terminal.slug}`);
     revalidatePath(`/portal/${application.terminal.slug}/${application.slug}`);
