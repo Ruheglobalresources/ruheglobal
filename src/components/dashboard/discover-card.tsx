@@ -110,21 +110,32 @@ export function DiscoverCardSkeleton() {
   );
 }
 
-// The institution page (/institutions/[slug]) is the next page to build.
-const pageFor = (slug: string) => `/institutions/${slug}`;
+// Institution page: /institutions/[slug]
+const institutionHref = (slug: string) => `/institutions/${slug}`;
+
+// Course detail page: /institutions/[slug]/courses/[courseId]
+const courseHref = (slug: string, courseId: string) => `/institutions/${slug}/courses/${courseId}`;
 
 export function CourseCard({ course }: { course: CourseCardData }) {
   const { institution } = course;
+  // Only real course rows have their own detail page. A "programme" (a subject area
+  // of an institution with no course rows yet) falls back to its institution page.
+  const href =
+    course.kind === "course" ? courseHref(institution.slug, course.id) : institutionHref(institution.slug);
+
   return (
     <DiscoverCard
-      href={pageFor(institution.slug)}
+      href={href}
       title={course.name}
       subtitle={institution.name}
       logoUrl={institution.logoUrl}
       price={course.tuition}
-      chips={[course.level, course.duration, course.nextIntake ? `Intake ${course.nextIntake}` : null].filter(
-        (x): x is string => Boolean(x)
-      )}
+      chips={[
+        course.kind === "programme" ? "Subject area" : null,
+        course.level,
+        course.duration,
+        course.nextIntake ? `Intake ${course.nextIntake}` : null,
+      ].filter((x): x is string => Boolean(x))}
     />
   );
 }
@@ -133,7 +144,7 @@ export function InstitutionCard({ institution }: { institution: InstitutionCardD
   const place = [institution.city, institution.country].filter(Boolean).join(", ");
   return (
     <DiscoverCard
-      href={pageFor(institution.slug)}
+      href={institutionHref(institution.slug)}
       title={institution.name}
       subtitle={place || "Partner institution"}
       logoUrl={institution.logoUrl}
