@@ -13,6 +13,9 @@ export type TopSchoolsSectionProps = {
   onSave?: (school: TopSchool) => void;
 };
 
+// How far (px) the mouse must move before a press counts as a drag, not a click.
+const DRAG_THRESHOLD = 5;
+
 export function TopSchoolsSection({ schools: allSchools, onApply = () => {}, onSave }: TopSchoolsSectionProps) {
   // Only show a tab for countries that actually have a school in the database,
   // keeping the order (and flags) defined in COUNTRIES.
@@ -31,7 +34,21 @@ export function TopSchoolsSection({ schools: allSchools, onApply = () => {}, onS
       : (countries[0]?.name ?? "");
 
   const trackRef = useRef<HTMLDivElement>(null);
-  const dragState = useRef({ isDown: false, startX: 0, startScroll: 0 });
+
+  // Drag bookkeeping lives in refs so pointer events never wait on a re-render.
+  // `captured` flips to true only once the mouse has moved past the threshold,
+  // which is what lets a plain click reach the card link underneath.
+  const dragState = useRef({
+    isDown: false,
+    captured: false,
+    pointerId: 0,
+    startX: 0,
+    startScroll: 0,
+  });
+  // True from the moment a real drag starts until just after the click that
+  // follows the mouse-up, so that click can be swallowed.
+  const suppressClick = useRef(false);
+  // Only used for styling (cursor, snap behaviour) while dragging.
   const [isDragging, setIsDragging] = useState(false);
 
   // whether there are more schools hidden to the left or right of the track
@@ -109,23 +126,60 @@ export function TopSchoolsSection({ schools: allSchools, onApply = () => {}, onS
 
   const onPointerDown = (e: React.PointerEvent) => {
     const track = trackRef.current;
-    if (!track) return;
-    dragState.current = { isDown: true, startX: e.clientX, startScroll: track.scrollLeft };
-    track.setPointerCapture(e.pointerId);
+    // Touch and pen already scroll the track natively, so drag-to-scroll is
+    // mouse only. Also ignore anything other than the primary button.
+    if (!track || e.pointerType !== "mouse" || e.button !== 0) return;
+
+    // NOTE: we deliberately do NOT call setPointerCapture here. Capturing on
+    // mouse-down redirects the click to the track and the card link never
+    // receives it. Capture starts later, in onPointerMove, once it's a drag.
+    dragState.current = {
+      isDown: true,
+      captured: false,
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startScroll: track.scrollLeft,
+    };
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
     const track = trackRef.current;
     const state = dragState.current;
     if (!state.isDown || !track) return;
+
     const dx = e.clientX - state.startX;
-    if (Math.abs(dx) > 4) setIsDragging(true);
-    track.scrollLeft = state.startScroll - dx;
+
+    // Only treat it as a drag once the mouse has clearly moved.
+    if (!state.captured && Math.abs(dx) > DRAG_THRESHOLD) {
+      track.setPointerCapture(state.pointerId);
+      state.captured = true;
+      suppressClick.current = true;
+      setIsDragging(true);
+    }
+
+    if (state.captured) track.scrollLeft = state.startScroll - dx;
   };
 
   const endDrag = () => {
-    dragState.current.isDown = false;
-    requestAnimationFrame(() => setIsDragging(false));
+    const track = trackRef.current;
+    const state = dragState.current;
+
+    if (state.captured && track?.hasPointerCapture(state.pointerId)) {
+      track.releasePointerCapture(state.pointerId);
+    }
+
+    const wasDrag = state.captured;
+    state.isDown = false;
+    state.captured = false;
+
+    if (wasDrag) {
+      // The click event fires right after pointerup. Keep suppressing until
+      // that has happened, then allow normal clicks again.
+      setTimeout(() => {
+        suppressClick.current = false;
+      }, 0);
+    }
+    setIsDragging(false);
   };
 
   // No active schools in the database yet, so hide the whole section
@@ -185,13 +239,18 @@ export function TopSchoolsSection({ schools: allSchools, onApply = () => {}, onS
 
         {/* schools track with lg only hover arrows */}
         <div className="group relative mt-8">
+          {/*
+            Arrows are invisible until the track is hovered. While invisible they
+            must not catch pointer events, otherwise they sit on top of the first
+            and last cards and swallow clicks meant for them.
+          */}
           <button
             type="button"
             aria-label="Show previous school"
             disabled={!canScrollLeft}
             onClick={() => scrollByCard(-1)}
-            className={`absolute left-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center bg-transparent p-2 text-ruby-500 opacity-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] transition duration-200 hover:scale-110 hover:text-ruby-400 focus-visible:opacity-100 lg:flex ${
-              canScrollLeft ? "lg:group-hover:opacity-100" : "pointer-events-none"
+            className={`pointer-events-none absolute left-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center bg-transparent p-2 text-ruby-500 opacity-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] transition duration-200 hover:scale-110 hover:text-ruby-400 focus-visible:opacity-100 lg:flex ${
+              canScrollLeft ? "lg:group-hover:pointer-events-auto lg:group-hover:opacity-100" : ""
             }`}
           >
             <svg
@@ -213,8 +272,8 @@ export function TopSchoolsSection({ schools: allSchools, onApply = () => {}, onS
             aria-label="Show next school"
             disabled={!canScrollRight}
             onClick={() => scrollByCard(1)}
-            className={`absolute right-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center bg-transparent p-2 text-ruby-500 opacity-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] transition duration-200 hover:scale-110 hover:text-ruby-400 focus-visible:opacity-100 lg:flex ${
-              canScrollRight ? "lg:group-hover:opacity-100" : "pointer-events-none"
+            className={`pointer-events-none absolute right-3 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center bg-transparent p-2 text-ruby-500 opacity-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] transition duration-200 hover:scale-110 hover:text-ruby-400 focus-visible:opacity-100 lg:flex ${
+              canScrollRight ? "lg:group-hover:pointer-events-auto lg:group-hover:opacity-100" : ""
             }`}
           >
             <svg
@@ -237,18 +296,29 @@ export function TopSchoolsSection({ schools: allSchools, onApply = () => {}, onS
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={endDrag}
+            onPointerCancel={endDrag}
             onPointerLeave={endDrag}
-            className={`flex gap-5 overflow-x-auto px-6 pb-4 snap-x snap-mandatory scroll-smooth sm:px-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${
-              isDragging ? "cursor-grabbing select-none" : "cursor-grab"
+            // Stops the browser's native "drag this link/image" ghost, which
+            // would otherwise cancel our pointer events mid-drag.
+            onDragStart={(e) => e.preventDefault()}
+            // Swallow the click that follows a real drag (runs in the capture
+            // phase, before the card link sees it). Plain clicks pass through.
+            onClickCapture={(e) => {
+              if (suppressClick.current) {
+                e.preventDefault();
+                e.stopPropagation();
+              }
+            }}
+            className={`flex gap-5 overflow-x-auto px-6 pb-4 sm:px-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${
+              // While dragging, turn snapping and smooth scrolling off so the
+              // track follows the mouse 1:1. On release, snapping settles it.
+              isDragging
+                ? "cursor-grabbing select-none snap-none scroll-auto"
+                : "cursor-grab snap-x snap-mandatory scroll-smooth"
             }`}
           >
             {schools.map((school, i) => (
-              <div
-                key={school.id}
-                onClickCapture={(e) => {
-                  if (isDragging) e.stopPropagation();
-                }}
-              >
+              <div key={school.id}>
                 <SchoolCard school={school} index={i} onApply={onApply} />
               </div>
             ))}
