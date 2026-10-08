@@ -1,4 +1,6 @@
+//src/schemas/index.ts
 import * as z from "zod";
+import { PortalKindValues } from "@/constants/portal-kinds";
 
 export const LoginSchema = z.object({
   email: z.string().email({ message: "Email is required" }),
@@ -51,6 +53,8 @@ export const SubmissionStatusValues = [
 export const PortalTerminalSchema = z.object({
   name: z.string().min(1, "Terminal name is required"),
   icon: z.string().optional(),
+  // where and how this terminal is used on the website
+  kind: z.enum(PortalKindValues).default("GENERAL"),
   isActive: z.boolean().default(true),
   order: z.coerce.number().int().default(0),
 });

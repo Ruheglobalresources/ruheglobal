@@ -4,6 +4,7 @@ import { TerminalForm } from "./terminal-form";
 import { TerminalRowActions } from "@/components/admin/terminal-row-actions";
 import { ActiveToggle } from "@/components/admin/active-toggle";
 import { toggleTerminalActive } from "@/actions";
+import { kindLabel } from "@/constants/portal-kinds";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ export default async function AdminTerminalsPage() {
           <thead className="border-b bg-neutral-50 text-left text-xs uppercase text-neutral-500">
             <tr>
               <th className="px-4 py-3">Name</th>
+              <th className="px-4 py-3">Used for</th>
               <th className="px-4 py-3">Applications</th>
               <th className="px-4 py-3">Order</th>
               <th className="px-4 py-3">Visible</th>
@@ -40,6 +42,7 @@ export default async function AdminTerminalsPage() {
             {terminals.map((t) => (
               <tr key={t.id} className="border-b last:border-0">
                 <td className="px-4 py-3 font-medium">{t.icon ? `${t.icon} ` : ""}{t.name}</td>
+                <td className="px-4 py-3 text-neutral-500">{kindLabel(t.kind)}</td>
                 <td className="px-4 py-3 text-neutral-500">
                   <Link href={`/admin/applications?terminal=${t.id}`} className="hover:underline">
                     {t._count.applications}
@@ -62,7 +65,7 @@ export default async function AdminTerminalsPage() {
               </tr>
             ))}
             {terminals.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-8 text-center text-neutral-400">No terminals yet — add your first one above.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-neutral-400">No terminals yet — add your first one above.</td></tr>
             )}
           </tbody>
         </table>

@@ -32,13 +32,13 @@ export async function createTerminal(values: z.infer<typeof PortalTerminalSchema
   const validated = PortalTerminalSchema.safeParse(values);
   if (!validated.success) return { error: "Invalid fields" };
 
-  const { name, icon, isActive, order } = validated.data;
+  const { name, icon, kind, isActive, order } = validated.data;
   const slug = slugify(name);
 
   const existing = await db.portalTerminal.findFirst({ where: { OR: [{ name }, { slug }] } });
   if (existing) return { error: "A terminal with that name already exists" };
 
-  await db.portalTerminal.create({ data: { name, slug, icon: icon || null, isActive, order } });
+  await db.portalTerminal.create({ data: { name, slug, icon: icon || null, kind, isActive, order } });
   revalidatePath("/admin/terminals");
   revalidatePath("/portal");
   return { success: "Terminal created" };
@@ -49,9 +49,18 @@ export async function updateTerminal(id: string, values: z.infer<typeof PortalTe
   const validated = PortalTerminalSchema.safeParse(values);
   if (!validated.success) return { error: "Invalid fields" };
 
-  const { name, icon, isActive, order } = validated.data;
+  const { name, icon, kind, isActive, order } = validated.data;
+
+  const current = await db.portalTerminal.findUnique({ where: { id }, select: { kind: true } });
+  if (!current) return { error: "Terminal not found" };
+
   // slug is intentionally left untouched after creation — applications reference it via terminalId, not the slug text
-  await db.portalTerminal.update({ where: { id }, data: { name, icon: icon || null, isActive, order } });
+  // The applications under a terminal always carry the terminal's kind, so a change of kind
+  // updates them in the same transaction.
+  await db.$transaction([
+    db.portalTerminal.update({ where: { id }, data: { name, icon: icon || null, kind, isActive, order } }),
+    ...(current.kind !== kind ? [db.application.updateMany({ where: { terminalId: id }, data: { kind } })] : []),
+  ]);
   revalidatePath("/admin/terminals");
   revalidatePath("/portal");
   return { success: "Terminal updated" };
@@ -158,11 +167,15 @@ export async function createApplication(values: z.infer<typeof ApplicationSchema
   const { terminalId, name, subtitle, icon, badge, isLive, isActive, order } = validated.data;
   const slug = slugify(name);
 
+  // the application takes the kind of the terminal it is created under
+  const terminal = await db.portalTerminal.findUnique({ where: { id: terminalId }, select: { kind: true } });
+  if (!terminal) return { error: "Terminal not found" };
+
   const existing = await db.application.findFirst({ where: { terminalId, slug } });
   if (existing) return { error: "An application with that name already exists under this terminal" };
 
   const application = await db.application.create({
-    data: { terminalId, name, subtitle: subtitle || null, slug, icon: icon || null, badge: badge || null, isLive, isActive, order },
+    data: { terminalId, kind: terminal.kind, name, subtitle: subtitle || null, slug, icon: icon || null, badge: badge || null, isLive, isActive, order },
   });
   revalidatePath("/admin/applications");
   revalidatePath("/portal");
@@ -175,10 +188,15 @@ export async function updateApplication(id: string, values: z.infer<typeof Appli
   if (!validated.success) return { error: "Invalid fields" };
 
   const { terminalId, name, subtitle, icon, badge, isLive, isActive, order } = validated.data;
+
+  // moving an application to another terminal also moves it to that terminal's kind
+  const terminal = await db.portalTerminal.findUnique({ where: { id: terminalId }, select: { kind: true } });
+  if (!terminal) return { error: "Terminal not found" };
+
   // slug is intentionally left untouched after creation — it's the scroll/route anchor
   await db.application.update({
     where: { id },
-    data: { terminalId, name, subtitle: subtitle || null, icon: icon || null, badge: badge || null, isLive, isActive, order },
+    data: { terminalId, kind: terminal.kind, name, subtitle: subtitle || null, icon: icon || null, badge: badge || null, isLive, isActive, order },
   });
   revalidatePath("/admin/applications");
   revalidatePath(`/admin/applications/${id}`);

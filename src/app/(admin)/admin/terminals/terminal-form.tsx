@@ -17,10 +17,12 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PortalKindValues, PORTAL_KINDS } from "@/constants/portal-kinds";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil } from "lucide-react";
 
-type Terminal = { id: string; name: string; icon: string | null; order: number; isActive: boolean };
+type Terminal = { id: string; name: string; icon: string | null; kind: string; order: number; isActive: boolean };
 
 export function TerminalForm({
   terminal,
@@ -48,6 +50,7 @@ export function TerminalForm({
     defaultValues: {
       name: terminal?.name ?? "",
       icon: terminal?.icon ?? "",
+      kind: (terminal?.kind as (typeof PortalKindValues)[number]) ?? "GENERAL",
       order: terminal?.order ?? 0,
       isActive: terminal?.isActive ?? true,
     },
@@ -90,6 +93,27 @@ export function TerminalForm({
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl><Input {...field} disabled={isPending} placeholder="Study Abroad" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="kind"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Used for</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+                    <FormControl>
+                      <SelectTrigger className="w-full"><SelectValue placeholder="Choose what this terminal is used for" /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {PortalKindValues.map((k) => (
+                        <SelectItem key={k} value={k}>{PORTAL_KINDS[k].label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-neutral-500">{PORTAL_KINDS[field.value].description}</p>
                   <FormMessage />
                 </FormItem>
               )}

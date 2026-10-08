@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Building2, GraduationCap } from "lucide-react";
 import {
   elevation1,
   filledButton,
@@ -14,6 +14,10 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 
 const HERO_IMAGE = "/hero-banner.jpeg";
+
+// Quick links in a row ABOVE the banner, right aligned.
+const quickLinkClass =
+  "inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-xs font-semibold text-neutral-600 transition hover:text-ruby-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ruby-500/50 sm:text-sm";
 
 function WavingHand() {
   const reduceMotion = useReducedMotion();
@@ -44,6 +48,19 @@ export function HeroBanner({
   firstName: string | null;
 }) {
   return (
+    <div>
+      {/* Quick links: above the banner, top right, tight gap to the banner */}
+      <nav aria-label="Quick links" className="mb-1.5 flex items-center justify-end gap-3 sm:gap-4">
+        <Link href="/courses" className={quickLinkClass}>
+          <GraduationCap size={15} className="text-ruby-600" />
+          Courses
+        </Link>
+        <Link href="/institutions" className={quickLinkClass}>
+          <Building2 size={15} className="text-ruby-600" />
+          Institutions
+        </Link>
+      </nav>
+
     <section
       className={cn(
         "relative overflow-hidden rounded-2xl border border-ruby-100 bg-ruby-50",
@@ -116,5 +133,6 @@ export function HeroBanner({
         </div>
       </div>
     </section>
+    </div>
   );
 }

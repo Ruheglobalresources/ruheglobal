@@ -109,15 +109,31 @@ model TwoFactorConfirmation {
 // the admin block manages them directly, so adding a 6th one later
 // (e.g. a dedicated "Property" or "Money Exchange" terminal) needs no
 // schema change.
+//
+// What a terminal is USED FOR is the one thing that is an enum (PortalKind). It is chosen
+// when the terminal is created, so the website knows where and how to use it: the
+// "Proceed to apply" buttons on schools and institutions open the SCHOOL terminal, a visa
+// page would open the VISA one, and so on. New terminals of an existing kind need no
+// schema change. A brand new kind needs one line here plus the code that uses it.
 // ─────────────────────────────────────────────────────────────────────────
 
+enum PortalKind {
+  GENERAL // not tied to a flow on the website, shown on the portal only
+  SCHOOL // applications opened from the school and institution pages
+  VISA
+  WORK_ABROAD
+  HOUSING
+  EVENT // events and fairs, collects visitor data
+}
+
 model PortalTerminal {
-  id       String  @id @default(uuid())
-  name     String  @unique // "Exams & Prep"
-  slug     String  @unique // "exams-prep"
+  id       String     @id @default(uuid())
+  name     String     @unique // "Exams & Prep"
+  slug     String     @unique // "exams-prep"
   icon     String?
-  order    Int     @default(0)
-  isActive Boolean @default(true)
+  kind     PortalKind @default(GENERAL) // where and how this terminal is used
+  order    Int        @default(0)
+  isActive Boolean    @default(true)
 
   applications Application[]
 
@@ -125,6 +141,7 @@ model PortalTerminal {
   updatedAt DateTime @updatedAt
 
   @@index([order])
+  @@index([kind])
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -184,8 +201,11 @@ model FieldDefinition {
 // ─────────────────────────────────────────────────────────────────────────
 
 model Application {
-  id         String  @id @default(uuid())
+  id         String     @id @default(uuid())
   terminalId String
+  // Copy of the terminal's kind, kept in sync by the admin actions (never edited by hand),
+  // so an application can be found by what it is for without joining its terminal.
+  kind       PortalKind @default(GENERAL)
   name       String // "Work in Germany"
   subtitle   String? // "One team, 14 countries..."
   slug       String
@@ -205,6 +225,7 @@ model Application {
 
   @@unique([terminalId, slug])
   @@index([terminalId])
+  @@index([kind])
 }
 
 // Small pills shown on an application card — country flags under "Work in

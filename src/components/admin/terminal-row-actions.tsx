@@ -8,7 +8,7 @@ import { ConfirmationModal } from "@/components/ui/confirmation-modal";
 import { deleteTerminal } from "@/actions";
 import { ListChecks, FolderKanban, Pencil, Trash2 } from "lucide-react";
 
-type Terminal = { id: string; name: string; icon: string | null; order: number; isActive: boolean };
+type Terminal = { id: string; name: string; icon: string | null; kind: string; order: number; isActive: boolean };
 
 export function TerminalRowActions({ terminal }: { terminal: Terminal }) {
   const [editOpen, setEditOpen] = useState(false);
