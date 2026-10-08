@@ -40,7 +40,7 @@ export function CoursesPreview() {
           )}
         </>
       }
-      showAllHref="/portal/courses"
+      showAllHref="/courses"
       seeAllLabel={list.total !== null ? `See all ${fmt(list.total)} courses` : "See all courses"}
       list={list}
       emptyText="Courses will appear here as soon as they are added."
@@ -66,7 +66,7 @@ export function InstitutionsPreview() {
         </h2>
       }
       description="Our trusted partners meet the highest standards of education."
-      showAllHref="/portal/institutions"
+      showAllHref="/institutions"
       seeAllLabel={list.total !== null ? `See all ${fmt(list.total)} institutions` : "See all institutions"}
       list={list}
       emptyText="Partner institutions will appear here as soon as they are added."

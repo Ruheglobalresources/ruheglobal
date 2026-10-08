@@ -2,7 +2,8 @@
 
 // src/components/institutions/detail/InstitutionCourses.tsx
 // Course cards in the Edvoy style: name, degree badge, a 2x2 grid of facts
-// (Fee / Duration / Next intake / Study level), "View details" and "Proceed to apply".
+// (Fee / Duration / Next intake / Study level), "View details" (opens the course's own
+// page) and "Proceed to apply".
 // The detail page only sends the first batch of courses; the big button at the bottom
 // goes to the full courses page.
 import Link from "next/link";
@@ -48,7 +49,6 @@ export function InstitutionCourses({
   const [level, setLevel] = useState("All");
   const [subject, setSubject] = useState("All");
   const [shown, setShown] = useState(PAGE);
-  const [open, setOpen] = useState<string | null>(null);
 
   const levels = useMemo(() => uniq(courses.map((c) => c.level)), [courses]);
   const subjects = useMemo(() => uniq(courses.map((c) => c.subject)), [courses]);
@@ -142,9 +142,6 @@ export function InstitutionCourses({
               c.level && { label: "Study level", value: c.level },
             ].filter((f): f is { label: string; value: string } => !!f);
 
-            const hasDetails = Boolean(c.description || c.intakes);
-            const isOpen = open === c.id;
-
             return (
               <li key={c.id} className="flex flex-col rounded-md border border-ink/15 bg-white">
                 <div className="p-4">
@@ -171,30 +168,15 @@ export function InstitutionCourses({
                       ))}
                     </dl>
                   )}
-
-                  {isOpen && (
-                    <div className="mt-3 space-y-2 border-t border-ink/10 pt-3 text-sm leading-6 text-ink/75">
-                      {c.intakes && (
-                        <p>
-                          <span className="font-semibold text-ink">Intakes:</span> {c.intakes}
-                        </p>
-                      )}
-                      {c.description && <p>{c.description}</p>}
-                    </div>
-                  )}
                 </div>
 
                 <div className="mt-auto flex gap-3 border-t border-ink/10 p-3">
-                  {hasDetails && (
-                    <button
-                      type="button"
-                      aria-expanded={isOpen}
-                      onClick={() => setOpen(isOpen ? null : c.id)}
-                      className={cn(btn("secondary", "sm"), "flex-1")}
-                    >
-                      {isOpen ? "Hide details" : "View details"}
-                    </button>
-                  )}
+                  <Link
+                    href={`/institutions/${institutionSlug}/courses/${c.id}`}
+                    className={cn(btn("secondary", "sm"), "flex-1")}
+                  >
+                    View details
+                  </Link>
                   {/* carries institution + course to the portal; signed-out users are sent to login first */}
                   <Link href={applyHref(institutionSlug, c.id)} className={cn(btn("primary", "sm"), "flex-1")}>
                     Proceed to apply

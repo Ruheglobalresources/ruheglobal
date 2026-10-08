@@ -1,115 +1,165 @@
-// prisma/institutionBatches/batch41.ts
+// prisma/institutionBatches/batch57.ts
 //
-// Batch 41: rows 255 to 259 of RGR University List (all Canada).
-//   255  Cape Breton University                           (public university, Sydney, Nova Scotia)
-//   256  Cégep de la Gaspésie et des Îles                 (public Cegep, Gaspé, Quebec, French language)
-//   257  Cégep Marie-Victorin                             (public Cegep, Montreal, Quebec, French language)
-//   258  Columbia College                                 (private college, Vancouver, British Columbia)
-//   259  Conestoga College                                (public college, Kitchener, Ontario)
+// Batch 57: rows 341 to 344 of RGR University List (Switzerland, Slovenia and Georgia). THIS IS THE LAST BATCH.
+//   341  EU Business School                                                   (private business school, filed under Switzerland)
+//   342  HTMi (International Hotel and Tourism Institute)                     (private hospitality institute, Sarnen, Switzerland)
+//   343  University of EMUNI, The Euro Mediterranean University               (international postgraduate university, Portoroz, Slovenia)
+//   344  David Tvildiani Medical University                                   (private medical university, Tbilisi, Georgia)
 //
-// That gives 5 institutions from 5 PDF rows, nothing skipped. Batch 40 ended at row 254. The next batch starts at row 260.
+// That gives 4 institutions from 4 PDF rows, nothing skipped. Batch 56 ended at row 340. The PDF ends at row 344, so
+// with this batch every row from 1 to 344 has been covered.
 //
-// HEADS UP FOR THE NEXT BATCH (rows 260 onward): row 260 is Crandall University (Moncton, New Brunswick), row 261 is
-// DEA Canadian College, row 262 is Georgian College (Barrie, Ontario), row 263 is Justice Institute of British Columbia
-// and row 264 is Kwantlen Polytechnic University. Copy the Canada helpers from this file, because each batch file
-// is self contained. Trinity Western University is row 312 (Canada, the PDF also lists it as row 178 under USA, so
-// check the slug before writing) and Saint Louis University (Madrid) is row 340, and needs its own slug because
-// Saint Louis University (row 170) is the Missouri university. Use "Canada" as the country value.
+// DECISION ROW 341 (EU Business School): the PDF lists it under Switzerland, but the school also has campuses in
+// Barcelona and Munich. It is filed under Switzerland, as the PDF has it, with Geneva as the home city. Montreux, Barcelona
+// and Munich are listed as campuses. Change country to Spain and city to Barcelona if you would rather file it there.
+// This is the same call as Geneva Business School in batch 56. One extra FAQ explains who awards the degrees.
 //
-// QUEBEC CEGEPS (rows 256 and 257): both are public Cegeps and teach mainly in French. Study in Quebec needs a CAQ
-// before the study permit, and a French test (TEF or TCF) is the usual language proof, so these two rows use their own
-// document pack (CA_DOCUMENTS_QC_FR_UG_ONLY). The engine needs an English score value, so ieltsOverall is filled in
-// with a typical figure, but the English score note says that French is the main requirement and the English
-// score may not apply. Confirm the real rule with each Cegep. Programmes are stored at the Undergraduate level with
-// the degree "DEC" (pre university DEC is 2 years, technical DEC is 3 years).
+// DECISION ROW 343 (EMUNI): EMUNI is a postgraduate only institution, so it has no bachelor's courses. The only
+// programme confirmed from a recent source is the Master in Intercultural Business Communication (2018/19 flyer). Older
+// reports name other EMUNI label masters (Risk Science, Global Law, International Relations and Immigration, Culture
+// and Tourism), but those are from 2008 to 2012 and are not listed because they may no longer run. An extra FAQ tells
+// students that there is no undergraduate route.
 //
-// CEGEP DE LA GASPESIE ET DES ILES (row 256): it has campuses in Gaspe, Carleton sur Mer, Grande Riviere and the
-// Magdalen Islands. It is in a small, remote region, so check what is open to international students before you
-// promote it. The campus list uses the best known locations. Confirm each address.
+// SLUG NOTES: row 342 is filed as HTMi Hotel and Tourism Management Institute Switzerland. The PDF writes
+// "International Hotel and Tourism Institute", but the study portals use the Hotel and Tourism Management Institute
+// Switzerland name. Row 343 uses the name EMUNI University in the entry.
 //
-// COLUMBIA COLLEGE (row 258): written as the Vancouver private college known for university transfer programmes.
-// Confirm the transfer partners, the programme names and the wikipediaTitle.
+// WEB SEARCH: DONE for all four schools.
+//   - EU Business School: Wikipedia says founded 1973 as European University, Geneva campus 1987, Barcelona 1989,
+//     Munich 1991, plus a digital campus. The school's own descriptions add Montreux. It offers foundation, bachelor's,
+//     master's, MBA and doctoral programmes in English, with fields such as business administration, communication,
+//     tourism management, international relations, sports management, digital media management, international
+//     business, marketing and finance. A DBA runs on the Geneva campus. Accreditations listed: ACBSP, IACBE, IQA from
+//     CEEMAN and the Swiss EduQua label. State recognised degrees are awarded through partners, named as the
+//     University of Roehampton, the University of Derby and UCAM. Website euruni.edu comes from the school's brochure.
+//   - HTMi: campus in Sarnen, Switzerland. Programmes found on study portals: BA International Hospitality Business
+//     Management, BA International Hospitality and Human Resources Management (both list entry as a Higher Diploma or
+//     equivalent, IELTS about 6, TOEFL 550), MA Hotel Business Management (IELTS 6, TOEFL 547, includes work
+//     placement), an MBA Postgraduate Diploma in Hospitality Management with an MSc by Edinburgh Napier University after
+//     a dissertation, and Postgraduate Diplomas in International Hotel and Tourism Management and in International Hotel
+//     Events Management. Modes listed are on campus, blended and online. One portal gave 23,000 CHF a year for a
+//     postgraduate diploma, not filed because it was not checked.
+//   - EMUNI: established 9 June 2008 in Portoroz, co-founded by the universities of Haifa, Maribor, Sousse and Urbino
+//     Carlo Bo, one of the priorities of the Union for the Mediterranean, legal entity in Slovenia since February 2009.
+//     The 2018/19 flyer gives the address Kidricevo nabrezje 2, 6330 Piran, lectures in Piran with e-learning, and an
+//     optional semester at Urbino for 24 ECTS or more with a second certificate. An older record gives Soncna pot 20,
+//     Portoroz.
+//   - David Tvildiani Medical University: private, Tbilisi. One cycle English language Medical Doctor programme, 360
+//     ECTS, six years, accredited by Georgia's quality body from 29 June 2021 to 29 June 2028 (with a progress report
+//     condition). Sites in Tbilisi (Ljubljana St 13 and Chiaureli St 6, and Ak. Tsereteli Ave 121) and Rustavi. A
+//     portal says AIETI Medical School was listed in the WHO directory in 1995 and was founded in 1989, and the
+//     accreditation report says the MD programme dates from 1991. A study portal lists September starts with a 1 July
+//     deadline. Other programmes named by one portal: pre medical, nursing and PhD.
 //
-// COURSES: no course fee is stored in this batch. No fee figure was checked for any of these five, so every course
-// leaves the amount out and says to confirm the fee. Course names are typical programmes for each college or
-// university and should be checked against its current programme list.
+// WHAT NEEDS CHECKING BEFORE IT REACHES STUDENTS:
+//   - Every English score. None was confirmed for EU Business School, EMUNI or David Tvildiani. HTMi figures come from
+//     study portals.
+//   - All programme names, lengths and intakes. Start dates (February or September for the Swiss schools, October for
+//     EMUNI, September for David Tvildiani) are typical figures, not confirmed.
+//   - Campus addresses. No street address was found for any EU Business School campus or for HTMi. The EMUNI and David
+//     Tvildiani addresses came from older records, and the Rustavi street name differs between sources.
+//   - Websites. htmi.ch and dtmu.edu.ge are from memory and were not shown in the searches.
+//   - Founding year of David Tvildiani (1989 from one portal, MD programme from 1991). No founding year is filed for HTMi.
+//   - Which EU Business School degrees are awarded by which partner, and whether they are recognised where the student
+//     plans to work or study next.
+//   - Whether the EMUNI master is still offered and taught in English.
+//   - Which David Tvildiani years run on which campus, and whether nursing and the pre medical programme are open to
+//     international students.
+//   - Medical degree recognition and licensing in the country where the student plans to practise (for example the
+//     home country medical council rules for foreign graduates).
+//   - Visa rules for Nigerian applicants (Swiss national visa, Slovenian long stay visa, Georgian student visa). The
+//     document packs list the usual items only.
+//
+// FEWER THAN 10 COURSES: all four entries list only what is well known or was found. I did not pad them with invented
+// courses. EMUNI has a single course. Send me the school's course list if you want more.
+//
+// Left out on purpose: tuition figures, acceptance rate, ranking, social links, postal codes and anything unconfirmed.
 //
 // TEXT LIMITS: every text field is one paragraph and stays inside the engine limits (summary 320, ieltsNote 160,
 // tuitionNote 160, metaTitle 70, metaDescription 170, overview/studentLife/accommodation/library/sports 450,
 // course and campus description 300, FAQ answer 400). Run with --dry first to confirm the batch passes.
 //
-// IMPORTANT, HOW SURE EACH ENTRY IS: no web searches were done for this batch. Everything is from general
-// knowledge, so treat all of it as "confirm before it reaches students". The least certain items are:
-//   - Every English or French score (IELTS, TOEFL, Duolingo, TEF, TCF). These change often, so confirm each on
-//     the school pages. They are written as typical minimums, not verified figures.
-//   - Cape Breton University: confirm the programme names, the graduate programmes, the intakes, the athletics
-//     details and the housing position.
-//   - Both Cegeps: confirm the programme names, the language of teaching for international students, the
-//     intakes, the campus addresses and the website pages.
-//   - Columbia College: confirm the programme names, the partner universities, the intakes and the housing help.
-//   - Conestoga College: confirm the programme names, the graduate certificates, which campus teaches each
-//     programme, the intakes and the athletics details.
-//   - Founding years and street addresses come from general knowledge. Confirm each.
-//   Left out on purpose: tuition figures, acceptance rate, ranking, social links and anything unconfirmed.
-//   Library, sports and student life paragraphs are kept general on purpose, and each one says to check
-//   the school pages for current details.
-//
-// Before running: the engine in seedInstitutions.ts runs each institution's child writes in one array
-// $transaction. If slow database calls fail, move to the interactive $transaction with timeout 60000.
-//
-// Run:  npm run seed:institutions -- 41
+// Run:  npm run seed:institutions -- 57 --dry
+//       npm run seed:institutions -- 57
 
 import type { CourseInput, DocumentRow, FaqInput, InstitutionInput } from "./types";
 
-// ── Shared Canada helpers ────────────────────────────────────────────────
+// ── Shared helpers ───────────────────────────────────────────────────────
 
-// General study permit pack for Canada. Confirm anything specific with the
-// international office of each college or university.
-const CA_DOCUMENTS: Record<string, DocumentRow[]> = {
+// General student visa packs. Confirm anything specific with the international office of
+// each institution and with the immigration service of the country.
+const CH_DOCUMENTS: Record<string, DocumentRow[]> = {
   Undergraduate: [
     ["Identity", "Passport"],
-    ["Academic", "High school transcripts and certificates"],
-    ["Academic", "English language test result"],
+    ["Academic", "Secondary school certificate and transcripts, legalised, with a certified translation if needed"],
+    ["Academic", "English language test result or proof of English study"],
     ["Financial", "Bank statement showing proof of funds"],
-    ["Financial", "Proof of tuition payment"],
-    ["Visa", "Letter of acceptance from the school"],
-    ["Visa", "Provincial attestation letter, if required"],
-    ["Visa", "Study permit application and police certificate"],
+    ["Financial", "Proof of tuition fee or deposit payment"],
+    ["Visa", "Admission letter from the institution"],
+    ["Visa", "Swiss national visa (type D) application at the Swiss embassy"],
+    ["Visa", "Proof of accommodation in Switzerland, if requested"],
+    ["Visa", "Health insurance valid in Switzerland"],
   ],
   Postgraduate: [
     ["Identity", "Passport"],
-    ["Academic", "Degree certificate and transcripts"],
+    ["Academic", "Degree certificate and transcripts, legalised, with a certified translation if needed"],
     ["Academic", "CV or resume"],
-    ["Academic", "Statement of purpose"],
-    ["Academic", "English language test result"],
+    ["Academic", "Statement of purpose or motivation letter"],
+    ["Academic", "English language test result or proof of English study"],
     ["Financial", "Bank statement showing proof of funds"],
-    ["Financial", "Proof of tuition payment"],
-    ["Visa", "Letter of acceptance from the school"],
-    ["Visa", "Provincial attestation letter, if required"],
-    ["Visa", "Study permit application and police certificate"],
+    ["Financial", "Proof of tuition fee or deposit payment"],
+    ["Visa", "Admission letter from the institution"],
+    ["Visa", "Swiss national visa (type D) application at the Swiss embassy"],
+    ["Visa", "Proof of accommodation in Switzerland, if requested"],
+    ["Visa", "Health insurance valid in Switzerland"],
   ],
 };
 
-// Schools that teach undergraduate level programmes only.
-const CA_DOCUMENTS_UG_ONLY: Record<string, DocumentRow[]> = {
-  Undergraduate: CA_DOCUMENTS.Undergraduate,
+const SI_DOCUMENTS: Record<string, DocumentRow[]> = {
+  Postgraduate: [
+    ["Identity", "Passport"],
+    ["Academic", "Bachelor degree certificate and transcripts, legalised, with a certified translation if needed"],
+    ["Academic", "CV or resume"],
+    ["Academic", "Statement of purpose or motivation letter"],
+    ["Academic", "English language test result or proof of English study"],
+    ["Financial", "Bank statement showing proof of funds"],
+    ["Financial", "Proof of tuition fee or deposit payment"],
+    ["Visa", "Admission letter from the institution"],
+    ["Visa", "Slovenian long stay visa (type D) or temporary residence permit for study"],
+    ["Visa", "Proof of accommodation in Slovenia"],
+    ["Visa", "Police clearance, if required"],
+    ["Visa", "Health insurance"],
+  ],
 };
 
-// Quebec French language Cegeps need a CAQ (Quebec acceptance certificate) before the study permit.
-const CA_DOCUMENTS_QC_FR_UG_ONLY: Record<string, DocumentRow[]> = {
+const GE_DOCUMENTS: Record<string, DocumentRow[]> = {
   Undergraduate: [
     ["Identity", "Passport"],
-    ["Academic", "High school transcripts and certificates"],
-    ["Academic", "French language test result (TEF or TCF)"],
+    ["Academic", "Secondary school certificate and transcripts, legalised or with an apostille, with a certified translation if needed"],
+    ["Academic", "English language test result, or proof of English study if the university asks for it"],
+    ["Academic", "Entrance examination result, as set by the university"],
     ["Financial", "Bank statement showing proof of funds"],
-    ["Financial", "Proof of tuition payment"],
-    ["Visa", "Letter of acceptance from the Cegep"],
-    ["Visa", "Quebec Acceptance Certificate (CAQ)"],
-    ["Visa", "Study permit application and police certificate"],
+    ["Financial", "Proof of tuition fee or deposit payment"],
+    ["Visa", "Admission letter from the university"],
+    ["Visa", "Georgian student visa or residence permit application"],
+    ["Visa", "Medical certificate and police clearance, if required"],
+    ["Visa", "Health insurance"],
+  ],
+  Postgraduate: [
+    ["Identity", "Passport"],
+    ["Academic", "Degree certificate and transcripts, legalised or with an apostille, with a certified translation if needed"],
+    ["Academic", "CV or resume"],
+    ["Academic", "Research proposal or statement of purpose"],
+    ["Academic", "English language test result or proof of English study"],
+    ["Financial", "Bank statement showing proof of funds"],
+    ["Financial", "Proof of tuition fee or deposit payment"],
+    ["Visa", "Admission letter from the university"],
+    ["Visa", "Georgian student visa or residence permit application"],
+    ["Visa", "Health insurance"],
   ],
 };
 
-function caFaqs(o: {
+function faqs(o: {
   name: string;
   sector: "public" | "private";
   place: string;
@@ -117,11 +167,12 @@ function caFaqs(o: {
   ielts: string;
   fees: string;
   intakes: string;
+  statusAnswer?: string;
 }): FaqInput[] {
   return [
     {
       question: `Is ${o.name} a public or private institution?`,
-      answer: `It is a ${o.sector} institution in ${o.place}.`,
+      answer: o.statusAnswer ?? `It is a ${o.sector} institution in ${o.place}.`,
     },
     { question: `What is ${o.name} known for?`, answer: o.known },
     { question: `What English score do I need for ${o.name}?`, answer: o.ielts },
@@ -138,15 +189,14 @@ function seo(name: string, place: string) {
 }
 
 function ug(
+  cur: string,
   name: string,
   degree: string,
   subject: string,
   duration: string | undefined,
   nextIntake: string | undefined,
   intakes: string | undefined,
-  tuitionAmount?: number,
-  description?: string,
-  period: string = "per year (2026/27)"
+  description?: string
 ): CourseInput {
   return {
     name,
@@ -156,23 +206,21 @@ function ug(
     duration,
     nextIntake,
     intakes,
-    tuitionAmount,
-    tuitionCurrency: "CAD",
-    tuitionPeriod: period,
+    tuitionCurrency: cur,
+    tuitionPeriod: "per year (2026/27)",
     description,
   };
 }
 
 function pg(
+  cur: string,
   name: string,
   degree: string,
   subject: string,
   duration: string | undefined,
   nextIntake: string | undefined,
   intakes: string | undefined,
-  tuitionAmount?: number,
-  description?: string,
-  period: string = "per year (2026/27)"
+  description?: string
 ): CourseInput {
   return {
     name,
@@ -182,9 +230,8 @@ function pg(
     duration,
     nextIntake,
     intakes,
-    tuitionAmount,
-    tuitionCurrency: "CAD",
-    tuitionPeriod: period,
+    tuitionCurrency: cur,
+    tuitionPeriod: "per year (2026/27)",
     description,
   };
 }
@@ -193,330 +240,287 @@ function pg(
 const CONFIRM_FEE = "Confirm the fee with admissions before you apply.";
 
 export const INSTITUTIONS: InstitutionInput[] = [
-  // ── PDF row 255 ────────────────────────────────────────────────────────
+  // ── PDF row 341 ────────────────────────────────────────────────────────
   {
-    name: "Cape Breton University",
-    slug: "cape-breton-university",
-    city: "Sydney",
-    country: "Canada",
-    institutionType: "Public university",
-    website: "https://www.cbu.ca",
-    founded: 1974,
-    upcomingIntake: "Jan 2027",
-    programs: ["Business", "Computer Science", "Community Studies"],
+    name: "EU Business School",
+    slug: "eu-business-school",
+    city: "Geneva",
+    country: "Switzerland",
+    institutionType: "Private business school",
+    website: "https://www.euruni.edu",
+    founded: 1973,
+    upcomingIntake: "Feb 2027",
+    programs: ["Business Administration", "International Relations", "Tourism Management"],
     summary:
-      "A public university in Sydney, Nova Scotia, on Cape Breton Island, founded in 1974, known for business, science, community studies and a large, welcoming international student community in a smaller, calmer Atlantic setting.",
-    ieltsOverall: 6.0,
-    ieltsAlternatives: ["TOEFL iBT 78", "Duolingo 105"],
+      "A private business school founded in 1973, with campuses in Geneva and Montreux in Switzerland, plus Barcelona and Munich. It teaches foundation, bachelor's, master's, MBA and doctoral programmes in English, in fields such as business administration, marketing, international relations and tourism.",
     ieltsNote:
-      "Typical minimums: IELTS 6.0, TOEFL iBT 78 or Duolingo 105, and graduate programmes ask more. Not verified. Confirm on the CBU website.",
-    tuitionCurrency: "CAD",
-    tuitionNote: "No tuition figure was confirmed. CBU publishes international tuition by programme. Confirm on its website.",
+      "No entry score was found. Programmes are taught in English. Confirm the accepted tests and scores for your programme with admissions.",
+    tuitionCurrency: "CHF",
+    tuitionNote: "No tuition figure was confirmed. Fees differ by programme and campus. Confirm with EU Business School admissions.",
     overview:
-      "Cape Breton University is a public university in Sydney, Nova Scotia, on Cape Breton Island, founded in 1974. It offers bachelor's and master's degrees in business, science, community studies and more, with small classes, a large international student community and a calmer, lower cost setting than a big city.",
+      "EU Business School was founded in 1973 as European University and has campuses in Geneva, Montreux, Barcelona and Munich, plus a digital campus. It offers foundation, bachelor's, master's, MBA and doctoral programmes taught in English. State recognised degrees are awarded through academic partners, including the University of Roehampton, the University of Derby and UCAM, depending on the programme and campus.",
     studentLife:
-      "The international office supports new students with arrival, study and work questions, and the campus has clubs, cultural groups and events. Sydney is a small city with ocean and hiking nearby, and part time work is more limited than in a big city. Check the CBU pages for current events and support.",
+      "Classes are small and international, and English is the language of teaching. Geneva is a global hub for banks and international bodies, and Montreux sits on Lake Geneva. Check the EU Business School pages for events, clubs and student support.",
     accommodation:
-      "CBU has residence halls on campus, and many students also rent rooms or shared homes in Sydney. Check the housing pages for current options and booking dates, and apply early.",
+      "Housing differs by campus, and many students rent rooms or shared flats. Swiss rents are high, so budget carefully. Check the EU Business School accommodation pages for current options, costs and booking dates, and apply early.",
     library:
-      "The university library offers study spaces, computers and online collections, and tutoring and writing support help with coursework. Check the library pages for opening hours and services.",
+      "No library details were confirmed. The school runs a digital campus with online learning tools. Check the EU Business School pages for facilities and study support.",
     sports:
-      "CBU competes in college athletics as the Capers, and students can also join intramural and club sports. Check the athletics and recreation pages for current teams and memberships.",
-    wikipediaTitle: "Cape Breton University",
-    ...seo("Cape Breton University", "Sydney, Nova Scotia"),
+      "No sports facility details were confirmed. Sports management is one of the school's subject areas. Check the EU Business School pages for current clubs and activities.",
+    wikipediaTitle: "EU Business School",
+    ...seo("EU Business School", "Geneva, Switzerland"),
     courses: [
-      ug("Bachelor of Business Administration (BBA)", "BBA", "Business", "4 Years", "Jan 2027", "January, May and September", undefined, "A business degree in management, marketing, finance and accounting. Confirm the programme name. " + CONFIRM_FEE),
-      ug("Bachelor of Science in Computer Science", "BSc", "Computer Science", "4 Years", "Jan 2027", "January, May and September", undefined, "A computing degree in programming, data and software. Confirm the programme name. " + CONFIRM_FEE),
-      ug("Bachelor of Arts in Psychology", "BA", "Psychology", "4 Years", "Jan 2027", "January, May and September", undefined, "A degree in human behaviour and research methods. Confirm the programme name. " + CONFIRM_FEE),
-      ug("Bachelor of Science in Biology", "BSc", "Biology", "4 Years", "Jan 2027", "January, May and September", undefined, "A science degree for health careers and research. Confirm the programme name. " + CONFIRM_FEE),
-      pg("Master of Business Administration in Community Economic Development", "MBA", "Business", "2 Years", "Jan 2027", "January, May and September", undefined, "A graduate business degree with a community and economic development focus. Confirm the programme name and intake. " + CONFIRM_FEE),
-      pg("Master of Education", "MEd", "Education", "2 Years", "Jan 2027", "January, May and September", undefined, "A graduate degree for teachers and school leaders. Confirm the programme name and whether international students can apply. " + CONFIRM_FEE),
+      ug("CHF", "Bachelor in Business Administration", "BBA", "Business", undefined, "Feb 2027", undefined, "A bachelor's degree in business, offered with several specialisations. The school lists BBA, BA and BS awards. It was not checked for 2026/27. Confirm the specialisations, length, campus and intakes. " + CONFIRM_FEE),
+      ug("CHF", "Bachelor in International Relations", "Bachelor", "International Relations", undefined, "Feb 2027", undefined, "International relations is one of the fields the school lists. The level and title were not checked. Confirm the degree title, length, campus and intakes. " + CONFIRM_FEE),
+      pg("CHF", "Master of Business Administration (MBA)", "MBA", "Business", undefined, "Feb 2027", undefined, "An MBA taught in English, with specialisations such as entrepreneurship and marketing named in rankings. It was not checked for 2026/27. Confirm the length, campus, intakes and entry rules. " + CONFIRM_FEE),
+      pg("CHF", "Doctor of Business Administration (DBA)", "DBA", "Business", undefined, undefined, undefined, "A doctoral programme in business, listed on the Geneva campus. It was not checked for 2026/27. Confirm the length, format, start dates and entry rules. " + CONFIRM_FEE),
     ],
     campuses: [
       {
-        name: "Sydney Campus",
-        city: "Sydney",
-        address: "1250 Grand Lake Road, Sydney, NS B1P 6L2",
-        description: "The main campus in Sydney, Nova Scotia, with teaching buildings, the library, residence halls, athletics facilities and the international office.",
+        name: "Geneva Campus",
+        city: "Geneva",
+        address: "Geneva, Switzerland. Confirm the full address with the school.",
+        description: "The first Swiss campus, opened in 1987. A Swiss student visa is needed for study here. Confirm the address and which programmes are taught there.",
+      },
+      {
+        name: "Montreux Campus",
+        city: "Montreux",
+        address: "Montreux, Switzerland. Confirm the full address with the school.",
+        description: "A Swiss campus on Lake Geneva, listed alongside Geneva for foundation and bachelor's programmes. Confirm the address and which programmes are taught there.",
+      },
+      {
+        name: "Barcelona Campus",
+        city: "Barcelona",
+        address: "Barcelona, Spain. Confirm the full address with the school.",
+        description: "A campus in Barcelona, opened in 1989. A Spanish student visa is needed for study here. Confirm the address and which programmes are taught there.",
+      },
+      {
+        name: "Munich Campus",
+        city: "Munich",
+        address: "Munich, Germany. Confirm the full address with the school.",
+        description: "A campus in Munich, opened in 1991. Confirm the address, programmes and whether it takes international students.",
       },
     ],
-    documents: CA_DOCUMENTS,
-    faqs: caFaqs({
-      name: "Cape Breton University",
-      sector: "public",
-      place: "Sydney, Nova Scotia",
-      known:
-        "CBU is known for business, science and community studies, a large international student community, and a calm Atlantic island setting with a lower cost of living than big cities.",
-      ielts:
-        "Typical minimums are IELTS 6.0, TOEFL iBT 78 or Duolingo 105, and graduate programmes ask for more. These were not verified, so confirm the exact score for your programme with admissions.",
-      fees:
-        "No tuition figure was confirmed for this listing. CBU publishes international tuition by programme, and housing and living costs are extra. Confirm the current figures on its website.",
-      intakes:
-        "You can usually start in September, January or May, and some programmes start only once a year. Check the international admissions page for current deadlines and apply early to leave time for your study permit.",
-    }),
+    documents: CH_DOCUMENTS,
+    faqs: [
+      ...faqs({
+        name: "EU Business School",
+        sector: "private",
+        place: "Geneva and Montreux, Switzerland, with campuses in Spain and Germany",
+        known:
+          "EU Business School is known for English taught business programmes, small classes, campuses in Geneva, Montreux, Barcelona and Munich, and degrees awarded through partner universities.",
+        ielts:
+          "No entry score was found for this listing. Programmes are taught in English. Confirm the accepted tests and the score for your programme with admissions before you apply.",
+        fees:
+          "No tuition figure was confirmed for this listing. Fees differ by programme and campus, and housing and Swiss living costs are extra. Confirm the current figures with admissions.",
+        intakes:
+          "Start dates were not confirmed. Many business schools start in September and in January or February. Check with admissions for the next start, and apply early to leave time for your student visa.",
+      }),
+      {
+        question: "Who awards the degree at EU Business School?",
+        answer:
+          "The school lists ACBSP and IACBE programme accreditation, IQA quality accreditation from CEEMAN and the Swiss EduQua label. State recognised degrees are awarded through partners such as Roehampton, Derby and UCAM. Check which partner awards your degree and how it is recognised in your next country.",
+      },
+    ],
   },
 
-  // ── PDF row 256 ────────────────────────────────────────────────────────
+  // ── PDF row 342 ────────────────────────────────────────────────────────
   {
-    name: "Cégep de la Gaspésie et des Îles",
-    slug: "cegep-de-la-gaspesie-et-des-iles",
-    city: "Gaspé",
-    country: "Canada",
-    institutionType: "Public college (Cegep)",
-    website: "https://www.cegepgim.ca",
-    upcomingIntake: "Jan 2027",
-    programs: ["Technical Programmes", "Pre University Studies", "Marine and Fisheries"],
+    name: "HTMi Hotel and Tourism Management Institute Switzerland",
+    slug: "htmi-hotel-and-tourism-management-institute-switzerland",
+    city: "Sarnen",
+    country: "Switzerland",
+    institutionType: "Private hospitality management institute",
+    website: "https://www.htmi.ch",
+    upcomingIntake: "Feb 2027",
+    programs: ["Hospitality Management", "Hotel Business Management", "Tourism Management"],
     summary:
-      "A public Cegep in the Gaspé region of Quebec, with campuses in Gaspé, Carleton sur Mer, Grande Rivière and the Magdalen Islands, known for French language technical and pre university programmes and a quiet coastal setting.",
-    ieltsOverall: 5.5,
-    ieltsAlternatives: ["TOEFL iBT 60"],
+      "A private hospitality and tourism institute in Sarnen, central Switzerland, with bachelor's, postgraduate diploma and master's programmes in hotel, events and tourism management, taught in English on campus, blended or online. One master's route leads to an MSc from Edinburgh Napier University.",
     ieltsNote:
-      "Teaching is mainly in French, so a French test (TEF or TCF) is the main requirement and an English score may not apply. Not verified. Confirm with the Cegep.",
-    tuitionCurrency: "CAD",
-    tuitionNote: "No tuition figure was confirmed. International students pay set fees per year. Confirm the current fee with the Cegep.",
+      "HTMi accepts an interview or its own English test. Study portals list about IELTS 6.0 or TOEFL 547 to 550. Confirm the score for your programme.",
+    tuitionCurrency: "CHF",
+    tuitionNote: "No tuition figure was confirmed. Fees differ by programme. Confirm with HTMi admissions.",
     overview:
-      "Cégep de la Gaspésie et des Îles is a public college in Quebec's Gaspé region, with campuses in Gaspé, Carleton sur Mer, Grande Rivière and the Magdalen Islands. It offers pre university and technical programmes taught mainly in French, in small classes and a quiet coastal setting far from the big cities.",
+      "HTMi, the Hotel and Tourism Management Institute Switzerland, is a private institute with its campus in Sarnen, in central Switzerland. It offers bachelor's degrees, postgraduate diplomas and master's programmes in hospitality, hotel business, events and tourism management, available on campus, blended or online, and taught in English.",
     studentLife:
-      "Classes are small and teachers know their students, and the Cegep runs activities, clubs and support for new students. The region offers sea, forest and mountains, with a slow pace and fewer part time jobs than in Montreal. Check the Cegep pages for current events and support.",
+      "Several programmes combine academic study with a work placement or internship in hospitality. Sarnen is a small town on a lake in central Switzerland, with mountains and walking routes nearby. Check the HTMi pages for events, clubs and student support.",
     accommodation:
-      "Students usually rent rooms or shared homes near their campus, and the Cegep may help with housing. Check with the Cegep for current options, and apply early, since the towns are small.",
+      "Sarnen is a small town, so many students live in rented rooms or shared housing nearby. Swiss rents are high, so budget carefully. Check the HTMi accommodation pages for current options, costs and booking dates, and apply early.",
     library:
-      "Each campus has a library and learning centre, with study spaces, computers and help with coursework. Check the Cegep pages for opening hours and services.",
+      "No library details were confirmed. Programmes can be taken on campus, blended or online, so learning tools are available digitally. Check the HTMi pages for facilities and study support.",
     sports:
-      "The Cegep runs sports and outdoor activities for students, and the region is good for hiking, skiing and sea sports. Check the Cegep pages for current teams and clubs.",
-    wikipediaTitle: "Cégep de la Gaspésie et des Îles",
-    ...seo("Cégep de la Gaspésie et des Îles", "Gaspé, Quebec"),
+      "No sports facility details were confirmed. The lake and mountain setting offers hiking, water sports and winter sports nearby. Check the HTMi pages for current clubs and activities.",
+    ...seo("HTMi Hotel and Tourism Management Institute Switzerland", "Sarnen, Switzerland"),
     courses: [
-      ug("DEC Pre University Social Science", "DEC", "Social Science", "2 Years", "Jan 2027", "August and January", undefined, "A two year pre university programme that prepares you for university. Confirm the programme name, language and offer for international students. " + CONFIRM_FEE),
-      ug("DEC Computer Science Technology", "DEC", "Computer Science", "3 Years", "Jan 2027", "August and January", undefined, "A three year technical programme in software and computing. Confirm the programme name, language and offer for international students. " + CONFIRM_FEE),
-      ug("DEC Nursing", "DEC", "Nursing", "3 Years", "Jan 2027", "August and January", undefined, "A three year technical programme in nursing care with clinical placements. Confirm the programme name and whether international students can apply. " + CONFIRM_FEE),
-      ug("DEC Fisheries and Aquaculture Technology", "DEC", "Marine Studies", "3 Years", "Jan 2027", "August and January", undefined, "A three year technical programme in fisheries, aquaculture and marine work. Confirm the programme name, campus and offer for international students. " + CONFIRM_FEE),
+      ug("CHF", "BA in International Hospitality Business Management", "BA", "Hospitality", undefined, "Feb 2027", undefined, "A bachelor's degree listed on a study portal. Entry is listed as a Higher Diploma in International Hotel and Tourism Management or equivalent, with about IELTS 6.0. Confirm the route, length and intakes. " + CONFIRM_FEE),
+      ug("CHF", "BA in International Hospitality and Human Resources Management", "BA", "Hospitality", undefined, "Feb 2027", undefined, "A bachelor's degree listed on a study portal, with the same entry as the business management BA. It was not checked on the HTMi site. Confirm the route, length and intakes. " + CONFIRM_FEE),
+      pg("CHF", "MA in Hotel Business Management", "MA", "Hospitality", undefined, "Feb 2027", undefined, "A master's degree that includes a work placement or internship, with about IELTS 6.0 listed. It was not checked for 2026/27. Confirm the length, intakes and entry rules. " + CONFIRM_FEE),
+      pg("CHF", "MBA Postgraduate Diploma and MSc in Hospitality and Tourism Management", "MSc", "Hospitality", undefined, "Feb 2027", undefined, "A route to an HTMi MBA and an MSc from Edinburgh Napier University, after a dissertation. It was not checked for 2026/27. Confirm the length, intakes and entry rules. " + CONFIRM_FEE),
+      pg("CHF", "Postgraduate Diploma in International Hotel and Tourism Management", "PG Diploma", "Hospitality", undefined, "Feb 2027", undefined, "A postgraduate diploma with academic study and a work placement or internship. It was not checked for 2026/27. Confirm the length, intakes and entry rules. " + CONFIRM_FEE),
     ],
     campuses: [
       {
-        name: "Gaspé Campus",
-        city: "Gaspé",
-        address: "94 Rue Jacques Cartier, Gaspé, QC G4X 2S8",
-        description: "The main campus in Gaspé, with classrooms, the library and student services. Confirm the address with the Cegep.",
-      },
-      {
-        name: "Carleton sur Mer Campus",
-        city: "Carleton sur Mer",
-        address: "Carleton sur Mer, Quebec. Confirm the street address with the Cegep.",
-        description: "A campus on the Baie des Chaleurs with classrooms and student services.",
-      },
-      {
-        name: "Grande Rivière Campus",
-        city: "Grande Rivière",
-        address: "Grande Rivière, Quebec. Confirm the street address with the Cegep.",
-        description: "A campus with workshops and training for marine and fisheries programmes.",
-      },
-      {
-        name: "Magdalen Islands Campus",
-        city: "Îles de la Madeleine",
-        address: "Îles de la Madeleine, Quebec. Confirm the street address with the Cegep.",
-        description: "A campus on the Magdalen Islands with classrooms and student services.",
+        name: "Sarnen Campus",
+        city: "Sarnen",
+        address: "Sarnen, Canton of Obwalden, Switzerland. Confirm the full address with HTMi.",
+        description: "The institute's campus in central Switzerland. A Swiss student visa is needed. Confirm the address and which programmes run on campus, blended or online.",
       },
     ],
-    documents: CA_DOCUMENTS_QC_FR_UG_ONLY,
-    faqs: caFaqs({
-      name: "Cégep de la Gaspésie et des Îles",
-      sector: "public",
-      place: "the Gaspé region of Quebec",
-      known:
-        "The Cegep is known for French language technical and pre university programmes, small classes and a quiet coastal setting with several campuses in the Gaspé region.",
-      ielts:
-        "Teaching is mainly in French, so a French test (TEF or TCF) is the main requirement and an English score may not apply. These details were not verified, so confirm the rule with admissions.",
-      fees:
-        "No tuition figure was confirmed for this listing. International students pay set fees per year, and housing and living costs are extra. Confirm the current figures with the Cegep.",
-      intakes:
-        "Programmes usually start in August, with some starts in January. Quebec study needs a CAQ before the study permit, so apply early and confirm the deadlines with the Cegep.",
-    }),
+    documents: CH_DOCUMENTS,
+    faqs: [
+      ...faqs({
+        name: "HTMi",
+        sector: "private",
+        place: "Sarnen, Switzerland",
+        known:
+          "HTMi is known as a Swiss hospitality and tourism institute with programmes in hotel business, events and tourism management, work placements, and options to study on campus, blended or online.",
+        ielts:
+          "HTMi accepts an interview or its own English placement test. Study portals list about IELTS 6.0, or TOEFL 547 to 550, depending on the programme. Confirm the accepted tests and the score for your programme with admissions.",
+        fees:
+          "No tuition figure was confirmed for this listing. Fees differ by programme, and housing and Swiss living costs are extra. Confirm the current figures with HTMi admissions.",
+        intakes:
+          "Start dates were not confirmed. Check with HTMi admissions for the next start, and apply early to leave time for your Swiss student visa.",
+      }),
+      {
+        question: "Do HTMi students get a UK degree?",
+        answer:
+          "One HTMi master's route lists an MSc awarded by Edinburgh Napier University after a dissertation, alongside an HTMi MBA. Other awards are issued by HTMi itself. Confirm which body awards your degree and how it is recognised where you plan to work or study next.",
+      },
+    ],
   },
 
-  // ── PDF row 257 ────────────────────────────────────────────────────────
+  // ── PDF row 343 ────────────────────────────────────────────────────────
   {
-    name: "Cégep Marie-Victorin",
-    slug: "cegep-marie-victorin",
-    city: "Montreal",
-    country: "Canada",
-    institutionType: "Public college (Cegep)",
-    website: "https://www.collegemv.qc.ca",
-    founded: 1968,
-    upcomingIntake: "Jan 2027",
-    programs: ["Accounting", "Computer Science", "Health Sciences"],
+    name: "EMUNI University (Euro Mediterranean University)",
+    slug: "emuni-euro-mediterranean-university",
+    city: "Portorož",
+    country: "Slovenia",
+    institutionType: "International postgraduate university",
+    website: "https://emuni.si",
+    founded: 2008,
+    upcomingIntake: "Oct 2027",
+    programs: ["Intercultural Business Communication", "Euro Mediterranean Studies"],
     summary:
-      "A public Cegep in Montreal, Quebec, founded in 1968, known for French language pre university and technical programmes in business, computing and health, in a large and lively student city with an international community.",
-    ieltsOverall: 5.5,
-    ieltsAlternatives: ["TOEFL iBT 60"],
+      "An international postgraduate university founded in 2008 with its seat in Portorož, on Slovenia's Adriatic coast, set up under the Union for the Mediterranean. It runs master's level programmes, research and summer schools, often with partner universities such as Urbino in Italy. It has no bachelor's courses.",
     ieltsNote:
-      "Teaching is mainly in French, so a French test (TEF or TCF) is the main requirement and an English score may not apply. Not verified. Confirm with the Cegep.",
-    tuitionCurrency: "CAD",
-    tuitionNote: "No tuition figure was confirmed. International students pay set fees per year. Confirm the current fee with the Cegep.",
+      "No entry score was found. Confirm the English level and the accepted tests for your master's programme with EMUNI admissions.",
+    tuitionCurrency: "EUR",
+    tuitionNote: "No tuition figure was confirmed. EMUNI works with partner universities, so fees differ by programme. Confirm with EMUNI.",
     overview:
-      "Cégep Marie-Victorin is a public college in Montreal, Quebec, founded in 1968. It offers pre university and technical programmes in business, computing, health and science, taught mainly in French, with student services, an international community and the opportunities of a large city.",
+      "EMUNI University was established on 9 June 2008 in Portorož, Slovenia, as an international postgraduate institution for the Euro Mediterranean region. It was co-founded by the universities of Haifa, Maribor, Sousse and Urbino Carlo Bo. It offers master's level study, summer schools and research, and many programmes are run together with partner universities.",
     studentLife:
-      "The Cegep has clubs, student groups and events, and staff help international students settle in and plan their studies. Montreal offers transit, part time work and a mix of French and English life. Check the Cegep pages for current events and support.",
+      "Lectures for some programmes are held in Piran, with e-learning and an optional mobility semester at the University of Urbino in Italy. Piran and Portorož are seaside towns on the Adriatic, with a mild climate. Check the EMUNI pages for events and student support.",
     accommodation:
-      "The Cegep has no residence halls, so students rent rooms or shared apartments in Montreal, and many choose homes close to the metro. Check with the Cegep for current housing help, and apply early.",
+      "Students usually rent rooms or shared flats in Piran, Portorož or nearby towns. A 2018 flyer listed approximate accommodation costs, so ask EMUNI for current figures. Check the EMUNI pages for booking dates, and apply early.",
     library:
-      "The Cegep library offers study spaces, computers and online collections, and learning support helps with coursework and French. Check the library pages for opening hours and services.",
+      "No library details were confirmed. Some programmes use e-learning alongside classroom lectures. Check the EMUNI pages for facilities and study support.",
     sports:
-      "The Cegep has sports teams and recreation activities for students. Check the Cegep pages for current teams, facilities and memberships.",
-    wikipediaTitle: "Cégep Marie-Victorin",
-    ...seo("Cégep Marie-Victorin", "Montreal, Quebec"),
+      "No sports facility details were confirmed. The coast around Piran and Portorož is good for walking, cycling and water sports. Check the EMUNI pages for current clubs and activities.",
+    wikipediaTitle: "Euro-Mediterranean University of Slovenia",
+    ...seo("EMUNI University", "Portorož, Slovenia"),
     courses: [
-      ug("DEC Pre University Social Science", "DEC", "Social Science", "2 Years", "Jan 2027", "August and January", undefined, "A two year pre university programme that prepares you for university. Confirm the programme name, language and offer for international students. " + CONFIRM_FEE),
-      ug("DEC Accounting and Management Technology", "DEC", "Accounting", "3 Years", "Jan 2027", "August and January", undefined, "A three year technical programme in accounting and business management. Confirm the programme name, language and offer for international students. " + CONFIRM_FEE),
-      ug("DEC Computer Science Technology", "DEC", "Computer Science", "3 Years", "Jan 2027", "August and January", undefined, "A three year technical programme in software and computing. Confirm the programme name, language and offer for international students. " + CONFIRM_FEE),
-      ug("DEC Nursing", "DEC", "Nursing", "3 Years", "Jan 2027", "August and January", undefined, "A three year technical programme in nursing care with clinical placements. Confirm the programme name and whether international students can apply. " + CONFIRM_FEE),
-      ug("DEC Pre University Health Sciences", "DEC", "Health Sciences", "2 Years", "Jan 2027", "August and January", undefined, "A two year pre university programme in science for health careers. Confirm the programme name, language and offer for international students. " + CONFIRM_FEE),
+      pg("EUR", "Master in Intercultural Business Communication", "Master", "Business", undefined, "Oct 2027", undefined, "A second cycle master's degree with lectures in Piran and e-learning, and an optional semester at the University of Urbino. The details are from a 2018/19 flyer. Confirm that it still runs, the language, length and entry rules. " + CONFIRM_FEE),
     ],
     campuses: [
       {
-        name: "Montreal Campus",
-        city: "Montreal",
-        address: "7000 Rue Marie-Victorin, Montreal, QC H1G 2J6",
-        description: "The main campus in Montreal, with classrooms, the library, sports facilities and student services. Confirm the address with the Cegep.",
+        name: "EMUNI Seat (Piran and Portorož)",
+        city: "Portorož",
+        address: "Kidričevo nabrežje 2, 6330 Piran. An older record gives Sončna pot 20, Portorož. Confirm the full address with EMUNI.",
+        description: "The seat of the university. A 2018/19 flyer gave the Piran address and an older record the Portorož one, so confirm where classes are held.",
       },
     ],
-    documents: CA_DOCUMENTS_QC_FR_UG_ONLY,
-    faqs: caFaqs({
-      name: "Cégep Marie-Victorin",
-      sector: "public",
-      place: "Montreal, Quebec",
-      known:
-        "The Cegep is known for French language pre university and technical programmes in business, computing and health, in the large student city of Montreal.",
-      ielts:
-        "Teaching is mainly in French, so a French test (TEF or TCF) is the main requirement and an English score may not apply. These details were not verified, so confirm the rule with admissions.",
-      fees:
-        "No tuition figure was confirmed for this listing. International students pay set fees per year, and housing and Montreal living costs are extra. Confirm the current figures with the Cegep.",
-      intakes:
-        "Programmes usually start in August, with some starts in January. Quebec study needs a CAQ before the study permit, so apply early and confirm the deadlines with the Cegep.",
-    }),
+    documents: SI_DOCUMENTS,
+    faqs: [
+      ...faqs({
+        name: "EMUNI",
+        sector: "private",
+        place: "Portorož, Slovenia",
+        statusAnswer:
+          "EMUNI is an international postgraduate university set up in 2008 under the Union for the Mediterranean and registered in Slovenia. Its public or private status was not confirmed, so check with EMUNI.",
+        known:
+          "EMUNI is known as an international postgraduate university for the Euro Mediterranean region, with master's programmes run with partner universities, summer schools, research and a mobility option in Urbino, Italy.",
+        ielts:
+          "No entry score was found for this listing. Confirm the English level and the accepted tests for your master's programme with EMUNI admissions before you apply.",
+        fees:
+          "No tuition figure was confirmed for this listing. Fees differ by programme, and housing and living costs are extra. Confirm the current figures with EMUNI.",
+        intakes:
+          "Start dates were not confirmed. Slovenian master's programmes usually start in autumn. Check with EMUNI admissions, and apply early to leave time for your student visa.",
+      }),
+      {
+        question: "Can I study a bachelor's degree at EMUNI?",
+        answer:
+          "No. EMUNI is a postgraduate institution, so it offers master's level and doctoral study rather than bachelor's degrees. You need a recognised bachelor's degree to apply, and the master's programme on offer should be confirmed with EMUNI admissions.",
+      },
+    ],
   },
 
-  // ── PDF row 258 ────────────────────────────────────────────────────────
+  // ── PDF row 344 ────────────────────────────────────────────────────────
   {
-    name: "Columbia College",
-    slug: "columbia-college-vancouver",
-    city: "Vancouver",
-    country: "Canada",
-    institutionType: "Private college",
-    website: "https://www.columbiacollege.ca",
-    founded: 1936,
-    upcomingIntake: "Jan 2027",
-    programs: ["University Transfer", "Business", "Sciences"],
+    name: "David Tvildiani Medical University",
+    slug: "david-tvildiani-medical-university",
+    city: "Tbilisi",
+    country: "Georgia",
+    institutionType: "Private medical university",
+    website: "https://dtmu.edu.ge",
+    founded: 1989,
+    upcomingIntake: "Sep 2027",
+    programs: ["Medicine", "Nursing", "Pre Medical Studies"],
     summary:
-      "A private college in downtown Vancouver, British Columbia, founded in 1936, known for university transfer programmes, small classes and English language support that lead into the second or third year of degrees at British Columbia universities.",
-    ieltsOverall: 6.0,
-    ieltsAlternatives: ["TOEFL iBT 80", "Duolingo 105"],
+      "A private medical university in Tbilisi, Georgia, with roots in the AIETI Medical School, founded in 1989. Its English taught six year Medical Doctor (MD) programme is the main offer for international students, alongside nursing and a pre medical programme.",
     ieltsNote:
-      "Typical minimums: IELTS 6.0, TOEFL iBT 80 or Duolingo 105, and some programmes ask more. Not verified. Confirm on the Columbia College website.",
-    tuitionCurrency: "CAD",
-    tuitionNote: "No tuition figure was confirmed. Columbia publishes fees by programme and course load. Confirm on its website.",
+      "No English score was found. The MD programme is taught in English and has an entrance exam. Confirm the English requirement with DTMU admissions.",
+    tuitionCurrency: "USD",
+    tuitionNote: "Sources disagree on fees, so none is filed. Confirm the annual MD fee and any deposit with DTMU admissions.",
     overview:
-      "Columbia College is a private college in downtown Vancouver, British Columbia, founded in 1936. It is known for university transfer programmes that let students complete the first years of a degree in small classes, then move on to partner universities in British Columbia, with English language support for new students.",
+      "David Tvildiani Medical University is a private university in Tbilisi that grew out of the AIETI Medical School, which a portal says was listed in the WHO directory of medical schools in 1995. Its one cycle English taught Medical Doctor programme is worth 360 ECTS and runs for six years. Georgian accreditation for the MD runs to June 2028.",
     studentLife:
-      "The college has an international student team, clubs and events, and advisors who help students plan their transfer. Vancouver offers transit, part time work, mountains and the sea. Check the college pages for current events and support.",
+      "Tbilisi is Georgia's capital, with about 1.5 million people, a lively food and café scene, and living costs below most of Western Europe. English and Georgian students study in separate streams. Check the DTMU pages for events, clinical placements and student support.",
     accommodation:
-      "Columbia offers homestay and housing help, and many students also rent rooms or shared apartments in Vancouver. Rents are high, so check the housing pages for current options and apply early.",
+      "Students rent rooms or shared flats in Tbilisi, and some listings mention hostels at the campuses. Check the DTMU accommodation pages for current options, costs and booking dates, and apply early.",
     library:
-      "The college library offers study spaces, computers and online collections, and tutoring and writing support help with coursework. Check the library pages for opening hours and services.",
+      "No library details were confirmed. The MD programme uses problem based learning with tutors, as noted in a 2021 accreditation review. Check the DTMU pages for facilities and study support.",
     sports:
-      "Columbia is a downtown college, so student activity centres on clubs, events and recreation rather than varsity teams. Vancouver offers many sports and outdoor options nearby.",
-    wikipediaTitle: "Columbia College (Vancouver)",
-    ...seo("Columbia College", "Vancouver, British Columbia"),
+      "No sports facility details were confirmed. Tbilisi has parks, gyms and hills nearby for hiking. Check the DTMU pages for current clubs and activities.",
+    ...seo("David Tvildiani Medical University", "Tbilisi, Georgia"),
     courses: [
-      ug("University Transfer Arts", "Transfer", "Arts", "2 Years", "Jan 2027", "January, May and September", undefined, "A two year transfer programme in arts subjects for a bachelor's degree at a university. Confirm the programme name and transfer partners. " + CONFIRM_FEE),
-      ug("University Transfer Business", "Transfer", "Business", "2 Years", "Jan 2027", "January, May and September", undefined, "A two year transfer programme in business for a bachelor's degree at a university. Confirm the programme name and transfer partners. " + CONFIRM_FEE),
-      ug("University Transfer Science", "Transfer", "Science", "2 Years", "Jan 2027", "January, May and September", undefined, "A two year transfer programme in science for a bachelor's degree at a university. Confirm the programme name and transfer partners. " + CONFIRM_FEE),
-      ug("University Transfer Computer Science", "Transfer", "Computer Science", "2 Years", "Jan 2027", "January, May and September", undefined, "A two year transfer programme in computing for a bachelor's degree at a university. Confirm the programme name and transfer partners. " + CONFIRM_FEE),
+      ug("USD", "Medical Doctor (MD)", "MD", "Medicine", "6 Years", "Sep 2027", "September", "A one cycle English taught medical degree of 360 ECTS. Applicants sit an entrance exam, and one portal listed a 1 July deadline. Confirm the entry rules, deadline and recognition for your home country. " + CONFIRM_FEE),
+      ug("USD", "Bachelor in Nursing", "Bachelor", "Nursing", undefined, "Sep 2027", "September", "A nursing programme listed by one portal. It was not checked on the DTMU site. Confirm that it is taught in English and open to international students, and the length and entry rules. " + CONFIRM_FEE),
+      ug("USD", "Pre Medical Programme", "Pre Medical", "Medicine", undefined, "Sep 2027", "September", "A programme listed by one portal to bridge high school and the MD programme. It was not checked on the DTMU site. Confirm the length, language and whether it leads into the MD. " + CONFIRM_FEE),
     ],
     campuses: [
       {
-        name: "Vancouver Campus",
-        city: "Vancouver",
-        address: "438 Terminal Avenue, Vancouver, BC V6A 0C1",
-        description: "The main campus in downtown Vancouver, with classrooms, the library and student services. Confirm the address with the college.",
+        name: "Tbilisi Campus",
+        city: "Tbilisi",
+        address: "Ljubljana St 13 and Chiaureli St 6, and Ak. Tsereteli Ave 121, Tbilisi. Confirm the full address with the university.",
+        description: "The main sites in the capital, listed in the accreditation record. A portal says years 3 to 6 are taught in Tbilisi, which was not confirmed. Confirm where each year is taught.",
       },
-    ],
-    documents: CA_DOCUMENTS_UG_ONLY,
-    faqs: caFaqs({
-      name: "Columbia College",
-      sector: "private",
-      place: "Vancouver, British Columbia",
-      known:
-        "Columbia College is known for university transfer programmes, small classes, English language support and a downtown Vancouver campus that leads into British Columbia universities.",
-      ielts:
-        "Typical minimums are IELTS 6.0, TOEFL iBT 80 or Duolingo 105, and some programmes ask for more. These were not verified, so confirm the exact score for your programme with admissions.",
-      fees:
-        "No tuition figure was confirmed for this listing. Columbia publishes fees by programme and course load, and housing and Vancouver living costs are extra. Confirm the current figures on its website.",
-      intakes:
-        "Programmes usually start in January, May and September. Check the admissions page for current deadlines and apply early to leave time for your study permit.",
-    }),
-  },
-
-  // ── PDF row 259 ────────────────────────────────────────────────────────
-  {
-    name: "Conestoga College",
-    slug: "conestoga-college",
-    city: "Kitchener",
-    country: "Canada",
-    institutionType: "Public college",
-    website: "https://www.conestogac.on.ca",
-    founded: 1967,
-    upcomingIntake: "Jan 2027",
-    programs: ["Business", "Engineering Technology", "Information Technology"],
-    summary:
-      "A public college in Kitchener, Ontario, in the Waterloo region, founded in 1967, known for hands on diplomas, degrees and graduate certificates in business, technology, engineering, health and trades, with co op and strong employer links.",
-    ieltsOverall: 6.0,
-    ieltsAlternatives: ["TOEFL iBT 80", "Duolingo 105"],
-    ieltsNote:
-      "Typical minimums: IELTS 6.0 for diplomas, higher for some degrees and graduate certificates, or TOEFL iBT 80 or Duolingo 105. Not verified. Confirm on the Conestoga website.",
-    tuitionCurrency: "CAD",
-    tuitionNote: "No tuition figure was confirmed. Conestoga publishes international fees by programme. Confirm on its website.",
-    overview:
-      "Conestoga College is a public college in Kitchener, Ontario, in the Waterloo region, founded in 1967. It offers diplomas, degrees and graduate certificates in business, technology, engineering, health and trades, with hands on learning, co op placements, employer links and campuses across southwestern Ontario.",
-    studentLife:
-      "The college has an international centre that supports new students, and the campuses have clubs, events and career services. Kitchener and Waterloo have a strong technology scene, with transit and part time work, and Toronto is within driving distance. Check the college pages for current events.",
-    accommodation:
-      "Conestoga has residence at the Doon campus, and many students also rent rooms or shared homes in Kitchener, Waterloo and nearby cities. Check the housing pages for current options and booking dates, and apply early.",
-    library:
-      "The college libraries offer study spaces, computers and online collections, and learning support helps with coursework and writing. Check the library pages for opening hours and services.",
-    sports:
-      "Conestoga competes in college athletics as the Condors, and students can also join intramural and recreation activities. Check the athletics and recreation pages for current teams and memberships.",
-    wikipediaTitle: "Conestoga College",
-    ...seo("Conestoga College", "Kitchener, Ontario"),
-    courses: [
-      ug("Business Diploma", "Diploma", "Business", "2 Years", "Jan 2027", "January, May and September", undefined, "A two year diploma in management, marketing and finance. Confirm the programme name and campus. " + CONFIRM_FEE),
-      ug("Computer Programmer Diploma", "Diploma", "Information Technology", "2 Years", "Jan 2027", "January, May and September", undefined, "A two year diploma in programming, databases and software. Confirm the programme name and campus. " + CONFIRM_FEE),
-      ug("Mechanical Engineering Technology Advanced Diploma", "Advanced Diploma", "Engineering", "3 Years", "Jan 2027", "January, May and September", undefined, "A three year advanced diploma in design, machines and manufacturing. Confirm the programme name and campus. " + CONFIRM_FEE),
-      ug("Early Childhood Education Diploma", "Diploma", "Education", "2 Years", "Jan 2027", "January, May and September", undefined, "A two year diploma in child development and early learning with placements. Confirm the programme name and campus. " + CONFIRM_FEE),
-      pg("Project Management Graduate Certificate", "Graduate Certificate", "Project Management", "1 Year", "Jan 2027", "January, May and September", undefined, "A one year graduate certificate in planning, leading and delivering projects. Confirm the programme name and campus. " + CONFIRM_FEE),
-      pg("Supply Chain Management Graduate Certificate", "Graduate Certificate", "Supply Chain", "1 Year", "Jan 2027", "January, May and September", undefined, "A one year graduate certificate in logistics, purchasing and operations. Confirm the programme name and campus. " + CONFIRM_FEE),
-    ],
-    campuses: [
       {
-        name: "Doon Campus",
-        city: "Kitchener",
-        address: "299 Doon Valley Drive, Kitchener, ON N2G 4M4",
-        description: "The main campus in Kitchener, with teaching buildings, labs, the library, residence and the international centre. Confirm the address with the college.",
+        name: "Rustavi Campus",
+        city: "Rustavi",
+        address: "Rustavi, Georgia. Sources give Amjato St 69 and Sanapiro St 69, so confirm the address with the university.",
+        description: "A site in Rustavi, near Tbilisi, listed in the accreditation record. A portal says years 1 and 2 are taught here, which was not confirmed. Confirm which years run here.",
       },
     ],
-    documents: CA_DOCUMENTS,
-    faqs: caFaqs({
-      name: "Conestoga College",
-      sector: "public",
-      place: "Kitchener, Ontario",
-      known:
-        "Conestoga is known for hands on diplomas, degrees and graduate certificates in business, technology, engineering, health and trades, with co op placements and strong employer links in the Waterloo region.",
-      ielts:
-        "Typical minimums are IELTS 6.0 for diplomas, higher for some degrees and graduate certificates, or TOEFL iBT 80 or Duolingo 105. These were not verified, so confirm the exact score for your programme with admissions.",
-      fees:
-        "No tuition figure was confirmed for this listing. Conestoga publishes international fees by programme, and housing and living costs are extra. Confirm the current figures on its website.",
-      intakes:
-        "Programmes usually start in January, May and September, and some start only once a year. Check the international admissions page for current deadlines and apply early to leave time for your study permit.",
-    }),
+    documents: GE_DOCUMENTS,
+    faqs: [
+      ...faqs({
+        name: "David Tvildiani Medical University",
+        sector: "private",
+        place: "Tbilisi, Georgia",
+        known:
+          "DTMU is known for its English taught six year MD programme, its roots in the AIETI Medical School, and a problem based learning curriculum. Check how the degree is recognised before you apply, because licensing rules differ by country.",
+        ielts:
+          "No English score was found for this listing. The MD programme is taught in English and applicants sit an entrance exam. Confirm the English requirement and the exam format with DTMU admissions.",
+        fees:
+          "Sources disagree on the annual fee, so none is filed. Housing, insurance and living costs are extra. Confirm the current fee and any deposit with DTMU admissions.",
+        intakes:
+          "The MD programme starts in September, and one portal listed a 1 July application deadline. Confirm the current dates with DTMU admissions, and apply early to leave time for your student visa.",
+      }),
+      {
+        question: "Will my DTMU medical degree be recognised in my home country?",
+        answer:
+          "Recognition and licensing rules differ by country, and some medical councils ask foreign graduates to pass extra exams or register first. Check the rules of the council in the country where you plan to practise before you apply.",
+      },
+    ],
   },
 ];
