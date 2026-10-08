@@ -314,6 +314,22 @@ export const ApiCatalogQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(12),
 });
 
+// Same filters as the catalog list, plus an optional institution slug that limits the
+// result to the courses of that one institution (used by the institution courses page).
+export const ApiCourseQuerySchema = ApiCatalogQuerySchema.extend({
+  institution: z
+    .string()
+    .trim()
+    .min(1)
+    .max(200)
+    .optional()
+    .openapi({
+      description:
+        "Institution slug. Returns only the courses of that institution, in the order set in the admin. q then matches the course name, subject or degree",
+      example: "conestoga-college",
+    }),
+});
+
 export const ApiInstitutionSlugParamSchema = z.object({
   slug: z.string().openapi({ example: "conestoga-college" }),
 });

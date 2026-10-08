@@ -25,6 +25,7 @@ import {
   ApiCatalogSummarySchema,
   ApiCountrySchema,
   ApiCourseCardSchema,
+  ApiCourseQuerySchema,
   ApiInstitutionCardSchema,
   ApiInstitutionDetailSchema,
   ApiInstitutionSlugParamSchema,
@@ -413,7 +414,7 @@ schoolsRoute.openapi(
 // types goes in as a bound parameter.
 // ─────────────────────────────────────────────────────────────────────────
 
-type CatalogFilters = { country?: string; q?: string };
+type CatalogFilters = { country?: string; q?: string; institution?: string };
 
 // Escape LIKE wildcards so "100%" or "a_b" search for what was typed.
 const likeEscape = (s: string) => s.replace(/[\\%_]/g, "\\$&");
@@ -426,13 +427,22 @@ const sqlAnd = (parts: Prisma.Sql[]) => (parts.length ? Prisma.join(parts, " AND
 //   turn  position inside its own institution, so ordering by turn hands out one
 //         course per institution per round and a page shows many institutions
 //         instead of 12 courses from one
-function coursesUnion({ country, q }: CatalogFilters) {
+function coursesUnion({ country, q, institution }: CatalogFilters) {
   const pattern = q ? `%${likeEscape(q)}%` : null;
 
   const courseWhere = sqlAnd([
     Prisma.sql`i."isActive" = true`,
     ...(country ? [Prisma.sql`lower(i.country) = lower(${country})`] : []),
-    ...(pattern ? [Prisma.sql`(c.name ILIKE ${pattern} OR c.subject ILIKE ${pattern} OR i.name ILIKE ${pattern})`] : []),
+    ...(institution ? [Prisma.sql`i.slug = ${institution}`] : []),
+    // Inside one institution every row already belongs to it, so matching the institution
+    // name would return the whole list for a search like "college". Search the course instead.
+    ...(pattern
+      ? [
+          institution
+            ? Prisma.sql`(c.name ILIKE ${pattern} OR c.subject ILIKE ${pattern} OR c.degree ILIKE ${pattern})`
+            : Prisma.sql`(c.name ILIKE ${pattern} OR c.subject ILIKE ${pattern} OR i.name ILIKE ${pattern})`,
+        ]
+      : []),
   ]);
 
   const programmeWhere = sqlAnd([
@@ -440,7 +450,10 @@ function coursesUnion({ country, q }: CatalogFilters) {
     Prisma.sql`btrim(p.name) <> ''`,
     Prisma.sql`NOT EXISTS (SELECT 1 FROM "InstitutionCourse" ic WHERE ic."institutionId" = i.id)`,
     ...(country ? [Prisma.sql`lower(i.country) = lower(${country})`] : []),
-    ...(pattern ? [Prisma.sql`(p.name ILIKE ${pattern} OR i.name ILIKE ${pattern})`] : []),
+    ...(institution ? [Prisma.sql`i.slug = ${institution}`] : []),
+    ...(pattern
+      ? [institution ? Prisma.sql`p.name ILIKE ${pattern}` : Prisma.sql`(p.name ILIKE ${pattern} OR i.name ILIKE ${pattern})`]
+      : []),
   ]);
 
   return Prisma.sql`
@@ -922,8 +935,8 @@ coursesRoute.openapi(
     tags: ["Courses"],
     summary: "List courses",
     description:
-      "Courses across all institutions, one per institution in turn so a page shows many institutions. Institutions that have no course rows yet contribute their listed subject areas (kind programme). Filter by country name, or search by course, subject or institution name. Results are paginated and meta.total is the number of matches.",
-    request: { query: ApiCatalogQuerySchema },
+      "Courses across all institutions, one per institution in turn so a page shows many institutions. Institutions that have no course rows yet contribute their listed subject areas (kind programme). Filter by country name, or search by course, subject or institution name. Pass institution (a slug from listInstitutions) to get only that institution's courses, in the order set in the admin. Results are paginated and meta.total is the number of matches.",
+    request: { query: ApiCourseQuerySchema },
     responses: {
       200: {
         description: "A page of courses",
@@ -936,8 +949,8 @@ coursesRoute.openapi(
     },
   }),
   async (c) => {
-    const { country, q, page, limit } = c.req.valid("query");
-    const { rows, total } = await queryCatalogCourses({ country, q, page, limit });
+    const { country, q, institution, page, limit } = c.req.valid("query");
+    const { rows, total } = await queryCatalogCourses({ country, q, institution, page, limit });
 
     c.header("Cache-Control", PUBLIC_CACHE);
     return c.json({ data: rows.map((r) => toCatalogCourse(r)), meta: pageMeta(total, page, limit) }, 200);
