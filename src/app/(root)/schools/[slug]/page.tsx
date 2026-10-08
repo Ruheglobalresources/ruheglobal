@@ -194,7 +194,7 @@ export default async function SchoolPage({ params }: PageProps) {
                 )}
 
                 
-                 <a href={applyHref(school.slug)}
+                 <a href={applyHref(school.slug, undefined, "school")}
                   className="rounded-full bg-ruby px-5 py-2 text-white no-underline transition-colors hover:bg-ruby-600"
                 >
                   Start your application

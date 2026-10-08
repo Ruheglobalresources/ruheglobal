@@ -44,6 +44,11 @@ export default async function AdminSubmissionDetailPage({ params }: { params: Pr
           <p className="mt-1 text-sm text-neutral-600">
             {submission.application.name} · {submission.application.terminal.name} · step {submission.currentStep}
           </p>
+          {submission.targetName && (
+            <p className="mt-1 text-sm font-medium text-neutral-800">
+              Applying to {submission.targetName}{submission.targetCourseName ? `, ${submission.targetCourseName}` : ""}
+            </p>
+          )}
           {submission.counselorRequestName && (
             <p className="mt-1 text-xs text-neutral-400">Applicant mentioned prior contact with: {submission.counselorRequestName}</p>
           )}

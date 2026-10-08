@@ -10,6 +10,7 @@ import { DynamicField } from "./dynamic-field";
 import { WizardStepper } from "./wizard-stepper";
 import { AutosaveStatus } from "./autosave-status";
 import type { WizardStep, WizardAnswer, AutosaveState, ApplicationStatus } from "./types";
+import type { ApplyTargetInput } from "@/lib/application-target";
 import { ArrowLeft, ArrowRight, Loader2, CheckCircle2 } from "lucide-react";
 
 interface ApplicationWizardProps {
@@ -21,6 +22,9 @@ interface ApplicationWizardProps {
   initialStatus: ApplicationStatus;
   initialCurrentStep: number;
   initialAnswers: WizardAnswer[];
+  // school applications: who it is for (sent with the first save) and the fields the student cannot change
+  target?: ApplyTargetInput | null;
+  lockedFieldIds?: string[];
 }
 
 export function ApplicationWizard({
@@ -32,6 +36,8 @@ export function ApplicationWizard({
   initialStatus,
   initialCurrentStep,
   initialAnswers,
+  target = null,
+  lockedFieldIds = [],
 }: ApplicationWizardProps) {
   const router = useRouter();
 
@@ -62,6 +68,7 @@ export function ApplicationWizard({
     const result = await saveSubmissionStep({
       applicationId,
       submissionId,
+      target,
       stepNumber: currentStep,
       values: getAnswersForStep(currentStep),
     });
@@ -102,6 +109,7 @@ export function ApplicationWizard({
     const result = await saveSubmissionStep({
       applicationId,
       submissionId,
+      target,
       stepNumber: currentStep,
       values: getAnswersForStep(currentStep),
     });
@@ -125,6 +133,7 @@ export function ApplicationWizard({
     const result = await saveSubmissionStep({
       applicationId,
       submissionId,
+      target,
       stepNumber: currentStep,
       setCurrentStep: isLastStep ? currentStep : nextStep,
       values: getAnswersForStep(currentStep),
@@ -201,7 +210,7 @@ export function ApplicationWizard({
               applicationId={applicationId}
               field={field}
               answer={answers[field.id]}
-              disabled={isLocked}
+              disabled={isLocked || lockedFieldIds.includes(field.id)}
               onChange={(next) => handleFieldChange(field.id, next)}
             />
           ))}

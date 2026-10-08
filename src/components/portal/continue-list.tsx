@@ -7,6 +7,7 @@ interface ContinueListItem {
   applicationSlug: string;
   terminalSlug: string;
   terminalName: string;
+  targetLabel?: string | null; // school applications: which school and course
   percent: number;
 }
 
@@ -20,12 +21,12 @@ export function ContinueList({ items }: { items: ContinueListItem[] }) {
         {items.map((item) => (
           <Link
             key={item.submissionId}
-            href={`/portal/${item.terminalSlug}/${item.applicationSlug}`}
+            href={`/portal/${item.terminalSlug}/${item.applicationSlug}?submission=${item.submissionId}`}
             className="flex items-center gap-4 rounded-xl border bg-white p-3.5 transition-colors hover:border-[color:var(--color-teal)] hover:bg-[color:var(--color-cloud)]"
           >
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-[color:var(--color-ink)]">{item.applicationName}</p>
-              <p className="truncate text-xs text-neutral-500">{item.terminalName}</p>
+              <p className="truncate text-xs text-neutral-500">{item.targetLabel ?? item.terminalName}</p>
               <div className="mt-2 h-1.5 w-full max-w-xs overflow-hidden rounded-full bg-neutral-100">
                 <div className="h-full rounded-full bg-[color:var(--color-teal)]" style={{ width: `${item.percent}%` }} />
               </div>

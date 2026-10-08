@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { TerminalForm } from "./terminal-form";
 import { TerminalRowActions } from "@/components/admin/terminal-row-actions";
 import { ActiveToggle } from "@/components/admin/active-toggle";
-import { toggleTerminalActive } from "@/actions";
+import { toggleTerminalActive, toggleTerminalVisible } from "@/actions";
 import { kindLabel } from "@/constants/portal-kinds";
 
 export const dynamic = "force-dynamic";
@@ -54,8 +54,9 @@ export default async function AdminTerminalsPage() {
                       (flipped) state — ActiveToggle only ever calls action(id), so the
                       new value has to be pre-baked here rather than computed client-side */}
                   <ActiveToggle
-                    checked={t.isActive}
-                    action={toggleTerminalActive.bind(null, t.id, !t.isActive)}
+                     checked={t.isVisible}
+    action={toggleTerminalVisible.bind(null, t.id, !t.isVisible)}
+   
                     id={t.id}
                   />
                 </td>

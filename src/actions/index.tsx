@@ -32,13 +32,13 @@ export async function createTerminal(values: z.infer<typeof PortalTerminalSchema
   const validated = PortalTerminalSchema.safeParse(values);
   if (!validated.success) return { error: "Invalid fields" };
 
-  const { name, icon, kind, isActive, order } = validated.data;
+  const { name, icon, isVisible, order } = validated.data;
   const slug = slugify(name);
 
   const existing = await db.portalTerminal.findFirst({ where: { OR: [{ name }, { slug }] } });
   if (existing) return { error: "A terminal with that name already exists" };
 
-  await db.portalTerminal.create({ data: { name, slug, icon: icon || null, kind, isActive, order } });
+  await db.portalTerminal.create({ data: { name, slug, icon: icon || null, isVisible, order } });
   revalidatePath("/admin/terminals");
   revalidatePath("/portal");
   return { success: "Terminal created" };
@@ -49,18 +49,9 @@ export async function updateTerminal(id: string, values: z.infer<typeof PortalTe
   const validated = PortalTerminalSchema.safeParse(values);
   if (!validated.success) return { error: "Invalid fields" };
 
-  const { name, icon, kind, isActive, order } = validated.data;
-
-  const current = await db.portalTerminal.findUnique({ where: { id }, select: { kind: true } });
-  if (!current) return { error: "Terminal not found" };
-
+  const { name, icon, isVisible, order } = validated.data;
   // slug is intentionally left untouched after creation — applications reference it via terminalId, not the slug text
-  // The applications under a terminal always carry the terminal's kind, so a change of kind
-  // updates them in the same transaction.
-  await db.$transaction([
-    db.portalTerminal.update({ where: { id }, data: { name, icon: icon || null, kind, isActive, order } }),
-    ...(current.kind !== kind ? [db.application.updateMany({ where: { terminalId: id }, data: { kind } })] : []),
-  ]);
+  await db.portalTerminal.update({ where: { id }, data: { name, icon: icon || null, isVisible, order } });
   revalidatePath("/admin/terminals");
   revalidatePath("/portal");
   return { success: "Terminal updated" };
@@ -75,6 +66,14 @@ export async function deleteTerminal(id: string) {
   revalidatePath("/admin/terminals");
   revalidatePath("/portal");
   return { success: "Terminal deleted" };
+}
+// Shows/hides the terminal's card on the /portal home page only. The terminal itself stays
+// active, so its own page and applications keep working (isActive is the full on/off switch).
+export async function toggleTerminalVisible(id: string, isVisible: boolean) {
+  await requireAdmin();
+  await db.portalTerminal.update({ where: { id }, data: { isVisible } });
+  revalidatePath("/admin/terminals");
+  revalidatePath("/portal");
 }
 
 export async function toggleTerminalActive(id: string, isActive: boolean) {

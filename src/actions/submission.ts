@@ -5,8 +5,22 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/require-user";
 import { SaveSubmissionStepSchema } from "@/schemas";
+import {
+  ApplyTargetInputSchema,
+  LOCKED_TARGET_KEYS,
+  TARGET_FIELD_KEYS,
+  resolveApplyTarget,
+  targetColumns,
+  targetWhere,
+} from "@/lib/application-target";
 
-type SaveSubmissionStepInput = z.infer<typeof SaveSubmissionStepSchema>;
+// The wizard also sends WHO the application is for (school applications only). It is only
+// used when the submission is created; after that the submission already holds its target.
+const SaveStepWithTargetSchema = SaveSubmissionStepSchema.extend({
+  target: ApplyTargetInputSchema.nullable().optional(),
+});
+
+type SaveSubmissionStepInput = z.infer<typeof SaveStepWithTargetSchema>;
 
 type SaveSubmissionStepResult =
   | { success: true; submissionId: string; currentStep: number }
@@ -22,16 +36,16 @@ type SaveSubmissionStepResult =
 export async function saveSubmissionStep(values: SaveSubmissionStepInput): Promise<SaveSubmissionStepResult> {
   const user = await requireUser();
 
-  const validated = SaveSubmissionStepSchema.safeParse(values);
+  const validated = SaveStepWithTargetSchema.safeParse(values);
   if (!validated.success) {
     return { success: false, error: "Invalid step data" };
   }
 
-  const { applicationId, submissionId, stepNumber, setCurrentStep, values: answers } = validated.data;
+  const { applicationId, submissionId, stepNumber, setCurrentStep, values: answers, target } = validated.data;
 
   const application = await db.application.findUnique({
     where: { id: applicationId },
-    select: { id: true, isActive: true, slug: true, terminal: { select: { slug: true } } },
+    select: { id: true, isActive: true, slug: true, kind: true, terminal: { select: { slug: true } } },
   });
   if (!application || !application.isActive) {
     return { success: false, error: "Application not found" };
@@ -51,6 +65,31 @@ export async function saveSubmissionStep(values: SaveSubmissionStepInput): Promi
     return { success: false, error: "This application has already been submitted and can no longer be edited" };
   }
 
+  // School application, first save: the submission needs its target. A student who already
+  // has a submission for this exact school and course gets THAT one back (second tab, double
+  // click) instead of a duplicate.
+  let newTargetData: ReturnType<typeof targetColumns> | null = null;
+  if (!submission && application.kind === "SCHOOL") {
+    if (!target) return { success: false, error: "Choose a school or institution to apply to first" };
+
+    const resolved = await resolveApplyTarget(target);
+    if (!resolved) return { success: false, error: "That school or institution is no longer available" };
+
+    const existing = await db.applicationSubmission.findFirst({
+      where: { userId: user.id, applicationId, ...targetWhere(resolved) },
+      orderBy: { updatedAt: "desc" },
+    });
+
+    if (existing) {
+      if (existing.status !== "DRAFT" && existing.status !== "IN_PROGRESS") {
+        return { success: false, error: "This application has already been submitted and can no longer be edited" };
+      }
+      submission = existing;
+    } else {
+      newTargetData = targetColumns(resolved);
+    }
+  }
+
   const targetStep = Math.max(setCurrentStep ?? stepNumber, submission?.currentStep ?? 1);
 
   submission = submission
@@ -64,15 +103,36 @@ export async function saveSubmissionStep(values: SaveSubmissionStepInput): Promi
           applicationId,
           status: "IN_PROGRESS",
           currentStep: targetStep,
+          ...(newTargetData ?? {}),
         },
       });
+
+  // The school and the course are decided by the target, not by the form. Whatever the
+  // browser sends for those two fields is replaced with the names saved on the submission.
+  let toSave = answers;
+  if (submission.targetName && answers.length > 0) {
+    const lockedFields = await db.applicationField.findMany({
+      where: { applicationId, fieldDefinition: { key: { in: LOCKED_TARGET_KEYS } } },
+      select: { id: true, fieldDefinition: { select: { key: true } } },
+    });
+    const forced = new Map(
+      lockedFields.map((f) => [
+        f.id,
+        f.fieldDefinition.key === TARGET_FIELD_KEYS.university ? submission!.targetName : submission!.targetCourseName,
+      ])
+    );
+    toSave = answers.map((a) => {
+      const value = forced.get(a.applicationFieldId);
+      return value ? { ...a, value } : a;
+    });
+  }
 
   // Upsert every answer on this step. Empty strings are stored as null so
   // "the applicant cleared this field" and "never touched this field" both
   // read as absent — submitApplication's required-field check relies on that.
-  if (answers.length > 0) {
+  if (toSave.length > 0) {
     await db.$transaction(
-      answers.map((answer) =>
+      toSave.map((answer) =>
         db.submissionValue.upsert({
           where: {
             submissionId_applicationFieldId: {

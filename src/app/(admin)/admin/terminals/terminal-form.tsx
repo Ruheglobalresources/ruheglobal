@@ -22,7 +22,7 @@ import { PortalKindValues, PORTAL_KINDS } from "@/constants/portal-kinds";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil } from "lucide-react";
 
-type Terminal = { id: string; name: string; icon: string | null; kind: string; order: number; isActive: boolean };
+type Terminal = { id: string; name: string; icon: string | null; kind: string; order: number; isActive: boolean; isVisible: boolean };
 
 export function TerminalForm({
   terminal,
@@ -53,6 +53,7 @@ export function TerminalForm({
       kind: (terminal?.kind as (typeof PortalKindValues)[number]) ?? "GENERAL",
       order: terminal?.order ?? 0,
       isActive: terminal?.isActive ?? true,
+      isVisible: terminal?.isVisible ?? true,
     },
   });
 
@@ -142,7 +143,7 @@ export function TerminalForm({
             />
             <FormField
               control={form.control}
-              name="isActive"
+              name="isVisible"
               render={({ field }) => (
                 <FormItem className="flex items-center justify-between rounded-lg border p-3">
                   <FormLabel className="!m-0">Visible on portal</FormLabel>

@@ -26,7 +26,8 @@ export default async function PortalDashboardPage() {
 
   const [terminals, inProgressSubmissions, counsellor] = await Promise.all([
     db.portalTerminal.findMany({
-      where: { isActive: true },
+      where: { isActive: true, isVisible: true },
+
       orderBy: { order: "asc" },
       include: { _count: { select: { applications: { where: { isActive: true } } } } },
     }),
@@ -43,7 +44,10 @@ export default async function PortalDashboardPage() {
           },
         },
       },
-    }),
+    }).catch((e) => {
+  console.error("SUBMISSION QUERY FAILED:", e.code, e.meta, e.message);
+  throw e;
+}),
     getPortalCounsellor(userId),
   ]);
 
@@ -60,6 +64,8 @@ export default async function PortalDashboardPage() {
       applicationSlug: submission.application.slug,
       terminalSlug: submission.application.terminal.slug,
       terminalName: submission.application.terminal.name,
+      // school applications share one form, so the list says which school and course each one is for
+      targetLabel: [submission.targetName, submission.targetCourseName].filter(Boolean).join(", ") || null,
       percent,
     };
   });

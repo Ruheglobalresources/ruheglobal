@@ -116,7 +116,7 @@ export function CourseExplorer({
 
               {/* carries school + course to the dashboard; signed-out users are sent to login first */}
               <a
-                href={applyHref(schoolSlug, c.id)}
+                href={applyHref(schoolSlug, c.id, "school")}
                 className="shrink-0 self-start rounded-full border border-ruby px-4 py-1.5 text-sm font-medium text-ruby transition-colors hover:bg-ruby hover:text-white sm:self-center"
               >
                 Choose this course

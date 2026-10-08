@@ -79,6 +79,11 @@ export default async function AdminSubmissionsPage({
                 <td className="px-4 py-3 text-neutral-500">
                   {s.application.name}
                   <div className="text-xs text-neutral-400">{s.application.terminal.name}</div>
+                  {s.targetName && (
+                    <div className="text-xs font-medium text-neutral-600">
+                      For {s.targetName}{s.targetCourseName ? `, ${s.targetCourseName}` : ""}
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-3"><StatusBadge status={s.status} /></td>
                 <td className="px-4 py-3 text-neutral-500">{s.counselor?.name ?? s.counselorRequestName ?? "—"}</td>

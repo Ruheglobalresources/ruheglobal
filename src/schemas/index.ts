@@ -55,6 +55,7 @@ export const PortalTerminalSchema = z.object({
   icon: z.string().optional(),
   // where and how this terminal is used on the website
   kind: z.enum(PortalKindValues).default("GENERAL"),
+  isVisible: z.boolean().default(true),
   isActive: z.boolean().default(true),
   order: z.coerce.number().int().default(0),
 });

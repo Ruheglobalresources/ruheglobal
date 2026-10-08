@@ -134,6 +134,8 @@ model PortalTerminal {
   kind     PortalKind @default(GENERAL) // where and how this terminal is used
   order    Int        @default(0)
   isActive Boolean    @default(true)
+  // false = still works (links, school "Proceed to apply" flow) but no card on /portal
+  isVisible Boolean    @default(true)
 
   applications Application[]
 
@@ -296,9 +298,26 @@ model ApplicationSubmission {
   counselorRequestName String?
   counselorId          String?
 
+  // WHO the application is for (school and institution applications, kind SCHOOL).
+  // All schools and institutions share one application, so this is what tells the
+  // submissions apart. All null for every other kind of application.
+  institutionId       String?
+  institutionCourseId String?
+  schoolId            String?
+  schoolCourseId      String?
+  // names as they were when the student applied, so the admin still sees what the
+  // application was for if the school or course is later renamed or deleted
+  targetName       String?
+  targetCourseName String?
+
   user        User        @relation("UserSubmissions", fields: [userId], references: [id], onDelete: Cascade)
   application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   counselor   User?       @relation("CounseledSubmissions", fields: [counselorId], references: [id], onDelete: SetNull)
+
+  institution       Institution?       @relation(fields: [institutionId], references: [id], onDelete: SetNull)
+  institutionCourse InstitutionCourse? @relation(fields: [institutionCourseId], references: [id], onDelete: SetNull)
+  school            School?            @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  schoolCourse      SchoolCourse?      @relation(fields: [schoolCourseId], references: [id], onDelete: SetNull)
 
   values SubmissionValue[]
 
@@ -307,6 +326,9 @@ model ApplicationSubmission {
 
   @@index([userId])
   @@index([applicationId])
+  @@index([userId, applicationId])
+  @@index([institutionId])
+  @@index([schoolId])
   @@index([status])
 }
 
@@ -519,6 +541,8 @@ model Institution {
   faqs      InstitutionFaq[]
   documents InstitutionDocument[]
 
+  applicationSubmissions ApplicationSubmission[]
+
   isActive Boolean @default(true)
   // Main partner institutions shown on the course-search page before the
   // visitor runs a search at all (a fixed "our partners" set, not a search
@@ -556,6 +580,8 @@ model InstitutionCourse {
   order       Int     @default(0)
 
   institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  applicationSubmissions ApplicationSubmission[]
 
   createdAt DateTime @default(now())
 
@@ -690,6 +716,8 @@ model School {
   images       SchoolImage[]
   scholarships SchoolScholarship[]
 
+  applicationSubmissions ApplicationSubmission[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -712,6 +740,8 @@ model SchoolCourse {
   order       Int     @default(0)
 
   school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  applicationSubmissions ApplicationSubmission[]
 
   createdAt DateTime @default(now())
 
