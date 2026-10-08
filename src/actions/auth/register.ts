@@ -6,8 +6,12 @@ import {db} from "@/lib/db"
 import { getUserByEmail } from "@/data/user";
 import { generateVerificationToken } from "@/lib/tokens";
 import { sendVerificationEmail } from "@/lib/mail"
+import { safeCallbackUrl } from "@/lib/callback-url";
 
-export const Register = async (values: z.infer<typeof RegisterSchema>) => {
+export const Register = async (
+    values: z.infer<typeof RegisterSchema>,
+    callbackUrl?: string | null
+) => {
     const validatedFields = RegisterSchema.safeParse(values);
 
     if (!validatedFields.success) {
@@ -32,7 +36,12 @@ export const Register = async (values: z.infer<typeof RegisterSchema>) => {
     const verificationToken = await generateVerificationToken(email);
 // Send verification email
 try {
-    await sendVerificationEmail(verificationToken.email, verificationToken.token);
+    // the link in the email keeps the page the user wanted (for example an application)
+    await sendVerificationEmail(
+        verificationToken.email,
+        verificationToken.token,
+        safeCallbackUrl(callbackUrl, "") || undefined
+    );
     return { success: "Verification email sent" };
 } catch (error) {
     console.error("Error sending verification email:", error);

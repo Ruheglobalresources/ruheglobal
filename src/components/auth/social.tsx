@@ -7,13 +7,14 @@ import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { DEFAULT_LOGIN_REDIRECT } from "@/route";
 import { useSearchParams } from "next/navigation";
+import { safeCallbackUrl } from "@/lib/callback-url";
 
 export const Social = () => {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl")
+  const callbackUrl = safeCallbackUrl(searchParams.get("callbackUrl"), DEFAULT_LOGIN_REDIRECT)
     const onClick = (provider: "google" | "github") => {
       signIn(provider, {
-        callbackUrl: callbackUrl || DEFAULT_LOGIN_REDIRECT
+        callbackUrl
       });
     }
     return (

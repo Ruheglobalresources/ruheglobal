@@ -2,16 +2,19 @@
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { LoginForm } from "@/components/auth/login-form";
+import { authHref } from "@/lib/callback-url";
 interface LoginButtonProps {
     children: React.ReactNode;
     mode?: "modal" | "redirect", 
     asChild?: boolean;
+    // the page to come back to after login, for example an application link
+    callbackUrl?: string;
 }
 
-export const LoginButton = ({children, mode = "redirect", asChild}: LoginButtonProps) => {
+export const LoginButton = ({children, mode = "redirect", asChild, callbackUrl}: LoginButtonProps) => {
     const router = useRouter();
     const onClick = () => {
-        router.push("/auth/login");
+        router.push(authHref("login", callbackUrl));
     }
     if (mode === "modal") {
         return (

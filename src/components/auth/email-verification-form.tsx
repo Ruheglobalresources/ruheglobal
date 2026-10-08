@@ -6,12 +6,14 @@ import { useCallback, useEffect, useState } from "react";
 import { newVerification } from "@/actions/auth/new-Verification";
 import { FormError } from "@/components/forms/form-error";
 import { FormSuccess } from "@/components/forms/form-success";
+import { authHref } from "@/lib/callback-url";
 
 export const EmailVerificationForm = () => {
     const [error, setError] = useState<string | undefined>();
     const [success, setSuccess] = useState<string | undefined>();
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
+    const callbackUrl = searchParams.get("callbackUrl");
     
 
     const onSubmit = useCallback(() => {
@@ -36,7 +38,7 @@ export const EmailVerificationForm = () => {
             <CardWrapper
               headerLabel="Confirming your email"
               backButtonLabel="Back to login"
-              backButtonHref="/auth/login"
+              backButtonHref={authHref("login", callbackUrl)}
             >
               <div className="flex items-center w-full justify-center">
                 {!success && !error  && (

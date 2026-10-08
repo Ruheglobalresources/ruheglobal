@@ -2,7 +2,7 @@
 import * as z from "zod";
 import { LoginSchema } from "@/schemas";
 import { signIn } from "@/auth";
-import { DEFAULT_LOGIN_REDIRECT } from "@/route";
+import { safeCallbackUrl } from "@/lib/callback-url";
 import { sendVerificationEmail, sendTwoFactorTokenEmail } from "@/lib/mail";
 import { AuthError } from "next-auth";
 import { generateVerificationToken, generateTwoFactorToken } from "@/lib/tokens";
@@ -23,6 +23,8 @@ export const Login = async (
   }
 
   const { email, password, code } = validatedFields.data;
+  // only a path on this site is ever used as the place to send the user after login
+  const redirectTo = safeCallbackUrl(callbackUrl);
   const existingUser = await getUserByEmail(email);
 
   if (!existingUser || !existingUser.email || !existingUser.password) {
@@ -32,7 +34,11 @@ export const Login = async (
   if (!existingUser.emailVerified) {
     const verificationToken = await generateVerificationToken(existingUser.email);
     try {
-      await sendVerificationEmail(verificationToken.email, verificationToken.token);
+      await sendVerificationEmail(
+        verificationToken.email,
+        verificationToken.token,
+        callbackUrl ? redirectTo : undefined
+      );
       return { success: "Verification email sent" };
     } catch (error) {
       console.error("Error sending verification email:", error);
@@ -82,7 +88,7 @@ export const Login = async (
   revalidatePath("/cart");
   revalidatePath("/profile");
     // Manually redirect on successful login
-    redirect(callbackUrl || DEFAULT_LOGIN_REDIRECT);
+    redirect(redirectTo);
 
     
 
@@ -110,5 +116,5 @@ revalidatePath("/");
 
   // Runs only on successful sign-in. redirect() throws NEXT_REDIRECT
   // which Next.js handles natively — it is NOT caught above.
-  redirect(callbackUrl || DEFAULT_LOGIN_REDIRECT);
+  redirect(redirectTo);
 };

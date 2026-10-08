@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/forms/form-error";
 import { FormSuccess } from "@/components/forms/form-success";
 import { Login } from "@/actions/auth/login";
+import { authHref, safeCallbackUrl } from "@/lib/callback-url";
 import { useState, useTransition } from "react";
 
 export const LoginForm = () => {
@@ -31,7 +32,9 @@ export const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  // what the address bar asked for (null when it asked for nothing) and the checked place to go
+  const requestedCallback = searchParams.get("callbackUrl");
+  const callbackUrl = safeCallbackUrl(requestedCallback, "/");
   const urlError =
     searchParams.get("error") === "OAuthAccountNotLinked"
       ? "Email already in use"
@@ -50,7 +53,7 @@ export const LoginForm = () => {
     setError("");
     setSuccess("");
     startTransition(() => {
-      Login(values, callbackUrl)
+      Login(values, requestedCallback ? callbackUrl : null)
         .then((data) => {
           if (data?.error) {
             form.reset();
@@ -73,7 +76,7 @@ export const LoginForm = () => {
     <CardWrapper
       headerLabel="Welcome back"
       backButtonLabel="Don't have an account?"
-      backButtonHref="/auth/register"
+      backButtonHref={authHref("register", requestedCallback)}
       showSocial
     >
       <Form {...form}>

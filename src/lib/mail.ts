@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { safeCallbackUrl } from "@/lib/callback-url";
 
 interface MailOptions {
   to: string;
@@ -521,8 +522,11 @@ export async function sendSalonPaymentSuccessNotification(params: {
 }
 
 
-export const sendVerificationEmail = async (email: string, token: string) => {
-  const confirmLink = `${domain}/auth/email-verification?token=${token}`;
+export const sendVerificationEmail = async (email: string, token: string, callbackUrl?: string) => {
+  const params = new URLSearchParams({ token });
+  const safe = safeCallbackUrl(callbackUrl, "");
+  if (safe) params.set("callbackUrl", safe);
+  const confirmLink = `${domain}/auth/email-verification?${params.toString()}`;
   await sendMail({
     to: email,
     subject: "Confirm your email — Ruhe Global Resources",
@@ -580,7 +584,3 @@ async function sendMail({ to, subject, body }: MailOptions) {
     throw error;
   }
 }
-
-
-
-

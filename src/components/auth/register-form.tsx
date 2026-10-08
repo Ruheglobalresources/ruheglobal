@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/forms/form-error";
 import { FormSuccess } from "@/components/forms/form-success";
 import { Register } from "@/actions/auth/register";
+import { useSearchParams } from "next/navigation";
+import { authHref } from "@/lib/callback-url";
 import { useState, useTransition } from "react";
 
 export const RegisterForm = () => {
@@ -26,6 +28,9 @@ export const RegisterForm = () => {
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
+
+  // the page the visitor wanted before being sent here, kept through the verification email
+  const callbackUrl = useSearchParams().get("callbackUrl");
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
@@ -40,7 +45,7 @@ export const RegisterForm = () => {
     setError("");
     setSuccess("");
     startTransition(() => {
-      Register(values).then((data) => {
+      Register(values, callbackUrl).then((data) => {
         setError(data.error);
         setSuccess(data.success);
       });
@@ -51,7 +56,7 @@ export const RegisterForm = () => {
     <CardWrapper
       headerLabel="Create an account"
       backButtonLabel="Already have an account?"
-      backButtonHref="/auth/login"
+      backButtonHref={authHref("login", callbackUrl)}
       showSocial
     >
       <Form {...form}>
