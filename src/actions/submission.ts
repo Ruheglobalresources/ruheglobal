@@ -95,6 +95,11 @@ export async function saveSubmissionStep(values: SaveSubmissionStepInput): Promi
 
   const targetStep = Math.max(setCurrentStep ?? stepNumber, submission?.currentStep ?? 1);
 
+  // a new submission starts with the counselor assigned to the account (an admin can still change it)
+  const owner = submission
+    ? null
+    : await db.user.findUnique({ where: { id: user.id }, select: { counselorId: true } });
+
   submission = submission
     ? await db.applicationSubmission.update({
         where: { id: submission.id },
@@ -106,6 +111,7 @@ export async function saveSubmissionStep(values: SaveSubmissionStepInput): Promi
           applicationId,
           status: "IN_PROGRESS",
           currentStep: targetStep,
+          counselorId: owner?.counselorId ?? null,
           ...(newTargetData ?? {}),
         },
       });

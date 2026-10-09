@@ -28,6 +28,7 @@ export function CounsellorCard({
       )}
     >
       {counsellor ? (
+        <>
         <div className="flex items-center gap-3">
           {counsellor.image ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -49,6 +50,10 @@ export function CounsellorCard({
             <p className="text-sm text-neutral-500">Counsellor</p>
           </div>
         </div>
+        {counsellor.bio && (
+          <p className="mt-3 line-clamp-4 text-sm leading-relaxed text-neutral-600">{counsellor.bio}</p>
+        )}
+        </>
       ) : (
         <p className="text-sm leading-relaxed text-neutral-600">
           A counsellor is assigned to you once you start an application. You

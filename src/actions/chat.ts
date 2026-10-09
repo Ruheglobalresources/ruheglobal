@@ -153,16 +153,21 @@ export async function sendMessage(input: { conversationId: string | null; body: 
     if (existing) {
       conversationId = existing.id;
     } else {
-      const assigned = await db.applicationSubmission.findFirst({
-        where: { userId: user.id, counselorId: { not: null } },
-        orderBy: { updatedAt: "desc" },
-        select: { counselorId: true },
-      });
+      const [owner, assigned] = await Promise.all([
+        db.user.findUnique({ where: { id: user.id }, select: { counselorId: true } }),
+        db.applicationSubmission.findFirst({
+          where: { userId: user.id, counselorId: { not: null } },
+          orderBy: { updatedAt: "desc" },
+          select: { counselorId: true },
+        }),
+      ]);
+      // the counselor assigned to the account first, then the one on their latest submission
+      const staffId = owner?.counselorId ?? assigned?.counselorId ?? null;
 
       const created = await db.conversation.create({
         data: {
           clientId: user.id,
-          ...(assigned?.counselorId ? { staff: { connect: { id: assigned.counselorId } } } : {}),
+          ...(staffId ? { staff: { connect: { id: staffId } } } : {}),
         },
         select: { id: true },
       });

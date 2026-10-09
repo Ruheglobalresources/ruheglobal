@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { getUserByEmail, getUserById } from "@/data/user";
 import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation"
 import { LoginSchema } from "@/schemas";
+import { assignCounselorToUser } from "@/lib/counselor-duty";
 import authConfig from "@/auth.config";
 
 export const {
@@ -20,6 +21,9 @@ export const {
     error: "/auth/error",
   },
   events: {
+    async createUser({ user }) {
+      if (user.id) await assignCounselorToUser(user.id);
+    },
     async linkAccount({ user }) {
       await db.user.update({
         where: { id: user.id },

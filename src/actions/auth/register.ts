@@ -7,6 +7,7 @@ import { getUserByEmail } from "@/data/user";
 import { generateVerificationToken } from "@/lib/tokens";
 import { sendVerificationEmail } from "@/lib/mail"
 import { safeCallbackUrl } from "@/lib/callback-url";
+import { assignCounselorToUser } from "@/lib/counselor-duty";
 
 export const Register = async (
     values: z.infer<typeof RegisterSchema>,
@@ -27,11 +28,14 @@ export const Register = async (
         return {error: "Email already in use!"};
     }
 
-    await db.user.create({
+    const createdUser = await db.user.create({
         data: {
             name, email, password: hashedPassword,
         },
     });
+
+    // the counselor on duty this week looks after the new account
+    await assignCounselorToUser(createdUser.id);
 
     const verificationToken = await generateVerificationToken(email);
 // Send verification email
