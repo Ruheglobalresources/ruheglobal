@@ -110,21 +110,31 @@ export function HeroBanner({
             background.
           </p>
 
-          {/* Buttons */}
-          <div className="mt-4 flex flex-wrap gap-2">
+          {/* Buttons: always one horizontal line; compact at md, normal at lg */}
+          <div className="mt-4 flex flex-nowrap items-center gap-2 md:gap-1.5 lg:gap-2">
             <Link
               href="/courses"
-              className={cn(filledButton, "text-xs sm:text-sm")}
+              className={cn(
+                filledButton,
+                "shrink-0 whitespace-nowrap text-xs sm:text-sm",
+                "md:gap-1 md:px-2.5 md:py-1.5 md:text-[11px]",
+                "lg:gap-2 lg:px-4 lg:py-2 lg:text-sm"
+              )}
             >
               Show my matches
-              <ArrowRight size={15} />
+              <ArrowRight
+                size={15}
+                className="md:h-3 md:w-3 lg:h-[15px] lg:w-[15px]"
+              />
             </Link>
 
             <Link
               href="#applications"
               className={cn(
                 outlinedButton,
-                "hidden text-xs sm:inline-flex sm:text-sm"
+                "hidden shrink-0 whitespace-nowrap text-xs sm:inline-flex sm:text-sm",
+                "md:px-2.5 md:py-1.5 md:text-[11px]",
+                "lg:px-4 lg:py-2 lg:text-sm"
               )}
             >
               Book Your Consultation

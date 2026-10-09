@@ -3,12 +3,7 @@
 
 import { Fragment, useEffect, useRef, useState, type CSSProperties } from "react";
 import { MorphFrame } from "@/components/MorphFrame";
-import {
-  ChainLink,
-  ShapeFrame,
-  type ChainShape,
-  type FrameShape,
-} from "./Shapeframes";
+import { ChainLink, ShapeFrame, type ChainShape, type FrameShape, } from "./Shapeframes";
 
 /* -------------------------------------------------------------------------- */
 /*  One chain, four stops                                                      */
