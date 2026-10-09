@@ -16,8 +16,8 @@ export const dynamic = "force-dynamic";
 // The portal's first page is the one place that shows everything:
 //   hero banner (greeting + find a course) -> applications (continue + terminals)
 //   -> courses strip -> institutions strip
-// The two strips are swipeable previews. "Show all" opens /portal/courses and
-// /portal/institutions, which hold the full lists.
+// The two strips are swipeable previews. "Show all" opens /courses and
+// /institutions, which hold the full lists.
 export default async function PortalDashboardPage() {
   const session = await auth();
   const userId = session?.user?.id;

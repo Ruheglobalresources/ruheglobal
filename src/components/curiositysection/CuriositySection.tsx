@@ -181,7 +181,7 @@ export function CuriositySection() {
     "mt-5 inline-block rounded-full bg-[#AF0E13] px-7 py-3 text-xs font-bold uppercase tracking-[0.1em] text-cloud transition-colors hover:bg-[#8f0b10] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#AF0E13]";
 
   return (
-    <section className="bg-ruby-50 py-8 text-ink ">
+    <section className="bg-white py-8 text-ink ">
       <div className="mx-auto max-w-7xl px-6 sm:px-10">
         {/* intro: MorphFrame beside the "who we are" note. Stacked on mobile,
             side-by-side from lg up, frame growing via useMorphSize. */}

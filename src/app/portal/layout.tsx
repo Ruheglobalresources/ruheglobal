@@ -35,7 +35,7 @@ export default async function PortalLayout({ children }: { children: React.React
         </Link>
 
         <Link
-          href="/portal/courses"
+          href="/courses"
           aria-label="Search courses"
           className="grid size-10 shrink-0 place-items-center rounded-full text-ink transition hover:bg-neutral-100"
         >

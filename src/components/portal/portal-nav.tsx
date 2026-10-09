@@ -40,7 +40,7 @@ type MenuItem = {
   highlight?: boolean;
 };
 
-const isCatalogPath = (p: string) => p.startsWith("/portal/courses") || p.startsWith("/portal/institutions");
+const isCatalogPath = (p: string) => p.startsWith("/courses") || p.startsWith("/institutions");
 
 const MENU: MenuItem[] = [
   { label: "Home", icon: House, href: "/portal", match: (p) => p === "/portal" },
@@ -61,8 +61,8 @@ const MENU: MenuItem[] = [
 
 const BOTTOM: MenuItem[] = [
   { label: "Home", icon: House, href: "/portal", match: (p) => p === "/portal" },
-  { label: "Courses", icon: GraduationCap, href: "/portal/courses", match: (p) => p.startsWith("/portal/courses") },
-  { label: "Institutions", icon: Building2, href: "/portal/institutions", match: (p) => p.startsWith("/portal/institutions") },
+  { label: "Courses", icon: GraduationCap, href: "/courses", match: (p) => p.startsWith("/courses") },
+  { label: "Institutions", icon: Building2, href: "/institutions", match: (p) => p.startsWith("/institutions") },
   {
     label: "Applications",
     icon: FileStack,

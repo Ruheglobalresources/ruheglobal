@@ -91,8 +91,8 @@ export function CatalogTabs({ active }: { active: "courses" | "institutions" }) 
   }, []);
 
   const tabs = [
-    { key: "courses", label: "Courses", href: "/portal/courses", icon: GraduationCap, count: summary?.courses },
-    { key: "institutions", label: "Institutions", href: "/portal/institutions", icon: Building2, count: summary?.institutions },
+    { key: "courses", label: "Courses", href: "/courses", icon: GraduationCap, count: summary?.courses },
+    { key: "institutions", label: "Institutions", href: "/institutions", icon: Building2, count: summary?.institutions },
   ] as const;
 
   return (

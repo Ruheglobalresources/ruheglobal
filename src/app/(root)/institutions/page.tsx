@@ -1,4 +1,4 @@
-// src/app/portal/institutions/page.tsx
+// src/app/institutions/page.tsx
 import { CatalogTabs } from "@/components/dashboard/catalog-lists";
 import { InstitutionsExplorer } from "@/components/dashboard/institutions-explorer";
 

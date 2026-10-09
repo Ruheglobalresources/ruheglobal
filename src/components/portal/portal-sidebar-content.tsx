@@ -37,7 +37,7 @@ type MenuItem = {
   highlight?: boolean;
 };
 
-export const isCatalogPath = (p: string) => p.startsWith("/portal/courses") || p.startsWith("/portal/institutions");
+export const isCatalogPath = (p: string) => p.startsWith("/courses") || p.startsWith("/institutions");
 
 const MENU: MenuItem[] = [
   { label: "Home", icon: House, href: "/portal", match: (p) => p === "/portal" },

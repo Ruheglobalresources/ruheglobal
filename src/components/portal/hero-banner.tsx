@@ -113,7 +113,7 @@ export function HeroBanner({
           {/* Buttons */}
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
-              href="/portal/courses"
+              href="/courses"
               className={cn(filledButton, "text-xs sm:text-sm")}
             >
               Show my matches
