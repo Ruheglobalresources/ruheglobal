@@ -27,6 +27,18 @@ model User {
   role               UserRole  @default(USER)
   isTwoFactorEnabled Boolean   @default(false)
 
+  // Counselors only: a short introduction shown to the applicants they look after
+  bio String?
+
+  // Applicants: the counselor looking after this user. Set automatically when the account
+  // is created (the counselor on duty that week) and changeable by an admin at any time.
+  counselorId String?
+  counselor   User?   @relation("UserCounselor", fields: [counselorId], references: [id], onDelete: SetNull)
+  // Counselors: the applicants assigned to them
+  clients     User[]  @relation("UserCounselor")
+  // Counselors: the weeks they are on duty
+  dutyWeeks   CounselorDuty[]
+
   accounts              Account[]
   twoFactorConfirmation TwoFactorConfirmation?
 
@@ -46,6 +58,25 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([counselorId])
+}
+
+// Which counselor is on duty for a week. A new account is assigned the counselor on duty
+// that week. Duty weeks run Monday to Sunday in Nigerian time, and weekStart is the
+// Monday 00:00 of the week. A week with no row keeps the counselor of the last week that
+// has one, so someone is always on duty; the admin only adds a row to change it.
+model CounselorDuty {
+  id          String   @id @default(uuid())
+  counselorId String
+  weekStart   DateTime @unique
+
+  counselor User @relation(fields: [counselorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([counselorId])
 }
 
 model Account {
