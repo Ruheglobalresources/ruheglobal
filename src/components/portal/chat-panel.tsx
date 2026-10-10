@@ -307,8 +307,8 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
         aria-label="Chat with your counsellor"
         inert={!chatOpen}
         className={cn(
-          // lg:top-0 is the change: there is no desktop top bar, so the chat starts at the very top
-          "fixed bottom-0 right-0 top-16 z-40 flex w-full flex-col border-l border-neutral-200 bg-white lg:top-0 lg:z-20 lg:w-[var(--portal-chat-width)]",
+          // lg:top-0 + lg:h-14 header: on desktop the chat is the right half of the same frame, so its header row lines up with the navbar
+          "fixed bottom-0 right-0 top-16 z-40 flex w-full flex-col border-l border-neutral-200 bg-white lg:top-0 lg:z-20 lg:w-[var(--portal-chat-width)] lg:border-l-0 lg:bg-[var(--portal-frame)]",
           chatOpen ? "translate-x-0" : "invisible translate-x-full",
           ready && !dragging && "transition-[translate,visibility] duration-200 ease-out"
         )}
@@ -348,7 +348,7 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
         </div>
 
         {/* Header */}
-        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-neutral-100 px-4">
+        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-neutral-100 px-4 lg:h-14 lg:border-b-0">
           <Avatar name={title} image={person?.image ?? null} className="size-10 text-base" />
           <div className="min-w-0 flex-1">
             <p className="truncate font-semibold text-ink">{title}</p>
@@ -419,7 +419,7 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
                       <div
                         className={cn(
                           "max-w-[85%] rounded-2xl px-3.5 py-2 text-[15px] leading-relaxed",
-                          m.fromMe ? "rounded-br-md bg-ruby-500 text-white" : "rounded-bl-md bg-neutral-100 text-ink",
+                          m.fromMe ? "rounded-br-md bg-ruby-500 text-white" : "rounded-bl-md bg-neutral-100 text-ink lg:bg-white lg:ring-1 lg:ring-neutral-200/70",
                           m.pending && "opacity-70"
                         )}
                       >
@@ -464,7 +464,7 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
         </div>
 
         {/* Composer */}
-        <div className="shrink-0 border-t border-neutral-100 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="shrink-0 border-t border-neutral-100 p-3 lg:border-t-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="flex items-end gap-2 rounded-3xl border border-neutral-300 bg-white py-1.5 pl-4 pr-1.5 transition focus-within:border-ruby-500 focus-within:ring-2 focus-within:ring-ruby-500/20">
             <textarea
               ref={textareaRef}

@@ -28,8 +28,8 @@ export const CHAT_MIN = 300; // px (was 320)
 export const CHAT_DEFAULT = CHAT_MIN; // the chat starts at its smallest width; people can drag it wider
 export const CHAT_MAX = 760;
 
-// Colour of the frame around the white body (sidebar + navbar). Sampled from the
-// Paystack dashboard. Change it here and the sidebar, navbar and corner all follow.
+// Colour of the frame around the white body (sidebar + navbar + chat bar). Sampled from the
+// Paystack dashboard. Change it here and the sidebar, navbar, chat and corners all follow.
 export const FRAME_COLOR = "#f6f7fa";
 
 const KEY_LEFT = "portal:left-collapsed";
@@ -175,7 +175,7 @@ const isFormPage = (pathname: string) =>
 // top strip (the header in portal-nav.tsx), between the two sidebars, and uses ALL
 // the space between them: collapse the menu or the chat and the body grows into it.
 // The page still scrolls with the window (so sticky bars, hash links and infinite
-// scroll behave as before); the round top-left corner is a fixed overlay, because a
+// scroll behave as before); the round top corners are fixed overlays, because a
 // real border-radius would scroll away with the content.
 // The left space follows the pinned width only, so hovering a collapsed rail
 // opens it over the page without pushing anything.
@@ -195,7 +195,7 @@ export function PortalMain({ children }: { children: ReactNode }) {
         <div className={cn("w-full min-w-0", isFormPage(pathname) && "mx-auto max-w-5xl")}>{children}</div>
       </main>
 
-      {/* Rounded top-left corner of the white body (desktop only) */}
+      {/* Rounded top corners of the white body (desktop only): left next to the menu, right next to the chat */}
       <div
         aria-hidden="true"
         className={cn(
@@ -204,6 +204,15 @@ export function PortalMain({ children }: { children: ReactNode }) {
           ready && !dragging && "transition-[left] duration-200 ease-out motion-reduce:transition-none"
         )}
         style={{ left: "var(--portal-left)" }}
+      />
+      <div
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none fixed top-14 z-20 hidden size-4 lg:block",
+          "[background:radial-gradient(circle_at_0%_100%,transparent_16px,var(--portal-frame)_16.5px)]",
+          ready && !dragging && "transition-[right] duration-200 ease-out motion-reduce:transition-none"
+        )}
+        style={{ right: "var(--portal-right)" }}
       />
     </>
   );

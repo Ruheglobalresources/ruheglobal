@@ -337,7 +337,7 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
         aria-label="Conversations"
         inert={!chatOpen}
         className={cn(
-          "fixed bottom-0 right-0 top-16 z-40 flex w-full flex-col border-l border-neutral-200 bg-white lg:top-0 lg:z-20 lg:w-[var(--portal-chat-width)]",
+          "fixed bottom-0 right-0 top-16 z-40 flex w-full flex-col border-l border-neutral-200 bg-white lg:top-0 lg:z-20 lg:w-[var(--portal-chat-width)] lg:border-l-0 lg:bg-[var(--portal-frame)]",
           chatOpen ? "translate-x-0" : "invisible translate-x-full",
           ready && !dragging && "transition-[translate,visibility] duration-200 ease-out"
         )}
@@ -376,7 +376,7 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
         </div>
 
         {/* Header: the list, or the conversation that is open */}
-        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-neutral-100 px-4">
+        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-neutral-100 px-4 lg:h-14 lg:border-b-0">
           {openId ? (
             <>
               <button
@@ -446,7 +446,7 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
                 </div>
               </div>
             ) : (
-              <ul className="divide-y divide-neutral-100">
+              <ul className="divide-y divide-neutral-100 lg:divide-neutral-200/70">
                 {inbox.map((item) => {
                   const name = item.person?.name ?? item.person?.email ?? "Ruhe team";
                   const preview = item.lastMessage
@@ -457,7 +457,7 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
                       <button
                         type="button"
                         onClick={() => openConversation(item.id)}
-                        className="flex w-full items-start gap-3 px-4 py-3 text-left outline-none transition hover:bg-neutral-50 focus-visible:bg-neutral-50"
+                        className="flex w-full items-start gap-3 px-4 py-3 text-left outline-none transition hover:bg-neutral-50 focus-visible:bg-neutral-50 lg:hover:bg-white lg:focus-visible:bg-white"
                       >
                         <Avatar name={name} image={item.person?.image ?? null} className="size-11 text-base" />
                         <div className="min-w-0 flex-1">
@@ -476,7 +476,7 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
                           {(item.person?.role !== "USER" || item.unassigned || item.awaiting) && (
                             <div className="mt-1 flex flex-wrap gap-1.5">
                               {item.person && item.person.role !== "USER" && (
-                                <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-600">
+                                <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-600 lg:bg-white">
                                   {ROLE_LABELS[item.person.role]}
                                 </span>
                               )}
@@ -553,7 +553,7 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
                           <div
                             className={cn(
                               "max-w-[85%] rounded-2xl px-3.5 py-2 text-[15px] leading-relaxed",
-                              m.fromMe ? "rounded-br-md bg-ruby-500 text-white" : "rounded-bl-md bg-neutral-100 text-ink",
+                              m.fromMe ? "rounded-br-md bg-ruby-500 text-white" : "rounded-bl-md bg-neutral-100 text-ink lg:bg-white lg:ring-1 lg:ring-neutral-200/70",
                               m.pending && "opacity-70"
                             )}
                           >
@@ -588,7 +588,7 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
             </div>
 
             {/* Composer */}
-            <div className="shrink-0 border-t border-neutral-100 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <div className="shrink-0 border-t border-neutral-100 p-3 lg:border-t-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
               {closed ? (
                 <p className="px-2 py-2 text-center text-sm text-neutral-500">This conversation is closed.</p>
               ) : (
