@@ -20,7 +20,7 @@ export default async function AdminSubmissionsPage({
     orderBy: { updatedAt: "desc" },
     take: 100,
     include: {
-      user: { select: { name: true, email: true } },
+      user: { select: { id: true, name: true, email: true } },
       counselor: { select: { name: true } },
       application: { select: { name: true, terminal: { select: { name: true } } } },
       _count: { select: { versions: true } },
@@ -74,7 +74,7 @@ export default async function AdminSubmissionsPage({
             {submissions.map((s) => (
               <tr key={s.id} className="border-b last:border-0">
                 <td className="px-4 py-3 font-medium">
-                  {s.user.name ?? "Unnamed"}
+                  <Link href={`/admin/users/${s.user.id}`} className="hover:underline">{s.user.name ?? "Unnamed"}</Link>
                   <div className="text-xs font-normal text-neutral-400">{s.user.email}</div>
                 </td>
                 <td className="px-4 py-3 text-neutral-500">

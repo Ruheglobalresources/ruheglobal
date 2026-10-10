@@ -6,8 +6,10 @@
 // and leaving leaves nothing behind. If a counsellor has been assigned to one
 // of the applicant's submissions, they are attached to the conversation as
 // staff straight away.
+import { after } from "next/server";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/require-user";
+import { notifyStaffOfAwaitingConversation } from "@/lib/conversation-alerts";
 
 const PAGE_SIZE = 50;
 const CHAT_MAX_LENGTH = 2000;
@@ -20,6 +22,7 @@ export type ChatMessage = {
   fromMe: boolean;
   seenByMe: boolean;
   seenByOther: boolean;
+  senderName?: string | null; // staff view only: who wrote it
   pending?: boolean; // client-only: optimistic message that has not been saved yet
 };
 
@@ -175,13 +178,27 @@ export async function sendMessage(input: { conversationId: string | null; body: 
     }
   }
 
-  const [message] = await db.$transaction([
+  const now = new Date();
+
+  const [message, turn] = await db.$transaction([
     db.message.create({
       data: { conversationId, senderId: user.id, body, seenByIds: [user.id] },
       select: messageSelect,
     }),
-    db.conversation.update({ where: { id: conversationId }, data: { lastMessageAt: new Date() } }),
+    // The first message of a new "awaiting a reply" turn marks the conversation as waiting.
+    // count is 0 when it was already waiting, so only that first message sends the alert.
+    db.conversation.updateMany({
+      where: { id: conversationId, awaitingSince: null },
+      data: { awaitingSince: now, lastMessageAt: now },
+    }),
   ]);
+
+  if (turn.count === 0) {
+    await db.conversation.update({ where: { id: conversationId }, data: { lastMessageAt: now } });
+  } else {
+    // after the response is sent, so the applicant never waits for the email
+    after(() => notifyStaffOfAwaitingConversation({ messageId: message.id }));
+  }
 
   return { success: true, conversationId, message: toChatMessage(message, user.id) };
 }

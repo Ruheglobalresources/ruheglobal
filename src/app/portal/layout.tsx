@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { Search } from "lucide-react";
 import { auth } from "@/auth";
 import { ChatPanel } from "@/components/portal/chat-panel";
+import { StaffChatPanel } from "@/components/portal/staff-chat-panel";
 import { PortalMain, PortalShell } from "@/components/portal/portal-shell";
 import { PortalNav } from "@/components/portal/portal-nav";
 import { PortalMobileSidebar } from "@/components/portal/portal-mobile-sidebar";
@@ -49,7 +50,12 @@ export default async function PortalLayout({ children }: { children: React.React
 
       <PortalMain>{children}</PortalMain>
 
-      <ChatPanel counsellor={counsellor} />
+      {/* applicants have one conversation; counselors and admins have an inbox of many */}
+      {session.user.role === "USER" ? (
+        <ChatPanel counsellor={counsellor} />
+      ) : (
+        <StaffChatPanel role={session.user.role} />
+      )}
     </PortalShell>
   );
 }

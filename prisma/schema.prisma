@@ -301,8 +301,8 @@ model ApplicationField {
 // One applicant's actual attempt at an Application. Total step count and
 // per-step completion are derived from ApplicationField + SubmissionValue
 // at query time (max stepNumber, and which required fields have a value)
-// rather than stored, the same way SalonOrder.amount was always computed
-// server-side rather than trusted/cached.
+// rather than stored, so they are always computed server-side and never
+// trusted or cached.
 // ─────────────────────────────────────────────────────────────────────────
 
 enum SubmissionStatus {
@@ -435,6 +435,11 @@ model Conversation {
 
   messages Message[]
 
+  // Set when the client sends a message and nobody on the staff side has answered yet; cleared
+  // when staff reply. It is what the "awaiting reply" views read, and the staff email alert is
+  // sent when it goes from empty to set, so one waiting turn means one email, not one per message.
+  awaitingSince DateTime?
+
   lastMessageAt DateTime @default(now())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -443,6 +448,7 @@ model Conversation {
   @@index([submissionId])
   @@index([status])
   @@index([lastMessageAt])
+  @@index([awaitingSince])
 }
 
 model Message {

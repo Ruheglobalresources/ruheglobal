@@ -26,7 +26,7 @@ export default async function AdminUsersPage({
       orderBy: { createdAt: "desc" },
       skip: (pageNumber - 1) * PAGE_SIZE,
       take: PAGE_SIZE + 1, // one extra row tells us there is a next page
-      select: { id: true, name: true, email: true, createdAt: true, counselorId: true },
+      select: { id: true, name: true, email: true, createdAt: true, counselorId: true, _count: { select: { submissions: true } } },
     }),
     db.user.findMany({ where: { role: "COUNSELOR" }, orderBy: { name: "asc" }, select: { id: true, name: true, email: true } }),
   ]);
@@ -62,22 +62,26 @@ export default async function AdminUsersPage({
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Joined</th>
+              <th className="px-4 py-3">Applications</th>
               <th className="px-4 py-3">Counselor</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((u) => (
               <tr key={u.id} className="border-b last:border-0">
-                <td className="px-4 py-3 font-medium">{u.name ?? "Unnamed"}</td>
+                <td className="px-4 py-3 font-medium">
+                  <Link href={`/admin/users/${u.id}`} className="hover:underline">{u.name ?? "Unnamed"}</Link>
+                </td>
                 <td className="px-4 py-3 text-neutral-500">{u.email}</td>
                 <td className="px-4 py-3 text-neutral-500">{u.createdAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</td>
+                <td className="px-4 py-3 text-neutral-500">{u._count.submissions}</td>
                 <td className="px-4 py-3">
                   <UserCounselorSelect userId={u.id} counselorId={u.counselorId} counselors={counselors} />
                 </td>
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={4} className="px-4 py-8 text-center text-neutral-400">{query ? "No users match that search." : "No users yet."}</td></tr>
+              <tr><td colSpan={5} className="px-4 py-8 text-center text-neutral-400">{query ? "No users match that search." : "No users yet."}</td></tr>
             )}
           </tbody>
         </table>

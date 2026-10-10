@@ -147,7 +147,9 @@ export default async function AdminSubmissionDetailPage({ params }: { params: Pr
 
       <div className="mb-6 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <h1 className="text-xl font-semibold">{submission.user.name ?? "Unnamed applicant"}</h1>
+          <h1 className="text-xl font-semibold">
+            <Link href={`/admin/users/${submission.user.id}`} className="hover:underline">{submission.user.name ?? "Unnamed applicant"}</Link>
+          </h1>
           <p className="text-sm text-neutral-500">{submission.user.email}</p>
           <p className="mt-1 text-sm text-neutral-600">
             {submission.application.name} · {submission.application.terminal.name} · step {submission.currentStep}

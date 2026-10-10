@@ -11,6 +11,7 @@ import {
   Inbox,
   UsersRound,
   Users,
+  MessageSquare,
   Newspaper,
   Building2,
   GraduationCap,
@@ -34,6 +35,7 @@ const TABS: Tab[] = [
   { href: "/admin/blog", label: "Blog", icon: Newspaper },
   { href: "/admin/counselors", label: "Counselors", icon: UsersRound, adminOnly: true },
   { href: "/admin/users", label: "Users", icon: Users, adminOnly: true },
+  { href: "/admin/conversations", label: "Conversations", icon: MessageSquare, adminOnly: true },
 ];
 
 export function AdminTabs({ role }: { role: UserRole }) {
