@@ -290,7 +290,7 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
           title="Chat with your counsellor"
           className={cn(
             "fixed z-30 grid place-items-center bg-ruby-500 text-white shadow-lg outline-none transition hover:bg-ruby-600 focus-visible:ring-2 focus-visible:ring-ruby-500/50 focus-visible:ring-offset-2",
-            "bottom-20 right-4 size-14 rounded-full",
+            "bottom-20 right-4 size-14 rounded-full lg:hidden",
             "lg:bottom-auto lg:right-0 lg:top-1/2 lg:h-14 lg:w-11 lg:-translate-y-1/2 lg:rounded-l-2xl lg:rounded-r-none lg:shadow-md"
           )}
         >
@@ -359,7 +359,7 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
             onClick={() => setChatOpen(false)}
             aria-label="Collapse chat"
             title="Collapse chat"
-            className="grid size-9 shrink-0 place-items-center rounded-full text-neutral-500 outline-none transition hover:bg-neutral-100 hover:text-ink focus-visible:ring-2 focus-visible:ring-ruby-500/50"
+            className="grid size-9 shrink-0 place-items-center rounded-full text-neutral-500 outline-none transition hover:bg-neutral-100 hover:text-ink focus-visible:ring-2 focus-visible:ring-ruby-500/50 lg:hidden"
           >
             <PanelRightClose size={20} className="hidden lg:block" />
             <X size={20} className="lg:hidden" />

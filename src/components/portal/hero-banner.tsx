@@ -49,8 +49,8 @@ export function HeroBanner({
 }) {
   return (
     <div>
-      {/* Quick links: above the banner, top right, tight gap to the banner */}
-      <nav aria-label="Quick links" className="mb-1.5 flex items-center justify-end gap-3 sm:gap-4">
+      {/* Quick links: above the banner, top right. Phones and tablets only: on desktop they live in the navbar. */}
+      <nav aria-label="Quick links" className="mb-1.5 flex items-center justify-end gap-3 sm:gap-4 lg:hidden">
         <Link href="/courses" className={quickLinkClass}>
           <GraduationCap size={15} className="text-ruby-600" />
           Courses

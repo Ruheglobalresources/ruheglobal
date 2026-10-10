@@ -28,12 +28,9 @@ export const CHAT_MIN = 300; // px (was 320)
 export const CHAT_DEFAULT = CHAT_MIN; // the chat starts at its smallest width; people can drag it wider
 export const CHAT_MAX = 760;
 
-// Space kept on the right of the page. While the chat is open the page ends at the
-// chat's border, so a normal gutter is enough. While it is closed, the "open chat"
-// tab floats on the right edge (44px wide), so the page keeps room for it instead
-// of sliding underneath.
-const GUTTER = "1.5rem";
-const GUTTER_WITH_TAB = "3.75rem";
+// Colour of the frame around the white body (sidebar + navbar). Sampled from the
+// Paystack dashboard. Change it here and the sidebar, navbar and corner all follow.
+export const FRAME_COLOR = "#f6f7fa";
 
 const KEY_LEFT = "portal:left-collapsed";
 const KEY_OPEN = "portal:chat-open";
@@ -155,12 +152,13 @@ export function PortalShell({ children }: { children: ReactNode }) {
     "--portal-left": `${leftCollapsed ? LEFT_COLLAPSED : LEFT_EXPANDED}px`,
     "--portal-right": `${chatOpen ? chatWidth : 0}px`,
     "--portal-chat-width": `${chatWidth}px`,
-    "--portal-right-gutter": chatOpen ? GUTTER : GUTTER_WITH_TAB,
+    "--portal-frame": FRAME_COLOR,
   } as CSSProperties;
 
   return (
     <PortalShellContext.Provider value={value}>
-      <div className="min-h-screen bg-white" style={vars}>
+      {/* Desktop frame: the sidebar + top strip wrap a white body (pt-14 = the strip's height) */}
+      <div className="min-h-screen bg-white lg:bg-[var(--portal-frame)] lg:pt-14" style={vars}>
         {children}
       </div>
     </PortalShellContext.Provider>
@@ -173,12 +171,12 @@ export function PortalShell({ children }: { children: ReactNode }) {
 const isFormPage = (pathname: string) =>
   /^\/portal\/(?!courses(\/|$)|institutions(\/|$))[^/]+\/[^/]+/.test(pathname);
 
-// The page area. On desktop it leaves room for whichever sidebars are showing and
-// uses ALL of the rest: collapse the menu or the chat and the page grows into the
-// freed space (there used to be a centred max-w-5xl box here, which turned that
-// space into empty margins).
-// There is no top bar on desktop any more, so it starts near the top (lg:pt-8);
-// phones and tablets still have the top bar, hence pt-24 below lg.
+// The page area: the white, inset body of the desktop layout. It sits under the
+// top strip (the header in portal-nav.tsx), between the two sidebars, and uses ALL
+// the space between them: collapse the menu or the chat and the body grows into it.
+// The page still scrolls with the window (so sticky bars, hash links and infinite
+// scroll behave as before); the round top-left corner is a fixed overlay, because a
+// real border-radius would scroll away with the content.
 // The left space follows the pinned width only, so hovering a collapsed rail
 // opens it over the page without pushing anything.
 export function PortalMain({ children }: { children: ReactNode }) {
@@ -186,15 +184,28 @@ export function PortalMain({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <main
-      className={cn(
-        "px-4 pb-28 pt-4 sm:px-6 lg:pb-12 lg:pl-[calc(var(--portal-left)+1.5rem)] lg:pr-[calc(var(--portal-right)+var(--portal-right-gutter))] lg:pt-8",
-        ready && !dragging && "lg:transition-[padding] lg:duration-150 lg:ease-out motion-reduce:lg:transition-none"
-      )}
-    >
-      {/* min-w-0 lets the card strips shrink with the page instead of pushing it wider */}
-      <div className={cn("w-full min-w-0", isFormPage(pathname) && "mx-auto max-w-5xl")}>{children}</div>
-    </main>
+    <>
+      <main
+        className={cn(
+          "bg-white px-4 pb-28 pt-4 sm:px-6 lg:min-h-[calc(100vh-3.5rem)] lg:pb-12 lg:pt-6 lg:ml-[var(--portal-left)] lg:mr-[var(--portal-right)] lg:px-8",
+          ready && !dragging && "lg:transition-[margin] lg:duration-200 lg:ease-out motion-reduce:lg:transition-none"
+        )}
+      >
+        {/* min-w-0 lets the card strips shrink with the page instead of pushing it wider */}
+        <div className={cn("w-full min-w-0", isFormPage(pathname) && "mx-auto max-w-5xl")}>{children}</div>
+      </main>
+
+      {/* Rounded top-left corner of the white body (desktop only) */}
+      <div
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none fixed top-14 z-20 hidden size-4 lg:block",
+          "[background:radial-gradient(circle_at_100%_100%,transparent_16px,var(--portal-frame)_16.5px)]",
+          ready && !dragging && "transition-[left] duration-200 ease-out motion-reduce:transition-none"
+        )}
+        style={{ left: "var(--portal-left)" }}
+      />
+    </>
   );
 }
 
