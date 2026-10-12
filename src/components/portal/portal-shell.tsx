@@ -15,12 +15,11 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
 } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 export const LEFT_EXPANDED = 248; // px (was 288)
@@ -40,6 +39,9 @@ const KEY_OPEN = "portal:chat-open";
 // person has actually resized the chat.
 const KEY_WIDTH = "portal:chat-width-v2";
 const KEY_WIDTH_OLD = "portal:chat-width";
+
+// On phones the chat is its own page at this route (opened from the bottom bar).
+export const CHAT_PAGE = "/portal/chat";
 
 // The sidebars only sit beside the page from the lg breakpoint up.
 const DESKTOP_QUERY = "(min-width: 1024px)";
@@ -75,6 +77,32 @@ export function usePortalShell() {
   const ctx = useContext(PortalShellContext);
   if (!ctx) throw new Error("usePortalShell must be used inside <PortalShell>");
   return ctx;
+}
+
+// Open the chat: the sidebar on desktop, the full page (/portal/chat) on phones.
+export function useOpenChat() {
+  const { setChatOpen } = usePortalShell();
+  const router = useRouter();
+  return useCallback(() => {
+    if (window.matchMedia(DESKTOP_QUERY).matches) setChatOpen(true);
+    else router.push(CHAT_PAGE);
+  }, [setChatOpen, router]);
+}
+
+// Close the chat: collapse the sidebar on desktop, leave the page on phones.
+export function useCloseChat() {
+  const { setChatOpen } = usePortalShell();
+  const router = useRouter();
+  return useCallback(() => {
+    if (window.matchMedia(DESKTOP_QUERY).matches) {
+      setChatOpen(false);
+      return;
+    }
+    // came from a page of this site: go back to it. Opened directly: go to the dashboard.
+    const cameFromSite = document.referrer.startsWith(window.location.origin);
+    if (cameFromSite && window.history.length > 1) router.back();
+    else router.replace("/portal");
+  }, [setChatOpen, router]);
 }
 
 export function PortalShell({ children }: { children: ReactNode }) {
@@ -127,13 +155,11 @@ export function PortalShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // On phones the chat is a full screen page of the bottom bar, so going to another page leaves it.
+  // On phones the chat is a page of its own (/portal/chat), so it is open exactly while
+  // that page is showing. Desktop keeps its own open/closed choice.
   const pathname = usePathname();
-  const lastPathname = useRef(pathname);
   useEffect(() => {
-    if (lastPathname.current === pathname) return;
-    lastPathname.current = pathname;
-    if (!window.matchMedia(DESKTOP_QUERY).matches) setChatOpen(false);
+    if (!window.matchMedia(DESKTOP_QUERY).matches) setChatOpen(pathname === CHAT_PAGE);
   }, [pathname]);
 
   const setChatWidth = useCallback((width: number) => setChatWidthState(clampChat(width)), []);
@@ -163,7 +189,6 @@ export function PortalShell({ children }: { children: ReactNode }) {
     "--portal-right": `${chatOpen ? chatWidth : 0}px`,
     "--portal-chat-width": `${chatWidth}px`,
     "--portal-frame": FRAME_COLOR,
-    // height of the phone bottom bar; the chat page stops above it
     "--portal-bottom-bar": "calc(4.5rem + env(safe-area-inset-bottom))",
   } as CSSProperties;
 
@@ -239,10 +264,10 @@ export function OpenChatButton({
   children: ReactNode;
   onClick?: () => void;
 }) {
-  const { setChatOpen } = usePortalShell();
+  const openChat = useOpenChat();
 
   const handleClick = () => {
-    setChatOpen(true);
+    openChat();
     onClick?.();
   };
 

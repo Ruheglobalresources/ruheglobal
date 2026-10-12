@@ -2,14 +2,14 @@
 
 // src/components/portal/staff-chat-panel.tsx
 // The chat bar for counselors and admins. Same right sidebar as the applicant's chat (opened from the
-// navbar door, drag to resize, a full screen page of the bottom bar on phones), but it opens on a list of conversations.
+// navbar door, drag to resize, its own full page at /portal/chat on phones), but it opens on a list of conversations.
 // Pick one to read it and reply; the arrow goes back to the list.
 //   - applicants only ever see ONE conversation (chat-panel.tsx)
 //   - staff see many: their own, the ones of their applicants, and (admins) the unassigned ones
 // The email alert opens /portal/conversations/<id>, which lands on /portal?conversation=<id>: the bar opens on that conversation.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, CheckCheck, GripVertical, Inbox, Loader2, MessageCircle, PanelRightClose, SendHorizontal, X } from "lucide-react";
+import { ArrowLeft, Check, CheckCheck, GripVertical, Inbox, Loader2, MessageCircle, SendHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import type { ChatMessage } from "@/lib/chat-service";
 import {
@@ -23,7 +23,7 @@ import {
 } from "@/actions/chat-staff";
 import { cn } from "@/lib/utils";
 import { Avatar, ROLE_LABELS, dayLabel, isImage, listTimeLabel, mergeMessages, timeLabel } from "./chat-utils";
-import { CHAT_MAX, CHAT_MIN, getChatMax, usePortalShell } from "./portal-shell";
+import { CHAT_MAX, CHAT_MIN, getChatMax, useCloseChat, useOpenChat, usePortalShell } from "./portal-shell";
 
 const MAX_LENGTH = 2000;
 const POLL_OPEN_MS = 5_000;
@@ -31,8 +31,10 @@ const POLL_CLOSED_MS = 20_000;
 const KEY_STEP = 24;
 
 export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
-  const { ready, chatOpen, setChatOpen, chatWidth, setChatWidth, resetChatWidth, dragging, setDragging, setUnread } =
+  const { ready, chatOpen, chatWidth, setChatWidth, resetChatWidth, dragging, setDragging, setUnread } =
     usePortalShell();
+  const openChat = useOpenChat();
+  const closeChat = useCloseChat();
 
   const [inbox, setInbox] = useState<InboxItem[]>([]);
   const [inboxLoading, setInboxLoading] = useState(true);
@@ -141,11 +143,12 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("conversation");
     if (!id) return;
-    setChatOpen(true);
     openConversation(id);
     const url = new URL(window.location.href);
     url.searchParams.delete("conversation");
     window.history.replaceState(null, "", url);
+    // desktop: open the bar. phones: go to the chat page (after the address was cleaned up above)
+    openChat();
     // runs once on arrival
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -316,9 +319,9 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
         aria-label="Conversations"
         inert={!chatOpen}
         className={cn(
-          "fixed bottom-[var(--portal-bottom-bar)] right-0 top-16 z-40 flex w-full flex-col border-l border-neutral-200 bg-white lg:bottom-0 lg:top-0 lg:z-20 lg:w-[var(--portal-chat-width)] lg:border-l-0 lg:bg-[var(--portal-frame)]",
+          "fixed inset-y-0 right-0 z-50 flex h-dvh w-full flex-col bg-white lg:z-20 lg:h-auto lg:w-[var(--portal-chat-width)] lg:bg-[var(--portal-frame)]",
           chatOpen ? "translate-x-0" : "invisible translate-x-full",
-          ready && !dragging && "transition-[translate,visibility] duration-200 ease-out"
+          ready && !dragging && "lg:transition-[translate,visibility] lg:duration-200 lg:ease-out"
         )}
       >
         <div
@@ -355,7 +358,7 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
         </div>
 
         {/* Header: the list, or the conversation that is open */}
-        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-neutral-100 px-4 lg:h-14 lg:border-b-0">
+        <div className="flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center gap-3 border-b border-neutral-100 px-4 pt-[env(safe-area-inset-top)] lg:h-14 lg:border-b-0 lg:pt-0">
           {openId ? (
             <>
               <button
@@ -384,6 +387,14 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
             </>
           ) : (
             <>
+              <button
+                type="button"
+                onClick={closeChat}
+                aria-label="Back"
+                className="-ml-2 grid size-10 shrink-0 place-items-center rounded-full text-ink outline-none transition hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-ruby-500/50 lg:hidden"
+              >
+                <ArrowLeft size={22} />
+              </button>
               <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ruby-50 text-ruby-600">
                 <Inbox size={20} />
               </span>
@@ -395,16 +406,6 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
               </div>
             </>
           )}
-          <button
-            type="button"
-            onClick={() => setChatOpen(false)}
-            aria-label="Collapse chat"
-            title="Collapse chat"
-            className="grid size-9 shrink-0 place-items-center rounded-full text-neutral-500 outline-none transition hover:bg-neutral-100 hover:text-ink focus-visible:ring-2 focus-visible:ring-ruby-500/50 lg:hidden"
-          >
-            <PanelRightClose size={20} className="hidden lg:block" />
-            <X size={20} className="lg:hidden" />
-          </button>
         </div>
 
         {!openId ? (
@@ -567,7 +568,7 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
             </div>
 
             {/* Composer */}
-            <div className="shrink-0 border-t border-neutral-100 p-3 lg:border-t-0 lg:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <div className="shrink-0 border-t border-neutral-100 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:border-t-0">
               {closed ? (
                 <p className="px-2 py-2 text-center text-sm text-neutral-500">This conversation is closed.</p>
               ) : (

@@ -5,14 +5,14 @@
 //   - On desktop the door in the navbar opens and closes it. On phones it is the Chat tab of the bottom bar.
 //   - Move the cursor onto its left border and drag to make it wider or narrower.
 //     The border also works from the keyboard (arrow keys) and resets on double-click.
-//   - On phones it opens full-screen instead (no resizing there).
+//   - On phones it is its own full page at /portal/chat (back arrow in the header, no resizing there).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
-import { Check, CheckCheck, GripVertical, Loader2, MessageCircle, PanelRightClose, SendHorizontal, X } from "lucide-react";
+import { ArrowLeft, Check, CheckCheck, GripVertical, Loader2, MessageCircle, SendHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { loadChat, loadEarlier, markSeen, sendMessage, type ChatMessage, type ChatStaff } from "@/lib/chatclient";
 import type { PortalCounsellor } from "@/lib/portal-counsellor";
 import { cn } from "@/lib/utils";
-import { CHAT_MAX, CHAT_MIN, getChatMax, usePortalShell } from "./portal-shell";
+import { CHAT_MAX, CHAT_MIN, getChatMax, useCloseChat, usePortalShell } from "./portal-shell";
 
 const MAX_LENGTH = 2000;
 const POLL_OPEN_MS = 5_000;
@@ -58,7 +58,6 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
   const {
     ready,
     chatOpen,
-    setChatOpen,
     chatWidth,
     setChatWidth,
     resetChatWidth,
@@ -66,6 +65,7 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
     setDragging,
     setUnread,
   } = usePortalShell();
+  const closeChat = useCloseChat();
 
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [staff, setStaff] = useState<ChatStaff | null>(null);
@@ -284,10 +284,10 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
         aria-label="Chat with your counsellor"
         inert={!chatOpen}
         className={cn(
-          // lg:top-0 + lg:h-14 header: on desktop the chat is the right half of the same frame, so its header row lines up with the navbar
-          "fixed bottom-[var(--portal-bottom-bar)] right-0 top-16 z-40 flex w-full flex-col border-l border-neutral-200 bg-white lg:bottom-0 lg:top-0 lg:z-20 lg:w-[var(--portal-chat-width)] lg:border-l-0 lg:bg-[var(--portal-frame)]",
+          // phones: a full page above everything (z-50, covers the bottom bar). lg: the right half of the frame, so its header row lines up with the navbar
+          "fixed inset-y-0 right-0 z-50 flex h-dvh w-full flex-col bg-white lg:z-20 lg:h-auto lg:w-[var(--portal-chat-width)] lg:bg-[var(--portal-frame)]",
           chatOpen ? "translate-x-0" : "invisible translate-x-full",
-          ready && !dragging && "transition-[translate,visibility] duration-200 ease-out"
+          ready && !dragging && "lg:transition-[translate,visibility] lg:duration-200 lg:ease-out"
         )}
       >
         {/* Drag this border to resize (desktop only) */}
@@ -325,22 +325,20 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
         </div>
 
         {/* Header */}
-        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-neutral-100 px-4 lg:h-14 lg:border-b-0">
+        <div className="flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center gap-3 border-b border-neutral-100 px-4 pt-[env(safe-area-inset-top)] lg:h-14 lg:border-b-0 lg:pt-0">
+          <button
+            type="button"
+            onClick={closeChat}
+            aria-label="Back"
+            className="-ml-2 grid size-10 shrink-0 place-items-center rounded-full text-ink outline-none transition hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-ruby-500/50 lg:hidden"
+          >
+            <ArrowLeft size={22} />
+          </button>
           <Avatar name={title} image={person?.image ?? null} className="size-10 text-base" />
           <div className="min-w-0 flex-1">
             <p className="truncate font-semibold text-ink">{title}</p>
             <p className="truncate text-xs text-neutral-500">{person ? "Your counsellor" : "Ask us anything about your application"}</p>
           </div>
-          <button
-            type="button"
-            onClick={() => setChatOpen(false)}
-            aria-label="Collapse chat"
-            title="Collapse chat"
-            className="grid size-9 shrink-0 place-items-center rounded-full text-neutral-500 outline-none transition hover:bg-neutral-100 hover:text-ink focus-visible:ring-2 focus-visible:ring-ruby-500/50 lg:hidden"
-          >
-            <PanelRightClose size={20} className="hidden lg:block" />
-            <X size={20} className="lg:hidden" />
-          </button>
         </div>
 
         {/* Messages */}
@@ -441,7 +439,7 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
         </div>
 
         {/* Composer */}
-        <div className="shrink-0 border-t border-neutral-100 p-3 lg:border-t-0 lg:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="shrink-0 border-t border-neutral-100 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:border-t-0">
           <div className="flex items-end gap-2 rounded-3xl border border-neutral-300 bg-white py-1.5 pl-4 pr-1.5 transition focus-within:border-ruby-500 focus-within:ring-2 focus-within:ring-ruby-500/20">
             <textarea
               ref={textareaRef}

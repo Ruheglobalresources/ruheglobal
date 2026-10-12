@@ -9,7 +9,7 @@
 // from it. Each sidebar has exactly one door, and it sits outside the bar:
 //   - menu door: right after the sidebar, in the navbar
 //   - chat door: at the right end of the navbar, next to the chat bar
-// Phones: a bottom bar.
+// Phones: a bottom bar; its Chat tab opens the chat as a full page (/portal/chat).
 //
 // Menu items without an href are pages that are not built yet. They show a
 // "Soon" tag instead of a link, so nothing leads to a 404. Give one an href
@@ -39,7 +39,7 @@ import {
 import type { PortalCounsellor } from "@/lib/portal-counsellor";
 import { cn } from "@/lib/utils";
 import { CounsellorCard } from "./counsellor-card";
-import { LEFT_EXPANDED, usePortalShell } from "./portal-shell";
+import { CHAT_PAGE, LEFT_EXPANDED, usePortalShell } from "./portal-shell";
 import { ProfileCard } from "./profile-card";
 
 type MenuItem = {
@@ -50,7 +50,9 @@ type MenuItem = {
   highlight?: boolean;
 };
 
-const isCatalogPath = (p: string) => p.startsWith("/courses") || p.startsWith("/institutions");
+// pages under /portal that are not an application (so "Applications" is not highlighted on them)
+const isCatalogPath = (p: string) =>
+  p.startsWith("/courses") || p.startsWith("/institutions") || p === CHAT_PAGE;
 
 const MENU: MenuItem[] = [
   { label: "Home", icon: House, href: "/portal", match: (p) => p === "/portal" },
@@ -341,14 +343,12 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
         className="fixed inset-x-0 bottom-0 z-30 flex h-[var(--portal-bottom-bar)] border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
       >
         {BOTTOM.map(({ label, icon: Icon, href, match }) => {
-          // while the chat page is open it is the current page, so nothing else looks selected
-          const active = !chatOpen && href && match ? match(pathname) : false;
+          const active = href && match ? match(pathname) : false;
           return (
             <Link
               key={label}
               href={href!}
               aria-current={active ? "page" : undefined}
-              onClick={() => setChatOpen(false)}
               className="flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium"
             >
               <span
@@ -364,20 +364,13 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
           );
         })}
 
-        {/* Chat: the conversation as a full screen page that stops above this bar */}
-        <button
-          type="button"
-          onClick={() => setChatOpen(!chatOpen)}
-          aria-pressed={chatOpen}
+        {/* Chat: opens the full page at /portal/chat (it covers this bar) */}
+        <Link
+          href={CHAT_PAGE}
           aria-label={unread ? `Chat, ${unread} unread` : "Chat"}
           className="flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium"
         >
-          <span
-            className={cn(
-              "relative grid h-8 w-16 place-items-center rounded-full transition",
-              chatOpen ? "bg-ruby-100 text-ruby-700" : "text-neutral-500"
-            )}
-          >
+          <span className="relative grid h-8 w-16 place-items-center rounded-full text-neutral-500 transition">
             <MessageCircle size={20} />
             {unread > 0 && (
               <span className="absolute right-3 top-0 grid min-w-4 place-items-center rounded-full bg-ruby-500 px-1 text-[10px] font-semibold leading-4 text-white">
@@ -385,8 +378,8 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
               </span>
             )}
           </span>
-          <span className={chatOpen ? "text-ruby-700" : "text-neutral-500"}>Chat</span>
-        </button>
+          <span className="text-neutral-500">Chat</span>
+        </Link>
       </nav>
     </>
   );
