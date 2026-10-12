@@ -56,6 +56,11 @@ model User {
   messagesSent        Message[]      @relation("MessageSender")
   blogPosts           BlogPost[]     @relation("BlogPostAuthor")
 
+  // Profile details collected during onboarding and edited on the profile page
+  profile        UserProfile?
+  qualifications AcademicQualification[]
+  tests          UserTest[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -836,4 +841,78 @@ model SchoolScholarship {
   createdAt DateTime @default(now())
 
   @@index([schoolId])
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// USER PROFILE
+// One row per applicant (created on first save), plus their qualifications
+// and test scores. Name and photo stay on User (User.name / User.image) so
+// Auth.js and the rest of the app keep reading them from the same place.
+// ─────────────────────────────────────────────────────────────────────────
+
+enum UserTestKind {
+  ENGLISH      // IELTS, TOEFL, PTE ...
+  STANDARDIZED // GRE, GMAT, SAT ...
+}
+
+model UserProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Basic info
+  phone            String?
+  nationality      String?
+  residenceCountry String?
+  residenceCity    String?
+  dateOfBirth      DateTime? @db.Date
+
+  // Study preferences
+  preferredDestination String?
+  preferredStudyLevel  String?
+  preferredStartYear   Int?
+  preferredStartMonth  Int? // 1 to 12
+  subjects             String[]
+
+  // Set when the applicant finishes the last onboarding step
+  onboardingCompletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AcademicQualification {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  level       String // "Bachelor's degree", "Master's degree" ...
+  institution String
+  programme   String?
+  country     String?
+  startYear   Int?
+  endYear     Int?
+  grade       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model UserTest {
+  id     String       @id @default(uuid())
+  userId String
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  kind     UserTestKind
+  name     String // "IELTS Academic", "GRE" ...
+  score    String // free text: bands, sections, totals
+  testDate DateTime? @db.Date
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, kind])
 }

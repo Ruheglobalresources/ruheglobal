@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Toaster } from "sonner";
 import { Search } from "lucide-react";
 import { auth } from "@/auth";
+import { OnboardingGate } from "@/components/profile/onboarding-modal";
 import { ChatPanel } from "@/components/portal/chat-panel";
 import { StaffChatPanel } from "@/components/portal/staff-chat-panel";
 import { PortalMain, PortalShell } from "@/components/portal/portal-shell";
@@ -11,18 +12,31 @@ import { PortalNav } from "@/components/portal/portal-nav";
 import { PortalMobileSidebar } from "@/components/portal/portal-mobile-sidebar";
 import { UserMenu } from "@/components/portal/user-menu";
 import { getPortalCounsellor } from "@/lib/portal-counsellor";
+import { getOnboardingState } from "@/lib/user-profile";
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 
   if (!session?.user?.id) redirect("/auth/login?callbackUrl=/portal");
 
-  const counsellor = await getPortalCounsellor(session.user.id);
-  const user = { name: session.user.name ?? null, email: session.user.email ?? null };
+  const isApplicant = session.user.role === "USER";
+  const [counsellor, onboarding] = await Promise.all([
+    getPortalCounsellor(session.user.id),
+    // only applicants are asked to set up a profile, not counselors or admins
+    isApplicant ? getOnboardingState(session.user.id) : null,
+  ]);
+  const user = {
+    name: session.user.name ?? null,
+    email: session.user.email ?? null,
+    image: session.user.image ?? null,
+  };
 
   return (
     <PortalShell>
       <Toaster richColors position="top-center" />
+
+      {/* Short setup after sign-in: a Vaul drawer on phones, a dialog on desktop */}
+      {onboarding && !onboarding.completed && <OnboardingGate initial={onboarding.initial} />}
 
       {/* Top bar: phones and tablets only. On lg+ the fixed sidebar replaces it. */}
       <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-neutral-200 bg-white px-4 pt-[env(safe-area-inset-top)] lg:hidden">
@@ -43,7 +57,7 @@ export default async function PortalLayout({ children }: { children: React.React
           <Search size={20} />
         </Link>
 
-        <UserMenu name={user.name} email={user.email} />
+        <UserMenu name={user.name} email={user.email} image={user.image} />
       </header>
 
       <PortalNav user={user} counsellor={counsellor} />

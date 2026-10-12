@@ -15,7 +15,7 @@ import type { PortalCounsellor } from "@/lib/portal-counsellor";
 import { PortalSidebarContent } from "./portal-sidebar-content";
 
 type PortalMobileSidebarProps = {
-  user: { name: string | null; email: string | null };
+  user: { name: string | null; email: string | null; image?: string | null };
   counsellor: PortalCounsellor | null;
 };
 

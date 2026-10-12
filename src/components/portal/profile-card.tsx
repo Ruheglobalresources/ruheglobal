@@ -2,7 +2,8 @@
 
 // src/components/portal/profile-card.tsx
 // The card at the top of the sidebar. The chevron opens the account menu.
-import { ChevronDown, LogOut } from "lucide-react";
+import Link from "next/link";
+import { ChevronDown, LogOut, UserRound } from "lucide-react";
 import { logout } from "@/actions/auth/logout";
 import { elevation1 } from "@/components/dashboard/styles";
 import {
@@ -16,10 +17,12 @@ import { cn } from "@/lib/utils";
 export function ProfileCard({
   name,
   email,
+  image,
   compact = false,
 }: {
   name: string | null;
   email: string | null;
+  image?: string | null;
   compact?: boolean;
 }) {
   const label = name ?? email ?? "Your account";
@@ -32,11 +35,21 @@ export function ProfileCard({
         <DropdownMenuTrigger
           aria-label={`Account menu for ${label}`}
           title={label}
-          className="grid size-11 shrink-0 place-items-center rounded-full bg-ruby-500 text-lg font-semibold text-white outline-none transition hover:bg-ruby-600 focus-visible:ring-2 focus-visible:ring-ruby-500/50 focus-visible:ring-offset-2"
+          className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-full bg-ruby-500 text-lg font-semibold text-white outline-none transition hover:bg-ruby-600 focus-visible:ring-2 focus-visible:ring-ruby-500/50 focus-visible:ring-offset-2"
         >
-          {initial}
+          {image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={image} alt="" className="size-full object-cover" />
+          ) : (
+            initial
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="right" className="w-64 rounded-2xl p-1.5">
+          <DropdownMenuItem asChild className="cursor-pointer gap-2 rounded-xl px-3 py-2 text-sm">
+            <Link href="/portal/profile">
+              <UserRound size={16} /> My profile
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => logout()} className="cursor-pointer gap-2 rounded-xl px-3 py-2 text-sm">
             <LogOut size={16} /> Log out
           </DropdownMenuItem>
@@ -53,8 +66,13 @@ export function ProfileCard({
           elevation1
         )}
       >
-        <span className="grid size-12 shrink-0 place-items-center rounded-full bg-ruby-500 text-lg font-semibold text-white">
-          {initial}
+        <span className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-full bg-ruby-500 text-lg font-semibold text-white">
+          {image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={image} alt="" className="size-full object-cover" />
+          ) : (
+            initial
+          )}
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate font-semibold text-ink">{label}</span>
@@ -63,6 +81,11 @@ export function ProfileCard({
         <ChevronDown size={20} className="shrink-0 text-neutral-500" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64 rounded-2xl p-1.5">
+        <DropdownMenuItem asChild className="cursor-pointer gap-2 rounded-xl px-3 py-2 text-sm">
+          <Link href="/portal/profile">
+            <UserRound size={16} /> My profile
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => logout()} className="cursor-pointer gap-2 rounded-xl px-3 py-2 text-sm">
           <LogOut size={16} /> Log out
         </DropdownMenuItem>

@@ -53,6 +53,7 @@ export const {
       if (session.user) {
         session.user.name = token.name;
         session.user.email = token.email as string;
+        session.user.image = (token.picture as string | null | undefined) ?? null;
       }
       return session;
     },
@@ -63,6 +64,7 @@ export const {
 
       token.name = existingUser.name;
       token.email = existingUser.email;
+      token.picture = existingUser.image;
       token.role = existingUser.role;
       token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
 

@@ -9,7 +9,7 @@
 // from it. Each sidebar has exactly one door, and it sits outside the bar:
 //   - menu door: right after the sidebar, in the navbar
 //   - chat door: at the right end of the navbar, next to the chat bar
-// Phones: the bottom bar (portal-bottom-bar.tsx); its Chat tab opens the chat as a full page (/portal/chat).
+// Phones: a bottom bar.
 //
 // Menu items without an href are pages that are not built yet. They show a
 // "Soon" tag instead of a link, so nothing leads to a 404. Give one an href
@@ -39,10 +39,8 @@ import {
 import type { PortalCounsellor } from "@/lib/portal-counsellor";
 import { cn } from "@/lib/utils";
 import { CounsellorCard } from "./counsellor-card";
-import { isCatalogPath } from "@/lib/portal-paths";
 import { LEFT_EXPANDED, usePortalShell } from "./portal-shell";
 import { ProfileCard } from "./profile-card";
-import { PortalBottomBar } from "../portal-bottom-bar";
 
 type MenuItem = {
   label: string;
@@ -52,9 +50,11 @@ type MenuItem = {
   highlight?: boolean;
 };
 
+const isCatalogPath = (p: string) => p.startsWith("/courses") || p.startsWith("/institutions");
+
 const MENU: MenuItem[] = [
   { label: "Home", icon: House, href: "/portal", match: (p) => p === "/portal" },
-  { label: "Profile", icon: User },
+  { label: "Profile", icon: User, href: "/portal/profile", match: (p) => p.startsWith("/portal/profile") },
   { label: "Documents", icon: Folder },
   { label: "Shortlist", icon: Heart },
   {
@@ -62,11 +62,23 @@ const MENU: MenuItem[] = [
     icon: FileStack,
     href: "/portal#applications",
     // The application wizard lives at /portal/<terminal>/<application>
-    match: (p) => p !== "/portal" && !isCatalogPath(p),
+    match: (p) => p !== "/portal" && !p.startsWith("/portal/profile") && !isCatalogPath(p),
   },
   { label: "Meet", icon: CalendarDays },
   { label: "Refer & Earn", icon: Gift, highlight: true },
   { label: "Report counsellor", icon: MessageSquareWarning },
+];
+
+const BOTTOM: MenuItem[] = [
+  { label: "Home", icon: House, href: "/portal", match: (p) => p === "/portal" },
+  { label: "Courses", icon: GraduationCap, href: "/courses", match: (p) => p.startsWith("/courses") },
+  { label: "Institutions", icon: Building2, href: "/institutions", match: (p) => p.startsWith("/institutions") },
+  {
+    label: "Applications",
+    icon: FileStack,
+    href: "/portal#applications",
+    match: (p) => p !== "/portal" && !p.startsWith("/portal/profile") && !isCatalogPath(p),
+  },
 ];
 
 // Thin ruby bar on the screen edge next to the active item. The offset matches
@@ -77,7 +89,7 @@ const accentBar = (offset: string) =>
   }`;
 
 type PortalNavProps = {
-  user: { name: string | null; email: string | null };
+  user: { name: string | null; email: string | null; image?: string | null };
   counsellor: PortalCounsellor | null;
 };
 
@@ -216,7 +228,7 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
           )}
         >
           <div className={cn("space-y-3", collapsed && "flex flex-col items-center")}>
-            <ProfileCard name={user.name} email={user.email} compact={collapsed} />
+            <ProfileCard name={user.name} email={user.email} image={user.image} compact={collapsed} />
 
             {collapsed ? (
               <button
@@ -323,8 +335,59 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
         </div>
       </aside>
 
-      {/* Bottom bar (phones and tablets): a shared component, also used on the public courses and institutions pages */}
-      <PortalBottomBar unread={unread} />
+      {/* Bottom bar (phones and tablets) */}
+      <nav
+        aria-label="Main"
+        className="fixed inset-x-0 bottom-0 z-30 flex h-[var(--portal-bottom-bar)] border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
+      >
+        {BOTTOM.map(({ label, icon: Icon, href, match }) => {
+          // while the chat page is open it is the current page, so nothing else looks selected
+          const active = !chatOpen && href && match ? match(pathname) : false;
+          return (
+            <Link
+              key={label}
+              href={href!}
+              aria-current={active ? "page" : undefined}
+              onClick={() => setChatOpen(false)}
+              className="flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium"
+            >
+              <span
+                className={cn(
+                  "grid h-8 w-16 place-items-center rounded-full transition",
+                  active ? "bg-ruby-100 text-ruby-700" : "text-neutral-500"
+                )}
+              >
+                <Icon size={20} />
+              </span>
+              <span className={active ? "text-ruby-700" : "text-neutral-500"}>{label}</span>
+            </Link>
+          );
+        })}
+
+        {/* Chat: the conversation as a full screen page that stops above this bar */}
+        <button
+          type="button"
+          onClick={() => setChatOpen(!chatOpen)}
+          aria-pressed={chatOpen}
+          aria-label={unread ? `Chat, ${unread} unread` : "Chat"}
+          className="flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium"
+        >
+          <span
+            className={cn(
+              "relative grid h-8 w-16 place-items-center rounded-full transition",
+              chatOpen ? "bg-ruby-100 text-ruby-700" : "text-neutral-500"
+            )}
+          >
+            <MessageCircle size={20} />
+            {unread > 0 && (
+              <span className="absolute right-3 top-0 grid min-w-4 place-items-center rounded-full bg-ruby-500 px-1 text-[10px] font-semibold leading-4 text-white">
+                {unread > 9 ? "9+" : unread}
+              </span>
+            )}
+          </span>
+          <span className={chatOpen ? "text-ruby-700" : "text-neutral-500"}>Chat</span>
+        </button>
+      </nav>
     </>
   );
 }
