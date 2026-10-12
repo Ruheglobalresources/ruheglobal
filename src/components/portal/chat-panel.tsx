@@ -9,7 +9,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { Check, CheckCheck, GripVertical, Loader2, MessageCircle, PanelRightClose, SendHorizontal, X } from "lucide-react";
 import { toast } from "sonner";
-import { loadChat, loadEarlier, markSeen, sendMessage, type ChatMessage, type ChatStaff } from "@/lib/chat-client";
+import { loadChat, loadEarlier, markSeen, sendMessage, type ChatMessage, type ChatStaff } from "@/lib/chatclient";
 import type { PortalCounsellor } from "@/lib/portal-counsellor";
 import { cn } from "@/lib/utils";
 import { CHAT_MAX, CHAT_MIN, getChatMax, usePortalShell } from "./portal-shell";
