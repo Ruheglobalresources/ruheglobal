@@ -25,7 +25,25 @@ export default async function PortalLayout({ children }: { children: React.React
     // only applicants are asked to set up a profile, not counselors or admins
     isApplicant ? getOnboardingState(session.user.id) : null,
   ]);
-  
+
+  // Forced onboarding: until an applicant finishes it, nothing else of the portal is
+  // rendered. The sidebar, chat and page content are not even sent to the browser.
+  // When the last step is saved, the gate refreshes and this layout renders the full
+  // portal at the same address, so a deep link (for example an apply link) is kept.
+  if (onboarding && !onboarding.completed) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Toaster richColors position="top-center" />
+        <header className="flex h-14 items-center border-b border-neutral-200 bg-white px-4 pt-[env(safe-area-inset-top)] sm:px-6">
+          <span className="font-display text-lg font-semibold tracking-tight text-ruby-600">
+            Ruhe<span className="text-ink"> Global Resources</span>
+          </span>
+        </header>
+        <OnboardingGate initial={onboarding.initial} />
+      </div>
+    );
+  }
+
   const user = {
     name: session.user.name ?? null,
     email: session.user.email ?? null,
@@ -35,9 +53,6 @@ export default async function PortalLayout({ children }: { children: React.React
   return (
     <PortalShell>
       <Toaster richColors position="top-center" />
-
-      {/* Short setup after sign-in: a Vaul drawer on phones, a dialog on desktop */}
-      {onboarding && !onboarding.completed && <OnboardingGate initial={onboarding.initial} />}
 
       {/* Top bar: phones and tablets only. On lg+ the fixed sidebar replaces it. */}
       <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-neutral-200 bg-white px-4 pt-[env(safe-area-inset-top)] lg:hidden">

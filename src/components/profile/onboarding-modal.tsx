@@ -1,15 +1,19 @@
 "use client";
 
 // src/components/profile/onboarding-modal.tsx
-// The short setup shown after sign-in, until the applicant finishes it.
+// The forced setup shown to applicants until they finish it.
 //   - phones: a Vaul bottom drawer, desktop: a dialog (both come from <Modal>)
 //   - 4 steps, each saved as soon as "Continue" is pressed, so leaving halfway keeps the answers
-//   - "Skip for now" (or closing it) hides it for the rest of this browser session
-//   - it stays out of the way on the profile page, where the same fields are already on screen
-import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+//   - it cannot be skipped or closed: the Modal is left permanently open (no setShowModal,
+//     no onClose), so Esc, outside click and drag down do nothing
+//   - the portal layout renders ONLY this gate until onboarding is finished, on every
+//     portal page including the profile page
+//   - "Sign out" is the only way out, so nobody is trapped
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { logout } from "@/actions/auth/logout";
 import { saveOnboardingStep } from "@/actions/profile";
 import { filledButton, outlinedButton } from "@/components/dashboard/styles";
 import { Modal } from "@/components/ui/modal";
@@ -21,7 +25,6 @@ import { SelectField, TextField } from "./fields";
 import { mapIssues, todayIso } from "./form-utils";
 import { SubjectPicker } from "./subject-picker";
 
-const SKIP_KEY = "rgr:onboarding-skipped";
 const TOTAL_STEPS = 4;
 
 const COPY = [
@@ -64,36 +67,14 @@ function payloadFor(step: number, v: OnboardingInitial): OnboardingStepInput {
 
 export function OnboardingGate({ initial }: { initial: OnboardingInitial }) {
   const router = useRouter();
-  const pathname = usePathname();
 
-  const [open, setOpen] = useState(false);
   const [finished, setFinished] = useState(false);
   const [step, setStep] = useState(1);
   const [values, setValues] = useState<OnboardingInitial>(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, setPending] = useState(false);
 
-  // Open after mount (the server cannot read sessionStorage), unless it was skipped this
-  // session, finished, or the person is already on the profile page.
-  useEffect(() => {
-    if (finished) return;
-    let skipped = false;
-    try {
-      skipped = sessionStorage.getItem(SKIP_KEY) === "1";
-    } catch {
-      // storage blocked: just show it
-    }
-    setOpen(!skipped && !pathname.startsWith("/portal/profile"));
-  }, [pathname, finished]);
-
-  const skip = () => {
-    try {
-      sessionStorage.setItem(SKIP_KEY, "1");
-    } catch {
-      // ignore
-    }
-    setOpen(false);
-  };
+  const busy = pending || finished;
 
   const set = <K extends keyof OnboardingInitial>(key: K) => (value: OnboardingInitial[K]) => {
     setValues((v) => ({ ...v, [key]: value }));
@@ -102,7 +83,7 @@ export function OnboardingGate({ initial }: { initial: OnboardingInitial }) {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pending) return;
+    if (busy) return;
 
     const payload = payloadFor(step, values);
     const parsed = OnboardingStepSchema.safeParse(payload);
@@ -125,8 +106,9 @@ export function OnboardingGate({ initial }: { initial: OnboardingInitial }) {
       return;
     }
 
+    // Last step saved. The layout stops rendering this gate once the refresh lands,
+    // and the full portal appears at the same address.
     setFinished(true);
-    setOpen(false);
     toast.success("You're all set. Your profile is saved.");
     router.refresh();
   };
@@ -135,7 +117,9 @@ export function OnboardingGate({ initial }: { initial: OnboardingInitial }) {
   const years = startYearOptions(5);
 
   return (
-    <Modal showModal={open} setShowModal={setOpen} onClose={skip} className="sm:max-w-md">
+    // No setShowModal and no onClose on purpose: the modal stays open and cannot be dismissed.
+    // [&>button]:hidden hides the dialog's built in close button (a direct child of the content).
+    <Modal showModal className="sm:max-w-md [&>button]:hidden">
       <form
         onSubmit={onSubmit}
         className="max-h-[88dvh] overflow-y-auto px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-1 sm:max-h-[80dvh] sm:p-0"
@@ -193,26 +177,26 @@ export function OnboardingGate({ initial }: { initial: OnboardingInitial }) {
                 setErrors({});
                 setStep(step - 1);
               }}
-              disabled={pending}
+              disabled={busy}
               aria-label="Back"
               className={cn(outlinedButton, "w-11 shrink-0 px-0")}
             >
               <ArrowLeft size={18} />
             </button>
           )}
-          <button type="submit" disabled={pending} className={cn(filledButton, "flex-1 disabled:opacity-60")}>
-            {pending && <Loader2 size={16} className="animate-spin" />}
+          <button type="submit" disabled={busy} className={cn(filledButton, "flex-1 disabled:opacity-60")}>
+            {busy && <Loader2 size={16} className="animate-spin" />}
             {step === TOTAL_STEPS ? "Finish" : "Continue"}
           </button>
         </div>
 
         <button
           type="button"
-          onClick={skip}
-          disabled={pending}
-          className="mx-auto mt-3 block rounded-full px-4 py-2 text-sm font-medium text-ink/55 transition hover:bg-ink/5 hover:text-ink"
+          onClick={() => logout()}
+          disabled={busy}
+          className="mx-auto mt-3 block rounded-full px-4 py-2 text-sm font-medium text-ink/55 transition hover:bg-ink/5 hover:text-ink disabled:opacity-60"
         >
-          Skip for now
+          Sign out
         </button>
       </form>
     </Modal>
