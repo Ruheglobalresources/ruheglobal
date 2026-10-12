@@ -5,7 +5,7 @@
 //   - On desktop the door in the navbar opens and closes it. On phones it is the Chat tab of the bottom bar.
 //   - Move the cursor onto its left border and drag to make it wider or narrower.
 //     The border also works from the keyboard (arrow keys) and resets on double-click.
-//   - On phones it is its own full page at /portal/chat (back arrow in the header, no resizing there).
+//   - On phones it is its own full page at /portal/chat, above the bottom bar (back arrow in the header, no resizing there).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { ArrowLeft, Check, CheckCheck, GripVertical, Loader2, MessageCircle, SendHorizontal } from "lucide-react";
 import { toast } from "sonner";
@@ -284,8 +284,8 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
         aria-label="Chat with your counsellor"
         inert={!chatOpen}
         className={cn(
-          // phones: a full page above everything (z-50, covers the bottom bar). lg: the right half of the frame, so its header row lines up with the navbar
-          "fixed inset-y-0 right-0 z-50 flex h-dvh w-full flex-col bg-white lg:z-20 lg:h-auto lg:w-[var(--portal-chat-width)] lg:bg-[var(--portal-frame)]",
+          // phones: a full page that stops above the bottom bar, so the bar stays visible. lg: the right half of the frame, so its header row lines up with the navbar
+          "fixed bottom-[var(--portal-bottom-bar)] right-0 top-0 z-40 flex w-full flex-col bg-white lg:bottom-0 lg:z-20 lg:w-[var(--portal-chat-width)] lg:bg-[var(--portal-frame)]",
           chatOpen ? "translate-x-0" : "invisible translate-x-full",
           ready && !dragging && "lg:transition-[translate,visibility] lg:duration-200 lg:ease-out"
         )}
@@ -439,7 +439,7 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
         </div>
 
         {/* Composer */}
-        <div className="shrink-0 border-t border-neutral-100 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:border-t-0">
+        <div className="shrink-0 border-t border-neutral-100 p-3 lg:border-t-0 lg:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="flex items-end gap-2 rounded-3xl border border-neutral-300 bg-white py-1.5 pl-4 pr-1.5 transition focus-within:border-ruby-500 focus-within:ring-2 focus-within:ring-ruby-500/20">
             <textarea
               ref={textareaRef}

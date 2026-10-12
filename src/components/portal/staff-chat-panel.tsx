@@ -2,7 +2,7 @@
 
 // src/components/portal/staff-chat-panel.tsx
 // The chat bar for counselors and admins. Same right sidebar as the applicant's chat (opened from the
-// navbar door, drag to resize, its own full page at /portal/chat on phones), but it opens on a list of conversations.
+// navbar door, drag to resize, its own full page at /portal/chat on phones, above the bottom bar), but it opens on a list of conversations.
 // Pick one to read it and reply; the arrow goes back to the list.
 //   - applicants only ever see ONE conversation (chat-panel.tsx)
 //   - staff see many: their own, the ones of their applicants, and (admins) the unassigned ones
@@ -319,7 +319,7 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
         aria-label="Conversations"
         inert={!chatOpen}
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex h-dvh w-full flex-col bg-white lg:z-20 lg:h-auto lg:w-[var(--portal-chat-width)] lg:bg-[var(--portal-frame)]",
+          "fixed bottom-[var(--portal-bottom-bar)] right-0 top-0 z-40 flex w-full flex-col bg-white lg:bottom-0 lg:z-20 lg:w-[var(--portal-chat-width)] lg:bg-[var(--portal-frame)]",
           chatOpen ? "translate-x-0" : "invisible translate-x-full",
           ready && !dragging && "lg:transition-[translate,visibility] lg:duration-200 lg:ease-out"
         )}
@@ -568,7 +568,7 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
             </div>
 
             {/* Composer */}
-            <div className="shrink-0 border-t border-neutral-100 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:border-t-0">
+            <div className="shrink-0 border-t border-neutral-100 p-3 lg:border-t-0 lg:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
               {closed ? (
                 <p className="px-2 py-2 text-center text-sm text-neutral-500">This conversation is closed.</p>
               ) : (

@@ -20,6 +20,7 @@ import {
   type ReactNode,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { CHAT_PAGE, PORTAL_FLAG_KEY } from "@/lib/portal-paths";
 import { cn } from "@/lib/utils";
 
 export const LEFT_EXPANDED = 248; // px (was 288)
@@ -39,9 +40,6 @@ const KEY_OPEN = "portal:chat-open";
 // person has actually resized the chat.
 const KEY_WIDTH = "portal:chat-width-v2";
 const KEY_WIDTH_OLD = "portal:chat-width";
-
-// On phones the chat is its own page at this route (opened from the bottom bar).
-export const CHAT_PAGE = "/portal/chat";
 
 // The sidebars only sit beside the page from the lg breakpoint up.
 const DESKTOP_QUERY = "(min-width: 1024px)";
@@ -117,6 +115,13 @@ export function PortalShell({ children }: { children: ReactNode }) {
   // also keeps animations off for this first jump.
   useEffect(() => {
     const desktop = window.matchMedia(DESKTOP_QUERY).matches;
+    // Tell the public /courses and /institutions pages that this person came from the portal,
+    // so they keep showing the portal's bottom bar (see portal-bottom-bar-gate.tsx).
+    try {
+      sessionStorage.setItem(PORTAL_FLAG_KEY, "1");
+    } catch {
+      // storage blocked: those pages just show without the bar
+    }
     try {
       const savedLeft = localStorage.getItem(KEY_LEFT);
       const savedOpen = localStorage.getItem(KEY_OPEN);
@@ -189,6 +194,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
     "--portal-right": `${chatOpen ? chatWidth : 0}px`,
     "--portal-chat-width": `${chatWidth}px`,
     "--portal-frame": FRAME_COLOR,
+    // height of the phone bottom bar (portal-bottom-bar.tsx); the chat page stops above it
     "--portal-bottom-bar": "calc(4.5rem + env(safe-area-inset-bottom))",
   } as CSSProperties;
 
@@ -259,10 +265,12 @@ export function OpenChatButton({
   className,
   children,
   onClick,
+  label,
 }: {
   className?: string;
   children: ReactNode;
   onClick?: () => void;
+  label?: string;
 }) {
   const openChat = useOpenChat();
 
@@ -276,6 +284,8 @@ export function OpenChatButton({
       type="button"
       onClick={handleClick}
       className={className}
+      aria-label={label}
+      title={label}
     >
       {children}
     </button>

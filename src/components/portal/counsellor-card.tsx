@@ -1,6 +1,6 @@
 // src/components/portal/counsellor-card.tsx
 import Link from "next/link";
-import { Headset, MessageCircle } from "lucide-react";
+import { Headset, MessagesSquare } from "lucide-react";
 import {
   elevation1,
   filledButton,
@@ -22,37 +22,39 @@ export function CounsellorCard({
   return (
     <div
       className={cn(
-        "rounded-3xl border border-neutral-200 bg-white p-4",
+        "rounded-2xl border border-neutral-200 bg-white p-3",
         elevation1,
         className
       )}
     >
       {counsellor ? (
         <>
-        <div className="flex items-center gap-3">
-          {counsellor.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={counsellor.image}
-              alt=""
-              className="size-12 shrink-0 rounded-full object-cover"
-            />
-          ) : (
-            <span className="grid size-12 shrink-0 place-items-center rounded-full bg-ruby-50 text-base font-semibold text-ruby-700">
-              {(counsellor.name ?? "C").charAt(0).toUpperCase()}
-            </span>
-          )}
+          <div className="flex items-center gap-2.5">
+            {counsellor.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={counsellor.image}
+                alt=""
+                className="size-10 shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ruby-50 text-sm font-semibold text-ruby-700">
+                {(counsellor.name ?? "C").charAt(0).toUpperCase()}
+              </span>
+            )}
 
-          <div className="min-w-0">
-            <p className="truncate font-semibold text-ink">
-              {counsellor.name ?? "Your counsellor"}
-            </p>
-            <p className="text-sm text-neutral-500">Counsellor</p>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-ink">
+                {counsellor.name ?? "Your counsellor"}
+              </p>
+              <p className="text-xs text-neutral-500">Counsellor</p>
+            </div>
           </div>
-        </div>
-        {counsellor.bio && (
-          <p className="mt-3 line-clamp-4 text-sm leading-relaxed text-neutral-600">{counsellor.bio}</p>
-        )}
+          {counsellor.bio && (
+            <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-neutral-600">
+              {counsellor.bio}
+            </p>
+          )}
         </>
       ) : (
         <p className="text-sm leading-relaxed text-neutral-600">
@@ -61,22 +63,24 @@ export function CounsellorCard({
         </p>
       )}
 
-      <OpenChatButton
-        className={cn(outlinedButton, "mt-4 w-full")}
-        onClick={onNavigate}
-      >
-        <MessageCircle size={18} />
-        Message {counsellor?.name ? "counsellor" : "us"}
-      </OpenChatButton>
+      <div className="mt-3 flex items-center gap-2">
+        <Link
+          href="/contact"
+          onClick={onNavigate}
+          className={cn(filledButton, "min-w-0 flex-1")}
+        >
+          <Headset size={18} />
+          Book a Session
+        </Link>
 
-      <Link
-        href="/contact"
-        onClick={onNavigate}
-        className={cn(filledButton, "mt-2 w-full")}
-      >
-        <Headset size={18} />
-        Book a Session
-      </Link>
+        <OpenChatButton
+          className={cn(outlinedButton, "size-10 shrink-0 p-0")}
+          onClick={onNavigate}
+          label={counsellor?.name ? "Message counsellor" : "Message us"}
+        >
+          <MessagesSquare size={18} />
+        </OpenChatButton>
+      </div>
     </div>
   );
 }
