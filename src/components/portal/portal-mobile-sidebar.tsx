@@ -12,6 +12,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import type { PortalCounsellor } from "@/lib/portal-counsellor";
+import { PortalBrand } from "./portal-brand";
 import { PortalSidebarContent } from "./portal-sidebar-content";
 
 type PortalMobileSidebarProps = {
@@ -47,9 +48,11 @@ export function PortalMobileSidebar({ user, counsellor }: PortalMobileSidebarPro
         side="left"
         className="h-dvh w-[88%] max-w-sm gap-0 border-white/10 bg-ink p-0 sm:max-w-sm lg:hidden [&>button]:text-white/70 [&>button]:hover:text-white"
       >
-        <SheetHeader className="shrink-0 border-b border-white/10 py-4 pl-4 pr-12">
-          <SheetTitle className="font-display text-xl font-semibold tracking-tight text-ruby-400">
-            Ruhe<span className="text-white"> Global Resources</span>
+        <SheetHeader className="shrink-0 border-b border-white/10 py-3 pl-4 pr-12">
+          <SheetTitle asChild>
+            <div>
+              <PortalBrand tone="dark" onClick={() => setOpen(false)} />
+            </div>
           </SheetTitle>
           <SheetDescription className="sr-only">Portal navigation</SheetDescription>
         </SheetHeader>

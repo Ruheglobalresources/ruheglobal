@@ -4,9 +4,10 @@
 // Desktop: ONE frame made of the sidebar and the top navbar together (like the
 // Paystack dashboard). Its colour is --portal-frame, set once in portal-shell.tsx.
 // The navbar is not a separate bar stacked on the sidebar: its first cell
-// is the sidebar's own header (the logo), so the logo row, the doors and
-// Courses / Institutions all sit on one continuous strip, and the sidebar menu hangs
-// from it. Each sidebar has exactly one door, and it sits outside the bar:
+// is the sidebar's own header (the Ruhe Global Resources logo lockup), so the logo
+// row, the doors and Courses / Institutions all sit on one continuous strip, and
+// the sidebar menu hangs from it. Each sidebar has exactly one door, and it sits
+// outside the bar:
 //   - menu door: right after the sidebar, in the navbar
 //   - chat door: at the right end of the navbar, next to the chat bar
 // Phones: a bottom bar.
@@ -39,6 +40,7 @@ import {
 import type { PortalCounsellor } from "@/lib/portal-counsellor";
 import { cn } from "@/lib/utils";
 import { CounsellorCard } from "./counsellor-card";
+import { PortalBrand } from "./portal-brand";
 import { LEFT_EXPANDED, usePortalShell } from "./portal-shell";
 import { ProfileCard } from "./profile-card";
 
@@ -105,7 +107,7 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
   const pathname = usePathname();
   const { ready, dragging, leftCollapsed: userCollapsed, toggleLeft, chatOpen, setChatOpen, unread } = usePortalShell();
 
-  // Hover-peek: only when the user has closed the panel. Hovering the icon rail
+  // Hover peek: only when the user has closed the panel. Hovering the icon rail
   // shows the full sidebar over the page; leaving it closes it again. If the
   // user has the panel open, hover does nothing. `collapsed` is what gets drawn.
   const [hovered, setHovered] = useState(false);
@@ -136,23 +138,8 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
           )}
           style={{ width: "var(--portal-left)" }}
         >
-          {userCollapsed ? (
-            <Link
-              href="/portal"
-              aria-label="Ruhe Global Resources"
-              title="Ruhe Global Resources"
-              className="grid size-10 shrink-0 place-items-center rounded-xl bg-ruby-500 font-display text-lg font-semibold text-white outline-none transition hover:bg-ruby-600 focus-visible:ring-2 focus-visible:ring-ruby-500/60"
-            >
-              R
-            </Link>
-          ) : (
-            <Link
-              href="/portal"
-              className="min-w-0 truncate pl-1 font-display text-lg font-semibold tracking-tight text-ruby-600 outline-none focus-visible:ring-2 focus-visible:ring-ruby-500/60"
-            >
-              Ruhe<span className="text-ink"> Global Resources</span>
-            </Link>
-          )}
+          {/* Logo image only when the rail is collapsed, full lockup when expanded */}
+          <PortalBrand showText={!userCollapsed} />
         </div>
 
         {/* Menu door: the only one for the menu sidebar */}
