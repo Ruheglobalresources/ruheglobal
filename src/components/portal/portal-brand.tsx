@@ -33,7 +33,7 @@ export function PortalBrand({
       )}
     >
       <Image
-        src="/logo.svg"
+        src="/logo.png"
         alt=""
         width={44}
         height={44}
@@ -45,7 +45,7 @@ export function PortalBrand({
         <span className="flex min-w-0 flex-col justify-center leading-none">
           <span
             className={cn(
-              "font-display text-[24px] font-extrabold tracking-wide",
+              "font-display text-[20px] md:text-[24px] font-extrabold tracking-wide",
               tone === "dark" ? "text-ruby-400" : "text-ruby"
             )}
           >
@@ -53,8 +53,8 @@ export function PortalBrand({
           </span>
           <span
             className={cn(
-              "mt-1 truncate text-[10px] font-medium tracking-[0.18em]",
-              tone === "dark" ? "text-white/80" : "text-ruby/90"
+              "mt-1 truncate text-[13px] font-medium tracking-[0.18em]",
+              tone === "dark" ? "text-white/80" : "text-gray-600"
             )}
           >
             Global Resources

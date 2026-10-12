@@ -10,6 +10,7 @@ import { StaffChatPanel } from "@/components/portal/staff-chat-panel";
 import { PortalMain, PortalShell } from "@/components/portal/portal-shell";
 import { PortalNav } from "@/components/portal/portal-nav";
 import { PortalMobileSidebar } from "@/components/portal/portal-mobile-sidebar";
+import { PortalBrand } from "@/components/portal/portal-brand";
 import { UserMenu } from "@/components/portal/user-menu";
 import { getPortalCounsellor } from "@/lib/portal-counsellor";
 import { getOnboardingState } from "@/lib/user-profile";
@@ -35,9 +36,7 @@ export default async function PortalLayout({ children }: { children: React.React
       <div className="min-h-screen bg-white">
         <Toaster richColors position="top-center" />
         <header className="flex h-14 items-center border-b border-neutral-200 bg-white px-4 pt-[env(safe-area-inset-top)] sm:px-6">
-          <span className="font-display text-lg font-semibold tracking-tight text-ruby-600">
-            Ruhe<span className="text-ink"> Global Resources</span>
-          </span>
+          <PortalBrand tone="dark"/>
         </header>
         <OnboardingGate initial={onboarding.initial} />
       </div>
@@ -54,16 +53,12 @@ export default async function PortalLayout({ children }: { children: React.React
     <PortalShell>
       <Toaster richColors position="top-center" />
 
-      {/* Top bar: phones and tablets only. On lg+ the fixed sidebar replaces it. */}
+      {/* Top bar: phones and tablets only. On lg+ the fixed sidebar replaces it.
+          Brand on the left, then search, user menu, and the menu trigger at the far right. */}
       <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-neutral-200 bg-white px-4 pt-[env(safe-area-inset-top)] lg:hidden">
-        <PortalMobileSidebar user={user} counsellor={counsellor} />
+        <PortalBrand />
 
-        <Link
-          href="/portal"
-          className="min-w-0 flex-1 truncate font-display text-lg font-semibold tracking-tight text-ruby-600"
-        >
-          Ruhe<span className="text-ink"> Global Resources</span>
-        </Link>
+        <div className="flex-1" />
 
         <Link
           href="/courses"
@@ -74,6 +69,8 @@ export default async function PortalLayout({ children }: { children: React.React
         </Link>
 
         <UserMenu name={user.name} email={user.email} image={user.image} />
+
+        <PortalMobileSidebar user={user} counsellor={counsellor} />
       </header>
 
       <PortalNav user={user} counsellor={counsellor} />
