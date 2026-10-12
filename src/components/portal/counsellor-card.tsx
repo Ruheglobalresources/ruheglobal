@@ -76,7 +76,6 @@ export function CounsellorCard({
         <OpenChatButton
           className={cn(outlinedButton, "size-10 shrink-0 p-0")}
           onClick={onNavigate}
-          label={counsellor?.name ? "Message counsellor" : "Message us"}
         >
           <MessagesSquare size={18} />
         </OpenChatButton>

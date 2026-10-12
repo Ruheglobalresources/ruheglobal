@@ -265,12 +265,10 @@ export function OpenChatButton({
   className,
   children,
   onClick,
-  label,
 }: {
   className?: string;
   children: ReactNode;
   onClick?: () => void;
-  label?: string;
 }) {
   const openChat = useOpenChat();
 
@@ -284,8 +282,6 @@ export function OpenChatButton({
       type="button"
       onClick={handleClick}
       className={className}
-      aria-label={label}
-      title={label}
     >
       {children}
     </button>
