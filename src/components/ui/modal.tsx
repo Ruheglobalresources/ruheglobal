@@ -46,12 +46,14 @@ export const Modal = ({
             closeModal({ dragged: true })
           }
         }}
+        noBodyStyles={false}
+        repositionInputs={false}
       >
         <Drawer.Overlay className="fixed inset-0 z-40 bg-black/40" />
         <Drawer.Portal>
           <Drawer.Content
             className={cn(
-              "fixed !max-w-none bottom-0 left-0 right-0 z-50 mt-24 rounded-t-[10px] border-t border-neutral-200 bg-white/95 backdrop-blur-md",
+              "fixed !max-w-none bottom-0 left-0 right-0 z-50 mt-24 rounded-t-[20px] border-t border-neutral-200 bg-white/95 backdrop-blur-md",
               className
             )}
           >
@@ -76,10 +78,15 @@ export const Modal = ({
       }}
     >
       <DialogTitle className="sr-only">Dialog</DialogTitle>
-        <DialogContent  className={cn(
-    "bg-white/95 shadow-lg border border-neutral-200 backdrop-blur-md",
-    className
-  )}> {children} </DialogContent>
+      <DialogContent
+        className={cn(
+          "bg-white/95 shadow-lg border border-neutral-200 backdrop-blur-md",
+          className
+        )}
+      >
+        {" "}
+        {children}{" "}
+      </DialogContent>
     </Dialog>
   )
 }
