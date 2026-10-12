@@ -4,9 +4,14 @@
 // /api/v1/*. The Next.js site, the Expo app and the ChatGPT Action all call it.
 // It never clashes with /api/auth or /api/schools/search.
 //
-// DATA FLOW (read only, nothing here writes to the database):
+// DATA FLOW:
 //   request -> Hono route below -> db.school.* (Prisma, @/lib/db) -> Postgres
 //   -> row -> serializer -> JSON response
+//
+// The catalog routes are public and read only. The chat routes (/chat/*) are the
+// exception: they need a signed in user (session cookie on the website, Bearer
+// token in the Expo app) and they write messages. They are hidden from the OpenAPI
+// document.
 //
 // ChatGPT reads /api/v1/openapi.json (OpenAPI 3.1). Admin stays on the web app
 // and server actions and is intentionally not exposed here.
@@ -20,9 +25,17 @@ import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { COUNTRIES } from "@/constants/schools";
+import { getApiUserId } from "@/lib/api-auth";
+import { getChatState, getEarlierMessages, markConversationSeen, sendChatMessage } from "@/lib/chat-service";
 import {
   ApiCatalogQuerySchema,
   ApiCatalogSummarySchema,
+  ApiChatEarlierQuerySchema,
+  ApiChatEarlierSchema,
+  ApiChatSeenBodySchema,
+  ApiChatSendBodySchema,
+  ApiChatSendResultSchema,
+  ApiChatStateSchema,
   ApiCountrySchema,
   ApiCourseCardSchema,
   ApiCourseQuerySchema,
@@ -982,6 +995,119 @@ catalogRoute.openapi(
 );
 
 // ─────────────────────────────────────────────────────────────────────────
+// CHAT: the applicant's conversation with their counsellor (signed in only)
+// The first routes that need a login, and the first that write. The website calls
+// them with its session cookie, the Expo app with Authorization: Bearer <token>
+// (see lib/api-auth.ts). The rules live in lib/chat-service.ts, shared with the
+// website's server actions. They are hidden from the OpenAPI document on purpose,
+// so the ChatGPT Action only ever sees the public catalog.
+// ─────────────────────────────────────────────────────────────────────────
+
+const chatRoute = new OpenAPIHono<{ Variables: { userId: string } }>();
+
+chatRoute.use("*", async (c, next) => {
+  const userId = await getApiUserId(c.req.header("authorization"));
+  if (!userId) {
+    return c.json({ error: { code: "UNAUTHORIZED", message: "Sign in to use the chat" } }, 401);
+  }
+  c.set("userId", userId);
+  // personal data: never cached by the edge, a browser or the app
+  c.header("Cache-Control", "no-store");
+  await next();
+});
+
+// GET /api/v1/chat/state
+chatRoute.openapi(
+  createRoute({
+    method: "get",
+    path: "/state",
+    operationId: "getChatState",
+    tags: ["Chat"],
+    hide: true,
+    summary: "The signed in applicant's open conversation",
+    responses: {
+      200: { description: "Latest messages and read receipts", content: { "application/json": { schema: ApiChatStateSchema } } },
+      401: { description: "Not signed in", content: { "application/json": { schema: ApiErrorSchema } } },
+    },
+  }),
+  async (c) => c.json(await getChatState(c.get("userId")), 200)
+);
+
+// GET /api/v1/chat/earlier
+chatRoute.openapi(
+  createRoute({
+    method: "get",
+    path: "/earlier",
+    operationId: "getEarlierChatMessages",
+    tags: ["Chat"],
+    hide: true,
+    summary: "Older messages of the conversation",
+    request: { query: ApiChatEarlierQuerySchema },
+    responses: {
+      200: { description: "A page of older messages", content: { "application/json": { schema: ApiChatEarlierSchema } } },
+      401: { description: "Not signed in", content: { "application/json": { schema: ApiErrorSchema } } },
+    },
+  }),
+  async (c) => {
+    const { conversationId, before } = c.req.valid("query");
+    return c.json(await getEarlierMessages(c.get("userId"), conversationId, before), 200);
+  }
+);
+
+// POST /api/v1/chat/seen
+chatRoute.openapi(
+  createRoute({
+    method: "post",
+    path: "/seen",
+    operationId: "markChatSeen",
+    tags: ["Chat"],
+    hide: true,
+    summary: "Mark what the counsellor wrote as read",
+    request: { body: { required: true, content: { "application/json": { schema: ApiChatSeenBodySchema } } } },
+    responses: {
+      200: { description: "Done", content: { "application/json": { schema: z.object({ ok: z.literal(true) }) } } },
+      401: { description: "Not signed in", content: { "application/json": { schema: ApiErrorSchema } } },
+    },
+  }),
+  async (c) => {
+    const { conversationId } = c.req.valid("json");
+    await markConversationSeen(c.get("userId"), conversationId);
+    return c.json({ ok: true as const }, 200);
+  }
+);
+
+// POST /api/v1/chat/messages
+chatRoute.openapi(
+  createRoute({
+    method: "post",
+    path: "/messages",
+    operationId: "sendChatMessage",
+    tags: ["Chat"],
+    hide: true,
+    summary: "Send a message to the counsellor",
+    description:
+      "Leave conversationId out for the first message: the conversation is created then, with the counsellor assigned to the account on it.",
+    request: { body: { required: true, content: { "application/json": { schema: ApiChatSendBodySchema } } } },
+    responses: {
+      201: { description: "The saved message", content: { "application/json": { schema: ApiChatSendResultSchema } } },
+      400: { description: "Empty or too long", content: { "application/json": { schema: ApiErrorSchema } } },
+      401: { description: "Not signed in", content: { "application/json": { schema: ApiErrorSchema } } },
+      404: { description: "Conversation not found", content: { "application/json": { schema: ApiErrorSchema } } },
+    },
+  }),
+  async (c) => {
+    const { conversationId, body } = c.req.valid("json");
+    const result = await sendChatMessage(c.get("userId"), { conversationId, body });
+
+    if (!result.success) {
+      const status = result.code === "NOT_FOUND" ? 404 : 400;
+      return c.json({ error: { code: result.code, message: result.error } }, status);
+    }
+    return c.json({ conversationId: result.conversationId, message: result.message }, 201);
+  }
+);
+
+// ─────────────────────────────────────────────────────────────────────────
 // APP: CORS, error shape, health, OpenAPI, docs
 // ─────────────────────────────────────────────────────────────────────────
 
@@ -1015,6 +1141,7 @@ app.route("/schools", schoolsRoute);
 app.route("/institutions", institutionsRoute);
 app.route("/courses", coursesRoute);
 app.route("/catalog", catalogRoute);
+app.route("/chat", chatRoute);
 
 // OpenAPI 3.1 document. Point a ChatGPT Action at this URL.
 app.doc31("/openapi.json", {

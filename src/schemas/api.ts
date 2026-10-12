@@ -333,3 +333,52 @@ export const ApiCourseQuerySchema = ApiCatalogQuerySchema.extend({
 export const ApiInstitutionSlugParamSchema = z.object({
   slug: z.string().openapi({ example: "conestoga-college" }),
 });
+
+// ─────────────────────────────────────────────────────────────────────────
+// CHAT (signed in applicants only: see the chat section of the API route)
+// ─────────────────────────────────────────────────────────────────────────
+
+export const ApiChatMessageSchema = z
+  .object({
+    id: z.string(),
+    body: z.string().nullable(),
+    fileUrl: z.string().nullable().openapi({ description: "Link to an image or document sent with the message" }),
+    createdAt: z.string().openapi({ description: "ISO 8601 time the message was sent" }),
+    fromMe: z.boolean().openapi({ description: "true when the signed in user wrote it" }),
+    seenByMe: z.boolean(),
+    seenByOther: z.boolean().openapi({ description: "true once the other side has read it" }),
+  })
+  .openapi("ChatMessage");
+
+export const ApiChatStaffSchema = z
+  .object({ name: z.string().nullable(), image: z.string().nullable() })
+  .openapi("ChatStaff");
+
+export const ApiChatStateSchema = z
+  .object({
+    conversationId: z.string().nullable().openapi({ description: "null until the first message is sent" }),
+    staff: ApiChatStaffSchema.nullable().openapi({ description: "The counsellor on the conversation, if any" }),
+    messages: z.array(ApiChatMessageSchema).openapi({ description: "The latest messages, oldest first" }),
+    hasMore: z.boolean().openapi({ description: "true when older messages can be loaded with /chat/earlier" }),
+  })
+  .openapi("ChatState");
+
+export const ApiChatEarlierQuerySchema = z.object({
+  conversationId: z.string().min(1),
+  before: z.string().min(1).openapi({ description: "createdAt of the oldest message already shown" }),
+});
+
+export const ApiChatEarlierSchema = z
+  .object({ messages: z.array(ApiChatMessageSchema), hasMore: z.boolean() })
+  .openapi("ChatEarlier");
+
+export const ApiChatSeenBodySchema = z.object({ conversationId: z.string().min(1) });
+
+export const ApiChatSendBodySchema = z.object({
+  conversationId: z.string().min(1).nullable().optional().openapi({ description: "Leave out or null for the first message" }),
+  body: z.string().openapi({ description: "The message, up to 2000 characters" }),
+});
+
+export const ApiChatSendResultSchema = z
+  .object({ conversationId: z.string(), message: ApiChatMessageSchema })
+  .openapi("ChatSendResult");

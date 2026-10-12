@@ -338,16 +338,18 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
       {/* Bottom bar (phones and tablets) */}
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-30 flex border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 flex h-[var(--portal-bottom-bar)] border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
       >
         {BOTTOM.map(({ label, icon: Icon, href, match }) => {
-          const active = href && match ? match(pathname) : false;
+          // while the chat page is open it is the current page, so nothing else looks selected
+          const active = !chatOpen && href && match ? match(pathname) : false;
           return (
             <Link
               key={label}
               href={href!}
               aria-current={active ? "page" : undefined}
-              className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium"
+              onClick={() => setChatOpen(false)}
+              className="flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium"
             >
               <span
                 className={cn(
@@ -361,6 +363,30 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
             </Link>
           );
         })}
+
+        {/* Chat: the conversation as a full screen page that stops above this bar */}
+        <button
+          type="button"
+          onClick={() => setChatOpen(!chatOpen)}
+          aria-pressed={chatOpen}
+          aria-label={unread ? `Chat, ${unread} unread` : "Chat"}
+          className="flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium"
+        >
+          <span
+            className={cn(
+              "relative grid h-8 w-16 place-items-center rounded-full transition",
+              chatOpen ? "bg-ruby-100 text-ruby-700" : "text-neutral-500"
+            )}
+          >
+            <MessageCircle size={20} />
+            {unread > 0 && (
+              <span className="absolute right-3 top-0 grid min-w-4 place-items-center rounded-full bg-ruby-500 px-1 text-[10px] font-semibold leading-4 text-white">
+                {unread > 9 ? "9+" : unread}
+              </span>
+            )}
+          </span>
+          <span className={chatOpen ? "text-ruby-700" : "text-neutral-500"}>Chat</span>
+        </button>
       </nav>
     </>
   );

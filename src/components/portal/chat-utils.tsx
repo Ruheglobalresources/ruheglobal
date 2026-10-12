@@ -1,6 +1,6 @@
 // src/components/portal/chat-utils.tsx
 // Small helpers shared by the staff chat panel.
-import type { ChatMessage } from "@/actions/chat";
+import type { ChatMessage } from "@/lib/chat-service";
 import { cn } from "@/lib/utils";
 
 // Union by id, oldest first. Fresh copies win so read receipts update.

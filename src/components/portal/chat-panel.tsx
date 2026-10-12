@@ -2,14 +2,14 @@
 
 // src/components/portal/chat-panel.tsx
 // The chat with your counsellor, docked as a right sidebar.
-//   - Collapse it with the button in its header; a tab on the right edge brings it back.
+//   - On desktop the door in the navbar opens and closes it. On phones it is the Chat tab of the bottom bar.
 //   - Move the cursor onto its left border and drag to make it wider or narrower.
 //     The border also works from the keyboard (arrow keys) and resets on double-click.
 //   - On phones it opens full-screen instead (no resizing there).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { Check, CheckCheck, GripVertical, Loader2, MessageCircle, PanelRightClose, SendHorizontal, X } from "lucide-react";
 import { toast } from "sonner";
-import { loadChat, loadEarlier, markSeen, sendMessage, type ChatMessage, type ChatStaff } from "@/actions/chat";
+import { loadChat, loadEarlier, markSeen, sendMessage, type ChatMessage, type ChatStaff } from "@/lib/chat-client";
 import type { PortalCounsellor } from "@/lib/portal-counsellor";
 import { cn } from "@/lib/utils";
 import { CHAT_MAX, CHAT_MIN, getChatMax, usePortalShell } from "./portal-shell";
@@ -64,7 +64,6 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
     resetChatWidth,
     dragging,
     setDragging,
-    unread,
     setUnread,
   } = usePortalShell();
 
@@ -281,34 +280,12 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
 
   return (
     <>
-      {/* Tab that brings the chat back. A round button above the bottom bar on phones. */}
-      {!chatOpen && (
-        <button
-          type="button"
-          onClick={() => setChatOpen(true)}
-          aria-label={unread ? `Open chat, ${unread} unread` : "Open chat"}
-          title="Chat with your counsellor"
-          className={cn(
-            "fixed z-30 grid place-items-center bg-ruby-500 text-white shadow-lg outline-none transition hover:bg-ruby-600 focus-visible:ring-2 focus-visible:ring-ruby-500/50 focus-visible:ring-offset-2",
-            "bottom-20 right-4 size-14 rounded-full lg:hidden",
-            "lg:bottom-auto lg:right-0 lg:top-1/2 lg:h-14 lg:w-11 lg:-translate-y-1/2 lg:rounded-l-2xl lg:rounded-r-none lg:shadow-md"
-          )}
-        >
-          <MessageCircle size={22} />
-          {unread > 0 && (
-            <span className="absolute -left-1 -top-1 grid min-w-5 place-items-center rounded-full border-2 border-white bg-ink px-1 text-[11px] font-semibold leading-4 text-white">
-              {unread > 9 ? "9+" : unread}
-            </span>
-          )}
-        </button>
-      )}
-
       <aside
         aria-label="Chat with your counsellor"
         inert={!chatOpen}
         className={cn(
           // lg:top-0 + lg:h-14 header: on desktop the chat is the right half of the same frame, so its header row lines up with the navbar
-          "fixed bottom-0 right-0 top-16 z-40 flex w-full flex-col border-l border-neutral-200 bg-white lg:top-0 lg:z-20 lg:w-[var(--portal-chat-width)] lg:border-l-0 lg:bg-[var(--portal-frame)]",
+          "fixed bottom-[var(--portal-bottom-bar)] right-0 top-16 z-40 flex w-full flex-col border-l border-neutral-200 bg-white lg:bottom-0 lg:top-0 lg:z-20 lg:w-[var(--portal-chat-width)] lg:border-l-0 lg:bg-[var(--portal-frame)]",
           chatOpen ? "translate-x-0" : "invisible translate-x-full",
           ready && !dragging && "transition-[translate,visibility] duration-200 ease-out"
         )}
@@ -464,7 +441,7 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
         </div>
 
         {/* Composer */}
-        <div className="shrink-0 border-t border-neutral-100 p-3 lg:border-t-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <div className="shrink-0 border-t border-neutral-100 p-3 lg:border-t-0 lg:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="flex items-end gap-2 rounded-3xl border border-neutral-300 bg-white py-1.5 pl-4 pr-1.5 transition focus-within:border-ruby-500 focus-within:ring-2 focus-within:ring-ruby-500/20">
             <textarea
               ref={textareaRef}

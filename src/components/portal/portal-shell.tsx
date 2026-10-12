@@ -15,6 +15,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
@@ -126,6 +127,15 @@ export function PortalShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // On phones the chat is a full screen page of the bottom bar, so going to another page leaves it.
+  const pathname = usePathname();
+  const lastPathname = useRef(pathname);
+  useEffect(() => {
+    if (lastPathname.current === pathname) return;
+    lastPathname.current = pathname;
+    if (!window.matchMedia(DESKTOP_QUERY).matches) setChatOpen(false);
+  }, [pathname]);
+
   const setChatWidth = useCallback((width: number) => setChatWidthState(clampChat(width)), []);
   const resetChatWidth = useCallback(() => setChatWidthState(clampChat(CHAT_DEFAULT)), []);
   const toggleLeft = useCallback(() => setLeftCollapsed((c) => !c), []);
@@ -153,6 +163,8 @@ export function PortalShell({ children }: { children: ReactNode }) {
     "--portal-right": `${chatOpen ? chatWidth : 0}px`,
     "--portal-chat-width": `${chatWidth}px`,
     "--portal-frame": FRAME_COLOR,
+    // height of the phone bottom bar; the chat page stops above it
+    "--portal-bottom-bar": "calc(4.5rem + env(safe-area-inset-bottom))",
   } as CSSProperties;
 
   return (

@@ -11,7 +11,7 @@
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/require-user";
-import type { ChatMessage } from "@/actions/chat";
+import type { ChatMessage } from "@/lib/chat-service";
 
 const PAGE_SIZE = 50;
 const CHAT_MAX_LENGTH = 2000;

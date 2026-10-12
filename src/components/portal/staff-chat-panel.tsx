@@ -1,8 +1,8 @@
 "use client";
 
 // src/components/portal/staff-chat-panel.tsx
-// The chat bar for counselors and admins. Same right sidebar as the applicant's chat (open and
-// close tab, drag to resize, full screen on phones), but it opens on a list of conversations.
+// The chat bar for counselors and admins. Same right sidebar as the applicant's chat (opened from the
+// navbar door, drag to resize, a full screen page of the bottom bar on phones), but it opens on a list of conversations.
 // Pick one to read it and reply; the arrow goes back to the list.
 //   - applicants only ever see ONE conversation (chat-panel.tsx)
 //   - staff see many: their own, the ones of their applicants, and (admins) the unassigned ones
@@ -11,7 +11,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type Keyboar
 import Link from "next/link";
 import { ArrowLeft, Check, CheckCheck, GripVertical, Inbox, Loader2, MessageCircle, PanelRightClose, SendHorizontal, X } from "lucide-react";
 import { toast } from "sonner";
-import type { ChatMessage } from "@/actions/chat";
+import type { ChatMessage } from "@/lib/chat-service";
 import {
   loadEarlierStaff,
   loadInbox,
@@ -31,7 +31,7 @@ const POLL_CLOSED_MS = 20_000;
 const KEY_STEP = 24;
 
 export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
-  const { ready, chatOpen, setChatOpen, chatWidth, setChatWidth, resetChatWidth, dragging, setDragging, unread, setUnread } =
+  const { ready, chatOpen, setChatOpen, chatWidth, setChatWidth, resetChatWidth, dragging, setDragging, setUnread } =
     usePortalShell();
 
   const [inbox, setInbox] = useState<InboxItem[]>([]);
@@ -312,32 +312,11 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
 
   return (
     <>
-      {!chatOpen && (
-        <button
-          type="button"
-          onClick={() => setChatOpen(true)}
-          aria-label={unread ? `Open conversations, ${unread} unread` : "Open conversations"}
-          title="Conversations"
-          className={cn(
-            "fixed z-30 grid place-items-center bg-ruby-500 text-white shadow-lg outline-none transition hover:bg-ruby-600 focus-visible:ring-2 focus-visible:ring-ruby-500/50 focus-visible:ring-offset-2",
-            "bottom-20 right-4 size-14 rounded-full lg:hidden",
-            "lg:bottom-auto lg:right-0 lg:top-1/2 lg:h-14 lg:w-11 lg:-translate-y-1/2 lg:rounded-l-2xl lg:rounded-r-none lg:shadow-md"
-          )}
-        >
-          <MessageCircle size={22} />
-          {unread > 0 && (
-            <span className="absolute -left-1 -top-1 grid min-w-5 place-items-center rounded-full border-2 border-white bg-ink px-1 text-[11px] font-semibold leading-4 text-white">
-              {unread > 9 ? "9+" : unread}
-            </span>
-          )}
-        </button>
-      )}
-
       <aside
         aria-label="Conversations"
         inert={!chatOpen}
         className={cn(
-          "fixed bottom-0 right-0 top-16 z-40 flex w-full flex-col border-l border-neutral-200 bg-white lg:top-0 lg:z-20 lg:w-[var(--portal-chat-width)] lg:border-l-0 lg:bg-[var(--portal-frame)]",
+          "fixed bottom-[var(--portal-bottom-bar)] right-0 top-16 z-40 flex w-full flex-col border-l border-neutral-200 bg-white lg:bottom-0 lg:top-0 lg:z-20 lg:w-[var(--portal-chat-width)] lg:border-l-0 lg:bg-[var(--portal-frame)]",
           chatOpen ? "translate-x-0" : "invisible translate-x-full",
           ready && !dragging && "transition-[translate,visibility] duration-200 ease-out"
         )}
@@ -588,7 +567,7 @@ export function StaffChatPanel({ role }: { role: "COUNSELOR" | "ADMIN" }) {
             </div>
 
             {/* Composer */}
-            <div className="shrink-0 border-t border-neutral-100 p-3 lg:border-t-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <div className="shrink-0 border-t border-neutral-100 p-3 lg:border-t-0 lg:pb-[max(0.75rem,env(safe-area-inset-bottom))]">
               {closed ? (
                 <p className="px-2 py-2 text-center text-sm text-neutral-500">This conversation is closed.</p>
               ) : (
