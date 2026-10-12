@@ -3,7 +3,7 @@
 // React.cache means the portal layout and the page share one query per request.
 import { cache } from "react";
 import { db } from "@/lib/db";
-import type { ProfileData, QualificationItem, TestItem } from "@/components/profile/type";
+import type { ProfileData, QualificationItem, TestItem } from "@/components/profile/types";
 import type { TestKind } from "@/schemas/profile";
 
 const isoDay = (d: Date | null | undefined) => (d ? d.toISOString().slice(0, 10) : "");

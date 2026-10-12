@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { SelectField } from "./fields";
 import { mapIssues } from "./form-utils";
 import { SubjectPicker } from "./subject-picker";
-import { ProfileData } from "./type";
+import { ProfileData } from "./types";
 
 
 const pick = (p: ProfileData): PreferencesValues => ({
