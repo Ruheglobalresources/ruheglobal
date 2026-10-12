@@ -25,6 +25,7 @@ export default async function PortalLayout({ children }: { children: React.React
     // only applicants are asked to set up a profile, not counselors or admins
     isApplicant ? getOnboardingState(session.user.id) : null,
   ]);
+  
   const user = {
     name: session.user.name ?? null,
     email: session.user.email ?? null,
