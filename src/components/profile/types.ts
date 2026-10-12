@@ -3,7 +3,6 @@
 // it can cross the server/client boundary and sit in a form input without conversion.
 // An empty string means "not set".
 import type { TestKind } from "@/schemas/profile";
-
 export type ProfileData = {
   userId: string;
   name: string;
