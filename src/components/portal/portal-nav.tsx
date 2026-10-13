@@ -42,6 +42,7 @@ import { CounsellorCard } from "./counsellor-card";
 import { APPLICATIONS_PAGE, isCatalogPath } from "@/lib/portal-paths";
 import { LEFT_EXPANDED, usePortalShell } from "./portal-shell";
 import { PortalBottomBar } from "./portal-bottom-bar";
+import { PortalBrand } from "./portal-brand";
 import { ProfileCard } from "./profile-card";
 
 type MenuItem = {
@@ -71,10 +72,10 @@ const MENU: MenuItem[] = [
 ];
 
 // Thin ruby bar on the screen edge next to the active item. The offset matches
-// the aside's padding (p-3 expanded, p-2 collapsed) so the bar touches the edge.
+// the sidebar body's side padding (px-4 expanded, px-2 collapsed) so the bar touches the edge.
 const accentBar = (offset: string) =>
   `before:absolute before:top-1/2 before:h-5 before:w-1 before:-translate-y-1/2 before:rounded-r-full before:bg-ruby-500 ${
-    offset === "-left-2" ? "before:-left-2" : "before:-left-3"
+    offset === "-left-2" ? "before:-left-2" : "before:-left-4"
   }`;
 
 type PortalNavProps = {
@@ -112,7 +113,7 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
       {/* ONE frame, desktop. Row 1 (this header) = sidebar header + navbar on a single strip. */}
       <header
         className={cn(
-          "fixed left-0 top-0 z-30 hidden h-14 items-center bg-[var(--portal-frame)] lg:flex",
+          "fixed left-0 top-0 z-30 hidden h-16 items-center bg-[var(--portal-frame)] lg:flex",
           animate && "transition-[right] duration-200 ease-out motion-reduce:transition-none"
         )}
         style={{ right: "var(--portal-right)" }}
@@ -120,28 +121,14 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
         {/* The sidebar's own header cell: same width as the sidebar, so strip and sidebar are one piece */}
         <div
           className={cn(
-            "flex h-full shrink-0 items-center px-3",
+            "flex h-full shrink-0 items-center",
+            userCollapsed ? "px-3" : "px-4",
             animate && "transition-[width] duration-200 ease-out motion-reduce:transition-none"
           )}
           style={{ width: "var(--portal-left)" }}
         >
-          {userCollapsed ? (
-            <Link
-              href="/portal"
-              aria-label="Ruhe Global Resources"
-              title="Ruhe Global Resources"
-              className="grid size-10 shrink-0 place-items-center rounded-xl bg-ruby-500 font-display text-lg font-semibold text-white outline-none transition hover:bg-ruby-600 focus-visible:ring-2 focus-visible:ring-ruby-500/60"
-            >
-              R
-            </Link>
-          ) : (
-            <Link
-              href="/portal"
-              className="min-w-0 truncate pl-1 font-display text-lg font-semibold tracking-tight text-ruby-600 outline-none focus-visible:ring-2 focus-visible:ring-ruby-500/60"
-            >
-              Ruhe<span className="text-ink"> Global Resources</span>
-            </Link>
-          )}
+          {/* Same logo in both states: the collapsed rail shows only the logo image, the open sidebar adds the text */}
+          <PortalBrand showText={!userCollapsed} />
         </div>
 
         {/* Menu door: the only one for the menu sidebar */}
@@ -156,7 +143,7 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
           <LeftIcon size={20} />
         </button>
 
-        <nav aria-label="Catalog" className="ml-2 flex items-center gap-1">
+        <nav aria-label="Catalog" className="ml-4 flex items-center gap-2">
           {TOP_LINKS.map(({ label, href, icon: Icon }) => {
             const active = pathname.startsWith(href);
             return (
@@ -165,7 +152,7 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-ruby-500/60",
+                  "inline-flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-ruby-500/60",
                   active ? "bg-ruby-50 text-ruby-700" : "text-ink/70 hover:bg-ink/5 hover:text-ink"
                 )}
               >
@@ -185,7 +172,7 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
           aria-label={rightLabel}
           aria-expanded={chatOpen}
           title={rightLabel}
-          className={cn(door, "mr-3")}
+          className={cn(door, "mr-5")}
         >
           <RightIcon size={20} />
           {!chatOpen && unread > 0 && (
@@ -199,7 +186,7 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
       {/* Row 2: the sidebar body, hanging from the strip. Same colour as the strip, no seam, no border. */}
       <aside
         className={cn(
-          "fixed bottom-0 left-0 top-14 z-20 hidden flex-col overflow-hidden bg-[var(--portal-frame)] lg:flex",
+          "fixed bottom-0 left-0 top-16 z-20 hidden flex-col overflow-hidden bg-[var(--portal-frame)] lg:flex",
           peek && "shadow-[8px_0_24px_rgba(16,27,45,0.12)]",
           animate && "transition-[width] duration-200 ease-out motion-reduce:transition-none"
         )}
@@ -212,11 +199,11 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
         {/* The whole sidebar body scrolls, so its scrollbar starts right under the navbar */}
         <div
           className={cn(
-            "min-h-0 flex-1 overflow-y-auto overflow-x-hidden pb-3 pt-2 [scrollbar-color:rgba(16,27,45,0.25)_transparent] [scrollbar-width:thin]",
-            collapsed ? "px-2" : "px-3"
+            "min-h-0 flex-1 overflow-y-auto overflow-x-hidden pb-5 pt-4 [scrollbar-color:rgba(16,27,45,0.25)_transparent] [scrollbar-width:thin]",
+            collapsed ? "px-2" : "px-4"
           )}
         >
-          <div className={cn("space-y-3", collapsed && "flex flex-col items-center")}>
+          <div className={cn("space-y-4", collapsed && "flex flex-col items-center")}>
             <ProfileCard name={user.name} email={user.email} image={user.image} compact={collapsed} />
 
             {collapsed ? (
@@ -245,14 +232,14 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
               </button>
             ) : (
               <div>
-                <p className="mb-1.5 px-1 text-xs font-semibold uppercase tracking-wider text-ink/50">Your counsellor</p>
+                <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-ink/50">Your counsellor</p>
                 <CounsellorCard counsellor={counsellor} />
               </div>
             )}
 
             <nav
               aria-label="Main"
-              className={cn(collapsed ? "flex flex-col items-center gap-1" : "space-y-0.5 pt-1")}
+              className={cn(collapsed ? "flex flex-col items-center gap-1.5" : "space-y-1 pt-2")}
             >
             {MENU.map(({ label, icon: Icon, href, match, highlight }) => {
               const active = href && match ? match(pathname) : false;
@@ -287,7 +274,7 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
                 );
               }
 
-              const base = "relative flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium transition";
+              const base = "relative flex h-11 items-center gap-3 rounded-xl px-4 text-sm font-medium transition";
 
               if (!href) {
                 return (
@@ -311,7 +298,7 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
                   key={label}
                   href={href}
                   aria-current={active ? "page" : undefined}
-                  className={cn(base, active ? cn("bg-ruby-50 text-ruby-700", accentBar("-left-3")) : "text-ink/70 hover:bg-ink/5 hover:text-ink")}
+                  className={cn(base, active ? cn("bg-ruby-50 text-ruby-700", accentBar("-left-4")) : "text-ink/70 hover:bg-ink/5 hover:text-ink")}
                 >
                   <Icon size={20} className={active ? "text-ruby-600" : "text-ink/45"} />
                   <span className="flex-1">{label}</span>

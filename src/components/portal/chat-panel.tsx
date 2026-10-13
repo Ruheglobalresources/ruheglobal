@@ -324,8 +324,8 @@ export function ChatPanel({ counsellor }: { counsellor: PortalCounsellor | null 
           </span>
         </div>
 
-        {/* Header */}
-        <div className="flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center gap-3 border-b border-neutral-100 px-4 pt-[env(safe-area-inset-top)] lg:h-14 lg:border-b-0 lg:pt-0">
+        {/* Header (lg:h-16 matches the navbar strip height in portal-nav.tsx) */}
+        <div className="flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-center gap-3 border-b border-neutral-100 px-4 pt-[env(safe-area-inset-top)] lg:h-16 lg:border-b-0 lg:pt-0">
           <button
             type="button"
             onClick={closeChat}

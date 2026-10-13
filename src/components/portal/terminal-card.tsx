@@ -25,12 +25,41 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Home: HomeIcon,
 };
 
-// Terminal/Application `icon` is a free-text field in the admin, meant to
-// hold a Lucide icon name (e.g. "Plane"). Anything unrecognized — including
-// an empty string — falls back to a sane default rather than crashing.
+// Terminal/Application `icon` is a free-text field in the admin. It can hold
+// either a Lucide icon name (e.g. "Plane") or a path to an image in the public
+// folder (e.g. "/icons/study-abroad.svg"). Anything unrecognized, including
+// an empty string, falls back to a sane default rather than crashing.
 export function resolvePortalIcon(name: string | null | undefined): LucideIcon {
   if (name && ICON_MAP[name]) return ICON_MAP[name];
   return GraduationCap;
+}
+
+// A value that starts with "/" is a file in /public, not a Lucide name.
+export function isPortalImageIcon(name: string | null | undefined): name is string {
+  return !!name && name.startsWith("/");
+}
+
+interface PortalIconProps {
+  name: string | null | undefined;
+  /** Size of a Lucide icon. */
+  size?: number;
+  /** Size of an image icon. Defaults to `size`. */
+  imageSize?: number;
+  className?: string;
+}
+
+// One place that draws a portal icon, whether it is a real image or a Lucide icon.
+export function PortalIcon({ name, size = 22, imageSize, className }: PortalIconProps) {
+  if (isPortalImageIcon(name)) {
+    const px = imageSize ?? size;
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={name} alt="" width={px} height={px} className={cn("object-contain", className)} />
+    );
+  }
+
+  const Icon = resolvePortalIcon(name);
+  return <Icon size={size} className={className} />;
 }
 
 interface TerminalCardProps {
@@ -41,8 +70,6 @@ interface TerminalCardProps {
 }
 
 export function TerminalCard({ slug, name, icon, applicationCount }: TerminalCardProps) {
-  const Icon = resolvePortalIcon(icon);
-
   return (
     <Link
       href={`/portal/${slug}`}
@@ -53,7 +80,7 @@ export function TerminalCard({ slug, name, icon, applicationCount }: TerminalCar
       )}
     >
       <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-ruby-50 text-ruby-600 transition group-hover:bg-ruby-100">
-        <Icon size={22} />
+        <PortalIcon name={icon} size={22} imageSize={28} />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[15px] font-semibold text-ink">{name}</span>

@@ -200,8 +200,8 @@ export function PortalShell({ children }: { children: ReactNode }) {
 
   return (
     <PortalShellContext.Provider value={value}>
-      {/* Desktop frame: the sidebar + top strip wrap a white body (pt-14 = the strip's height) */}
-      <div className="min-h-screen bg-white lg:bg-[var(--portal-frame)] lg:pt-14" style={vars}>
+      {/* Desktop frame: the sidebar + top strip wrap a white body (pt-16 = the strip's height) */}
+      <div className="min-h-screen bg-white lg:bg-[var(--portal-frame)] lg:pt-16" style={vars}>
         {children}
       </div>
     </PortalShellContext.Provider>
@@ -230,7 +230,7 @@ export function PortalMain({ children }: { children: ReactNode }) {
     <>
       <main
         className={cn(
-          "bg-white px-4 pb-28 pt-4 sm:px-6 lg:min-h-[calc(100vh-3.5rem)] lg:pb-12 lg:pt-6 lg:ml-[var(--portal-left)] lg:mr-[var(--portal-right)] lg:px-8",
+          "bg-white px-4 pb-28 pt-4 sm:px-6 lg:min-h-[calc(100vh-4rem)] lg:pb-12 lg:pt-6 lg:ml-[var(--portal-left)] lg:mr-[var(--portal-right)] lg:px-8",
           ready && !dragging && "lg:transition-[margin] lg:duration-200 lg:ease-out motion-reduce:lg:transition-none"
         )}
       >
@@ -242,7 +242,7 @@ export function PortalMain({ children }: { children: ReactNode }) {
       <div
         aria-hidden="true"
         className={cn(
-          "pointer-events-none fixed top-14 z-20 hidden size-4 lg:block",
+          "pointer-events-none fixed top-16 z-20 hidden size-4 lg:block",
           "[background:radial-gradient(circle_at_100%_100%,transparent_16px,var(--portal-frame)_16.5px)]",
           ready && !dragging && "transition-[left] duration-200 ease-out motion-reduce:transition-none"
         )}
@@ -251,7 +251,7 @@ export function PortalMain({ children }: { children: ReactNode }) {
       <div
         aria-hidden="true"
         className={cn(
-          "pointer-events-none fixed top-14 z-20 hidden size-4 lg:block",
+          "pointer-events-none fixed top-16 z-20 hidden size-4 lg:block",
           "[background:radial-gradient(circle_at_0%_100%,transparent_16px,var(--portal-frame)_16.5px)]",
           ready && !dragging && "transition-[right] duration-200 ease-out motion-reduce:transition-none"
         )}
