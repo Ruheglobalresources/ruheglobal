@@ -212,6 +212,7 @@ export function EligibilityFlow({ pills }: { pills: EligibilityPill[] }) {
   return (
     <StepFrame
       title={current.title}
+      scrollKey={current.stepNumber}
       emoji={current.emoji}
       progress={progress}
       onBack={back}

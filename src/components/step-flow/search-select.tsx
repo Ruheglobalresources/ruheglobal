@@ -76,6 +76,21 @@ export function SearchSelect({
     return () => document.removeEventListener("pointerdown", onDown);
   }, [open]);
 
+  // On a phone the keyboard covers the list. While it is open the field scrolls to the top of the
+  // visible area (just under the header) so the list has room above the keyboard. It runs again when
+  // the keyboard finishes opening, because the visible height changes then.
+  useEffect(() => {
+    if (!open || !window.matchMedia("(max-width: 639px)").matches) return;
+    const reveal = () => wrapRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    const timer = window.setTimeout(reveal, 250);
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", reveal);
+    return () => {
+      window.clearTimeout(timer);
+      vv?.removeEventListener("resize", reveal);
+    };
+  }, [open]);
+
   const pick = (option: string) => {
     if (multiple) {
       if (atMax) return;
@@ -149,7 +164,7 @@ export function SearchSelect({
 
   if (multiple) {
     return (
-      <div ref={wrapRef}>
+      <div ref={wrapRef} className="scroll-mt-4">
         <div className="relative">
           <div
             className={cn(
@@ -209,7 +224,7 @@ export function SearchSelect({
   const shown = open ? query : (value[0] ?? "");
 
   return (
-    <div ref={wrapRef} className="relative">
+    <div ref={wrapRef} className="relative scroll-mt-4">
       <div className="relative">
         <input
           ref={inputRef}

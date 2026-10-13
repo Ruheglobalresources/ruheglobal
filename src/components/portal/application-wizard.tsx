@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,18 @@ export function ApplicationWizard({
   const [autosaveState, setAutosaveState] = useState<AutosaveState>("idle");
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Every new step opens at the top, on desktop and mobile, so the heading is read first. The portal
+  // page scrolls with the window, and the wizard stays mounted between steps, so the previous
+  // step's scroll position would otherwise be carried over. Skipped on first load.
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    window.scrollTo({ top: 0 });
+  }, [currentStep]);
 
   // a submitted application stays editable, only the closed statuses lock it
   const isLocked = !isEditableStatus(status);
