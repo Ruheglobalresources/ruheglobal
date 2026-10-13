@@ -33,7 +33,7 @@ export default async function PortalDashboardPage() {
       include: { _count: { select: { applications: { where: { isActive: true } } } } },
     }),
     db.applicationSubmission.findMany({
-      where: { userId, status: { in: ["DRAFT", "IN_PROGRESS"] } },
+      where: { userId, status: { in: ["DRAFT", "IN_PROGRESS"] }, application: { kind: { not: "ELIGIBILITY" } } },
       orderBy: { updatedAt: "desc" },
       take: 5,
       include: {

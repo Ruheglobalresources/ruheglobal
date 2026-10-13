@@ -9,7 +9,9 @@
     "postinstall": "prisma generate",
     "seed:fields": "tsx prisma/seed-fields.ts",
     "seed:institutions": "tsx prisma/seedInstitutions.ts",
-    "seed:school": "tsx prisma/seed-school.ts"
+    "seed:school": "tsx prisma/seed-school.ts",
+    "seed-eligibility": "tsx prisma/seed-eligibility.ts"
+    
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",

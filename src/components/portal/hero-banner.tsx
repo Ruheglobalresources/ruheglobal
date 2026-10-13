@@ -11,6 +11,7 @@ import {
   outlinedButton,
 } from "@/components/dashboard/styles";
 import { cn } from "@/lib/utils";
+import { ELIGIBILITY_PAGE } from "@/lib/portal-paths";
 import Image from "next/image";
 
 const HERO_IMAGE = "/hero-banner.jpeg";
@@ -113,7 +114,7 @@ export function HeroBanner({
           {/* Buttons: always one horizontal line; compact at md, normal at lg */}
           <div className="mt-4 flex flex-nowrap items-center gap-2 md:gap-1.5 lg:gap-2">
             <Link
-              href="/courses"
+              href={ELIGIBILITY_PAGE}
               className={cn(
                 filledButton,
                 "shrink-0 whitespace-nowrap text-xs sm:text-sm",
