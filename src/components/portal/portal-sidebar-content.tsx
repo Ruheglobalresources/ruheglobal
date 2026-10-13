@@ -41,8 +41,6 @@ type MenuItem = {
 const MENU: MenuItem[] = [
   { label: "Home", icon: House, href: "/portal", match: (p) => p === "/portal" },
   { label: "Profile", icon: User, href: "/portal/profile", match: (p) => p.startsWith("/portal/profile") },
-  { label: "Documents", icon: Folder },
-  { label: "Shortlist", icon: Heart },
   {
     label: "Applications",
     icon: FileStack,
@@ -50,6 +48,8 @@ const MENU: MenuItem[] = [
     // The application wizard lives at /portal/<terminal>/<application>
     match: (p) => p !== "/portal" && !p.startsWith("/portal/profile") && !isCatalogPath(p),
   },
+  { label: "Documents", icon: Folder },
+  { label: "Shortlist", icon: Heart },
   { label: "Meet", icon: CalendarDays },
   { label: "Refer & Earn", icon: Gift, highlight: true },
   { label: "Report counsellor", icon: MessageSquareWarning },

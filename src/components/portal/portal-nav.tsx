@@ -54,16 +54,17 @@ type MenuItem = {
 
 const MENU: MenuItem[] = [
   { label: "Home", icon: House, href: "/portal", match: (p) => p === "/portal" },
-  { label: "Profile", icon: User },
-  { label: "Documents", icon: Folder },
-  { label: "Shortlist", icon: Heart },
+  { label: "Profile", icon: User, href: "/portal/profile", match: (p) => p.startsWith("/portal/profile") },
   {
     label: "Applications",
     icon: FileStack,
     href: APPLICATIONS_PAGE,
     // The application wizard lives at /portal/<terminal>/<application>
-    match: (p) => p !== "/portal" && !isCatalogPath(p),
+    match: (p) => p !== "/portal" && !p.startsWith("/portal/profile") && !isCatalogPath(p),
   },
+  { label: "Documents", icon: Folder },
+  { label: "Shortlist", icon: Heart },
+
   { label: "Meet", icon: CalendarDays },
   { label: "Refer & Earn", icon: Gift, highlight: true },
   { label: "Report counsellor", icon: MessageSquareWarning },
@@ -77,7 +78,7 @@ const accentBar = (offset: string) =>
   }`;
 
 type PortalNavProps = {
-  user: { name: string | null; email: string | null };
+  user: { name: string | null; email: string | null; image?: string | null };
   counsellor: PortalCounsellor | null;
 };
 
@@ -216,7 +217,7 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
           )}
         >
           <div className={cn("space-y-3", collapsed && "flex flex-col items-center")}>
-            <ProfileCard name={user.name} email={user.email} compact={collapsed} />
+            <ProfileCard name={user.name} email={user.email} image={user.image} compact={collapsed} />
 
             {collapsed ? (
               <button
