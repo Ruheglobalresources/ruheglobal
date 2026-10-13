@@ -27,6 +27,18 @@ model User {
   role               UserRole  @default(USER)
   isTwoFactorEnabled Boolean   @default(false)
 
+  // Counselors only: a short introduction shown to the applicants they look after
+  bio String?
+
+  // Applicants: the counselor looking after this user. Set automatically when the account
+  // is created (the counselor on duty that week) and changeable by an admin at any time.
+  counselorId String?
+  counselor   User?   @relation("UserCounselor", fields: [counselorId], references: [id], onDelete: SetNull)
+  // Counselors: the applicants assigned to them
+  clients     User[]  @relation("UserCounselor")
+  // Counselors: the weeks they are on duty
+  dutyWeeks   CounselorDuty[]
+
   accounts              Account[]
   twoFactorConfirmation TwoFactorConfirmation?
 
@@ -44,8 +56,32 @@ model User {
   messagesSent        Message[]      @relation("MessageSender")
   blogPosts           BlogPost[]     @relation("BlogPostAuthor")
 
+  // Profile details collected during onboarding and edited on the profile page
+  profile        UserProfile?
+  qualifications AcademicQualification[]
+  tests          UserTest[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([counselorId])
+}
+
+// Which counselor is on duty for a week. A new account is assigned the counselor on duty
+// that week. Duty weeks run Monday to Sunday in Nigerian time, and weekStart is the
+// Monday 00:00 of the week. A week with no row keeps the counselor of the last week that
+// has one, so someone is always on duty; the admin only adds a row to change it.
+model CounselorDuty {
+  id          String   @id @default(uuid())
+  counselorId String
+  weekStart   DateTime @unique
+
+  counselor User @relation(fields: [counselorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([counselorId])
 }
 
 model Account {
@@ -109,15 +145,33 @@ model TwoFactorConfirmation {
 // the admin block manages them directly, so adding a 6th one later
 // (e.g. a dedicated "Property" or "Money Exchange" terminal) needs no
 // schema change.
+//
+// What a terminal is USED FOR is the one thing that is an enum (PortalKind). It is chosen
+// when the terminal is created, so the website knows where and how to use it: the
+// "Proceed to apply" buttons on schools and institutions open the SCHOOL terminal, a visa
+// page would open the VISA one, and so on. New terminals of an existing kind need no
+// schema change. A brand new kind needs one line here plus the code that uses it.
 // ─────────────────────────────────────────────────────────────────────────
 
+enum PortalKind {
+  GENERAL // not tied to a flow on the website, shown on the portal only
+  SCHOOL // applications opened from the school and institution pages
+  VISA
+  WORK_ABROAD
+  HOUSING
+  EVENT // events and fairs, collects visitor data
+}
+
 model PortalTerminal {
-  id       String  @id @default(uuid())
-  name     String  @unique // "Exams & Prep"
-  slug     String  @unique // "exams-prep"
+  id       String     @id @default(uuid())
+  name     String     @unique // "Exams & Prep"
+  slug     String     @unique // "exams-prep"
   icon     String?
-  order    Int     @default(0)
-  isActive Boolean @default(true)
+  kind     PortalKind @default(GENERAL) // where and how this terminal is used
+  order    Int        @default(0)
+  isActive Boolean    @default(true)
+  // false = still works (links, school "Proceed to apply" flow) but no card on /portal
+  isVisible Boolean    @default(true)
 
   applications Application[]
 
@@ -125,6 +179,7 @@ model PortalTerminal {
   updatedAt DateTime @updatedAt
 
   @@index([order])
+  @@index([kind])
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -184,8 +239,11 @@ model FieldDefinition {
 // ─────────────────────────────────────────────────────────────────────────
 
 model Application {
-  id         String  @id @default(uuid())
+  id         String     @id @default(uuid())
   terminalId String
+  // Copy of the terminal's kind, kept in sync by the admin actions (never edited by hand),
+  // so an application can be found by what it is for without joining its terminal.
+  kind       PortalKind @default(GENERAL)
   name       String // "Work in Germany"
   subtitle   String? // "One team, 14 countries..."
   slug       String
@@ -205,6 +263,7 @@ model Application {
 
   @@unique([terminalId, slug])
   @@index([terminalId])
+  @@index([kind])
 }
 
 // Small pills shown on an application card — country flags under "Work in
@@ -247,8 +306,8 @@ model ApplicationField {
 // One applicant's actual attempt at an Application. Total step count and
 // per-step completion are derived from ApplicationField + SubmissionValue
 // at query time (max stepNumber, and which required fields have a value)
-// rather than stored, the same way SalonOrder.amount was always computed
-// server-side rather than trusted/cached.
+// rather than stored, so they are always computed server-side and never
+// trusted or cached.
 // ─────────────────────────────────────────────────────────────────────────
 
 enum SubmissionStatus {
@@ -275,18 +334,60 @@ model ApplicationSubmission {
   counselorRequestName String?
   counselorId          String?
 
+  // WHO the application is for (school and institution applications, kind SCHOOL).
+  // All schools and institutions share one application, so this is what tells the
+  // submissions apart. All null for every other kind of application.
+  institutionId       String?
+  institutionCourseId String?
+  schoolId            String?
+  schoolCourseId      String?
+  // names as they were when the student applied, so the admin still sees what the
+  // application was for if the school or course is later renamed or deleted
+  targetName       String?
+  targetCourseName String?
+
   user        User        @relation("UserSubmissions", fields: [userId], references: [id], onDelete: Cascade)
   application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   counselor   User?       @relation("CounseledSubmissions", fields: [counselorId], references: [id], onDelete: SetNull)
 
-  values SubmissionValue[]
+  institution       Institution?       @relation(fields: [institutionId], references: [id], onDelete: SetNull)
+  institutionCourse InstitutionCourse? @relation(fields: [institutionCourseId], references: [id], onDelete: SetNull)
+  school            School?            @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  schoolCourse      SchoolCourse?      @relation(fields: [schoolCourseId], references: [id], onDelete: SetNull)
+
+  values   SubmissionValue[]
+  versions SubmissionVersion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([applicationId])
+  @@index([userId, applicationId])
+  @@index([institutionId])
+  @@index([schoolId])
   @@index([status])
+}
+
+// A frozen copy of ALL the answers, taken every time the student presses Save & Submit
+// (and Save & Resubmit). A submitted application stays editable, so the live answers
+// can change after it was sent; the versions keep what was sent each time, which is
+// what the admin looks back at ("view previous answers"). Never edited, only added.
+model SubmissionVersion {
+  id           String @id @default(uuid())
+  submissionId String
+  version      Int // 1 for the first submit, 2 for the next, and so on
+
+  // [{ applicationFieldId, label, type, stepNumber, order, value, fileUrl }]
+  // The label is copied so the version still reads well if the field is renamed later.
+  answers Json
+
+  submission ApplicationSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([submissionId, version])
+  @@index([submissionId])
 }
 
 // The actual answer to one ApplicationField, for one submission.
@@ -339,6 +440,11 @@ model Conversation {
 
   messages Message[]
 
+  // Set when the client sends a message and nobody on the staff side has answered yet; cleared
+  // when staff reply. It is what the "awaiting reply" views read, and the staff email alert is
+  // sent when it goes from empty to set, so one waiting turn means one email, not one per message.
+  awaitingSince DateTime?
+
   lastMessageAt DateTime @default(now())
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -347,6 +453,7 @@ model Conversation {
   @@index([submissionId])
   @@index([status])
   @@index([lastMessageAt])
+  @@index([awaitingSince])
 }
 
 model Message {
@@ -469,6 +576,37 @@ model Institution {
   imageUrl String? // campus photo
   logoUrl  String? // favicon/logo
 
+  // ── Institution profile (all optional, filled in over time) ──────────
+  // Stat strip
+  founded        Int?
+  acceptanceRate String? // e.g. "85%"
+  upcomingIntake String? // e.g. "Jan 2027"
+
+  // "Highlights" tabs: one short paragraph each. A tab with no text is hidden.
+  overview      String? @db.Text
+  studentLife   String? @db.Text
+  accommodation String? @db.Text
+  library       String? @db.Text
+  sports        String? @db.Text
+
+  // Social links
+  facebookUrl  String?
+  instagramUrl String?
+  twitterUrl   String?
+  linkedinUrl  String?
+  youtubeUrl   String?
+
+  // SEO overrides for the institution page (fall back to name/summary)
+  metaTitle       String?
+  metaDescription String?
+
+  courses   InstitutionCourse[]
+  campuses  InstitutionCampus[]
+  faqs      InstitutionFaq[]
+  documents InstitutionDocument[]
+
+  applicationSubmissions ApplicationSubmission[]
+
   isActive Boolean @default(true)
   // Main partner institutions shown on the course-search page before the
   // visitor runs a search at all (a fixed "our partners" set, not a search
@@ -482,6 +620,88 @@ model Institution {
   @@index([country])
   @@index([isActive])
   @@index([order])
+}
+
+// A real, individual course at an institution (the "Courses" tab). The
+// institution's `programs` array stays as the short list of subject areas.
+model InstitutionCourse {
+  id            String  @id @default(uuid())
+  institutionId String
+  name          String // "Ontario College Graduate Certificate, Cybersecurity Response Planning"
+  level         String? // "Undergraduate" | "Postgraduate" (drives the study-level filter)
+  degree        String? // "MSc", "BSc", "Diploma", "Graduate Certificate"...
+  subject       String? // "Cyber Security" (drives the subject chips)
+  duration      String? // "1 Year"
+  nextIntake    String? // "Jan 2027"
+  intakes       String? // "January, May, September"
+
+  // Fee for the course. Currency falls back to the institution's tuitionCurrency.
+  tuitionAmount   Int?
+  tuitionCurrency String?
+  tuitionPeriod   String? // "per year"
+
+  description String? @db.Text
+  order       Int     @default(0)
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  applicationSubmissions ApplicationSubmission[]
+
+  createdAt DateTime @default(now())
+
+  @@index([institutionId])
+  @@index([level])
+  @@index([subject])
+}
+
+// A campus of the institution (the "Campuses" tab): a name plus one paragraph.
+model InstitutionCampus {
+  id            String  @id @default(uuid())
+  institutionId String
+  name          String // "Brantford"
+  city          String?
+  address       String?
+  description   String? @db.Text
+  order         Int     @default(0)
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([institutionId])
+}
+
+// One question and answer (the "FAQs" tab).
+model InstitutionFaq {
+  id            String @id @default(uuid())
+  institutionId String
+  question      String
+  answer        String @db.Text
+  order         Int    @default(0)
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([institutionId])
+}
+
+// A document an applicant needs (the "Required Documents" tab), grouped by
+// study level and by category (Visa, Financial, Identity, Academic...).
+model InstitutionDocument {
+  id            String @id @default(uuid())
+  institutionId String
+  studyLevel    String // "Undergraduate" | "Postgraduate"
+  category      String // "Visa" | "Financial" | "Identity" | "Academic"
+  name          String // "Passport"
+  order         Int    @default(0)
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([institutionId])
+  @@index([studyLevel])
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -560,6 +780,8 @@ model School {
   images       SchoolImage[]
   scholarships SchoolScholarship[]
 
+  applicationSubmissions ApplicationSubmission[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -582,6 +804,8 @@ model SchoolCourse {
   order       Int     @default(0)
 
   school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  applicationSubmissions ApplicationSubmission[]
 
   createdAt DateTime @default(now())
 
@@ -617,4 +841,78 @@ model SchoolScholarship {
   createdAt DateTime @default(now())
 
   @@index([schoolId])
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────
+// USER PROFILE
+// One row per applicant (created on first save), plus their qualifications
+// and test scores. Name and photo stay on User (User.name / User.image) so
+// Auth.js and the rest of the app keep reading them from the same place.
+// ─────────────────────────────────────────────────────────────────────────
+
+enum UserTestKind {
+  ENGLISH      // IELTS, TOEFL, PTE ...
+  STANDARDIZED // GRE, GMAT, SAT ...
+}
+
+model UserProfile {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Basic info
+  phone            String?
+  nationality      String?
+  residenceCountry String?
+  residenceCity    String?
+  dateOfBirth      DateTime? @db.Date
+
+  // Study preferences
+  preferredDestination String?
+  preferredStudyLevel  String?
+  preferredStartYear   Int?
+  preferredStartMonth  Int? // 1 to 12
+  subjects             String[]
+
+  // Set when the applicant finishes the last onboarding step
+  onboardingCompletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AcademicQualification {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  level       String // "Bachelor's degree", "Master's degree" ...
+  institution String
+  programme   String?
+  country     String?
+  startYear   Int?
+  endYear     Int?
+  grade       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model UserTest {
+  id     String       @id @default(uuid())
+  userId String
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  kind     UserTestKind
+  name     String // "IELTS Academic", "GRE" ...
+  score    String // free text: bands, sections, totals
+  testDate DateTime? @db.Date
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, kind])
 }

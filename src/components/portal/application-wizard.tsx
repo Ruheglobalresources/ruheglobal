@@ -171,7 +171,7 @@ export function ApplicationWizard({
     setStatus((prev) => (isUnsubmittedStatus(prev) ? "SUBMITTED" : prev));
     toast.success(hasBeenSubmitted ? "Application updated" : "Application submitted!");
     // the applicant lands on the list where every application can be tracked
-    router.push("/profile/applications");
+    router.push("/portal/applications");
   }
 
   if (!step) {

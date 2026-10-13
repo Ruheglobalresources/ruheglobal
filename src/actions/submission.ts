@@ -276,7 +276,7 @@ export async function submitApplication(applicationId: string, submissionId: str
   });
 
   revalidatePath("/portal");
-  revalidatePath("/profile/applications");
+  revalidatePath("/portal/applications");
   revalidatePath("/admin/submissions");
   revalidatePath(`/admin/submissions/${submissionId}`);
   if (application) {

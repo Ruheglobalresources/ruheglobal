@@ -4,13 +4,12 @@
 // Desktop: ONE frame made of the sidebar and the top navbar together (like the
 // Paystack dashboard). Its colour is --portal-frame, set once in portal-shell.tsx.
 // The navbar is not a separate bar stacked on the sidebar: its first cell
-// is the sidebar's own header (the Ruhe Global Resources logo lockup), so the logo
-// row, the doors and Courses / Institutions all sit on one continuous strip, and
-// the sidebar menu hangs from it. Each sidebar has exactly one door, and it sits
-// outside the bar:
+// is the sidebar's own header (the logo), so the logo row, the doors and
+// Courses / Institutions all sit on one continuous strip, and the sidebar menu hangs
+// from it. Each sidebar has exactly one door, and it sits outside the bar:
 //   - menu door: right after the sidebar, in the navbar
 //   - chat door: at the right end of the navbar, next to the chat bar
-// Phones: a bottom bar.
+// Phones: the bottom bar (portal-bottom-bar.tsx); its Chat tab opens the chat as a full page (/portal/chat).
 //
 // Menu items without an href are pages that are not built yet. They show a
 // "Soon" tag instead of a link, so nothing leads to a 404. Give one an href
@@ -40,8 +39,9 @@ import {
 import type { PortalCounsellor } from "@/lib/portal-counsellor";
 import { cn } from "@/lib/utils";
 import { CounsellorCard } from "./counsellor-card";
-import { PortalBrand } from "./portal-brand";
+import { APPLICATIONS_PAGE, isCatalogPath } from "@/lib/portal-paths";
 import { LEFT_EXPANDED, usePortalShell } from "./portal-shell";
+import { PortalBottomBar } from "./portal-bottom-bar";
 import { ProfileCard } from "./profile-card";
 
 type MenuItem = {
@@ -52,35 +52,21 @@ type MenuItem = {
   highlight?: boolean;
 };
 
-const isCatalogPath = (p: string) => p.startsWith("/courses") || p.startsWith("/institutions");
-
 const MENU: MenuItem[] = [
   { label: "Home", icon: House, href: "/portal", match: (p) => p === "/portal" },
-  { label: "Profile", icon: User, href: "/portal/profile", match: (p) => p.startsWith("/portal/profile") },
+  { label: "Profile", icon: User },
   { label: "Documents", icon: Folder },
   { label: "Shortlist", icon: Heart },
   {
     label: "Applications",
     icon: FileStack,
-    href: "/portal#applications",
+    href: APPLICATIONS_PAGE,
     // The application wizard lives at /portal/<terminal>/<application>
-    match: (p) => p !== "/portal" && !p.startsWith("/portal/profile") && !isCatalogPath(p),
+    match: (p) => p !== "/portal" && !isCatalogPath(p),
   },
   { label: "Meet", icon: CalendarDays },
   { label: "Refer & Earn", icon: Gift, highlight: true },
   { label: "Report counsellor", icon: MessageSquareWarning },
-];
-
-const BOTTOM: MenuItem[] = [
-  { label: "Home", icon: House, href: "/portal", match: (p) => p === "/portal" },
-  { label: "Courses", icon: GraduationCap, href: "/courses", match: (p) => p.startsWith("/courses") },
-  { label: "Institutions", icon: Building2, href: "/institutions", match: (p) => p.startsWith("/institutions") },
-  {
-    label: "Applications",
-    icon: FileStack,
-    href: "/portal#applications",
-    match: (p) => p !== "/portal" && !p.startsWith("/portal/profile") && !isCatalogPath(p),
-  },
 ];
 
 // Thin ruby bar on the screen edge next to the active item. The offset matches
@@ -91,7 +77,7 @@ const accentBar = (offset: string) =>
   }`;
 
 type PortalNavProps = {
-  user: { name: string | null; email: string | null; image?: string | null };
+  user: { name: string | null; email: string | null };
   counsellor: PortalCounsellor | null;
 };
 
@@ -107,7 +93,7 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
   const pathname = usePathname();
   const { ready, dragging, leftCollapsed: userCollapsed, toggleLeft, chatOpen, setChatOpen, unread } = usePortalShell();
 
-  // Hover peek: only when the user has closed the panel. Hovering the icon rail
+  // Hover-peek: only when the user has closed the panel. Hovering the icon rail
   // shows the full sidebar over the page; leaving it closes it again. If the
   // user has the panel open, hover does nothing. `collapsed` is what gets drawn.
   const [hovered, setHovered] = useState(false);
@@ -138,8 +124,23 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
           )}
           style={{ width: "var(--portal-left)" }}
         >
-          {/* Logo image only when the rail is collapsed, full lockup when expanded */}
-          <PortalBrand showText={!userCollapsed} />
+          {userCollapsed ? (
+            <Link
+              href="/portal"
+              aria-label="Ruhe Global Resources"
+              title="Ruhe Global Resources"
+              className="grid size-10 shrink-0 place-items-center rounded-xl bg-ruby-500 font-display text-lg font-semibold text-white outline-none transition hover:bg-ruby-600 focus-visible:ring-2 focus-visible:ring-ruby-500/60"
+            >
+              R
+            </Link>
+          ) : (
+            <Link
+              href="/portal"
+              className="min-w-0 truncate pl-1 font-display text-lg font-semibold tracking-tight text-ruby-600 outline-none focus-visible:ring-2 focus-visible:ring-ruby-500/60"
+            >
+              Ruhe<span className="text-ink"> Global Resources</span>
+            </Link>
+          )}
         </div>
 
         {/* Menu door: the only one for the menu sidebar */}
@@ -215,7 +216,7 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
           )}
         >
           <div className={cn("space-y-3", collapsed && "flex flex-col items-center")}>
-            <ProfileCard name={user.name} email={user.email} image={user.image} compact={collapsed} />
+            <ProfileCard name={user.name} email={user.email} compact={collapsed} />
 
             {collapsed ? (
               <button
@@ -322,59 +323,8 @@ export function PortalNav({ user, counsellor }: PortalNavProps) {
         </div>
       </aside>
 
-      {/* Bottom bar (phones and tablets) */}
-      <nav
-        aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-30 flex h-[var(--portal-bottom-bar)] border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
-      >
-        {BOTTOM.map(({ label, icon: Icon, href, match }) => {
-          // while the chat page is open it is the current page, so nothing else looks selected
-          const active = !chatOpen && href && match ? match(pathname) : false;
-          return (
-            <Link
-              key={label}
-              href={href!}
-              aria-current={active ? "page" : undefined}
-              onClick={() => setChatOpen(false)}
-              className="flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium"
-            >
-              <span
-                className={cn(
-                  "grid h-8 w-16 place-items-center rounded-full transition",
-                  active ? "bg-ruby-100 text-ruby-700" : "text-neutral-500"
-                )}
-              >
-                <Icon size={20} />
-              </span>
-              <span className={active ? "text-ruby-700" : "text-neutral-500"}>{label}</span>
-            </Link>
-          );
-        })}
-
-        {/* Chat: the conversation as a full screen page that stops above this bar */}
-        <button
-          type="button"
-          onClick={() => setChatOpen(!chatOpen)}
-          aria-pressed={chatOpen}
-          aria-label={unread ? `Chat, ${unread} unread` : "Chat"}
-          className="flex flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium"
-        >
-          <span
-            className={cn(
-              "relative grid h-8 w-16 place-items-center rounded-full transition",
-              chatOpen ? "bg-ruby-100 text-ruby-700" : "text-neutral-500"
-            )}
-          >
-            <MessageCircle size={20} />
-            {unread > 0 && (
-              <span className="absolute right-3 top-0 grid min-w-4 place-items-center rounded-full bg-ruby-500 px-1 text-[10px] font-semibold leading-4 text-white">
-                {unread > 9 ? "9+" : unread}
-              </span>
-            )}
-          </span>
-          <span className={chatOpen ? "text-ruby-700" : "text-neutral-500"}>Chat</span>
-        </button>
-      </nav>
+      {/* Bottom bar (phones and tablets): a shared component, also used on the public courses and institutions pages */}
+      <PortalBottomBar unread={unread} />
     </>
   );
 }

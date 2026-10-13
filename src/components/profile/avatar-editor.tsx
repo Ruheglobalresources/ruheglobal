@@ -106,7 +106,7 @@ export function AvatarEditor({
           disabled={busy}
           className="text-xs font-medium text-ink/50 transition hover:text-ruby-600 disabled:opacity-50"
         >
-          {removing ? "Removing..." : "Remove photo"}
+          {removing ? "Removing..." : ""}
         </button>
       )}
     </div>

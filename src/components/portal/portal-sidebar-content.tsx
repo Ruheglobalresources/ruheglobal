@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { elevation1 } from "@/components/dashboard/styles";
 import type { PortalCounsellor } from "@/lib/portal-counsellor";
+import { APPLICATIONS_PAGE, isCatalogPath } from "@/lib/portal-paths";
 import { cn } from "@/lib/utils";
 import { CounsellorCard } from "./counsellor-card";
 import { ProfileCard } from "./profile-card";
@@ -37,19 +38,17 @@ type MenuItem = {
   highlight?: boolean;
 };
 
-export const isCatalogPath = (p: string) => p.startsWith("/courses") || p.startsWith("/institutions");
-
 const MENU: MenuItem[] = [
   { label: "Home", icon: House, href: "/portal", match: (p) => p === "/portal" },
-  { label: "Profile", icon: User, href: "/portal/profile", match: (p) => p.startsWith("/portal/profile") },
+  { label: "Profile", icon: User },
   { label: "Documents", icon: Folder },
   { label: "Shortlist", icon: Heart },
   {
     label: "Applications",
     icon: FileStack,
-    href: "/portal#applications",
+    href: APPLICATIONS_PAGE,
     // The application wizard lives at /portal/<terminal>/<application>
-    match: (p) => p !== "/portal" && !p.startsWith("/portal/profile") && !isCatalogPath(p),
+    match: (p) => p !== "/portal" && !isCatalogPath(p),
   },
   { label: "Meet", icon: CalendarDays },
   { label: "Refer & Earn", icon: Gift, highlight: true },
@@ -57,7 +56,7 @@ const MENU: MenuItem[] = [
 ];
 
 type PortalSidebarContentProps = {
-  user: { name: string | null; email: string | null; image?: string | null };
+  user: { name: string | null; email: string | null };
   counsellor: PortalCounsellor | null;
   /** Called when a link inside the sidebar is followed. The mobile sheet uses it to close itself. */
   onNavigate?: () => void;
@@ -68,7 +67,7 @@ export function PortalSidebarContent({ user, counsellor, onNavigate }: PortalSid
 
   return (
   <div className="space-y-4">
-    <ProfileCard name={user.name} email={user.email} image={user.image} />
+    <ProfileCard name={user.name} email={user.email} />
 
     <div>
       <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-white/50">Your counsellor</p>

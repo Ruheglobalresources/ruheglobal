@@ -91,7 +91,7 @@ export default async function PortalDashboardPage() {
             <h2 className="text-xl font-semibold text-ink">Applications</h2>
             <p className="text-sm text-neutral-500">Pick up where you left off, or choose a terminal to start something new.</p>
           </div>
-          <Link href="/profile/applications" className="shrink-0 text-sm font-medium text-[color:var(--color-teal)] hover:underline">
+          <Link href="/portal/applications" className="shrink-0 text-sm font-medium text-[color:var(--color-teal)] hover:underline">
             My applications
           </Link>
         </div>

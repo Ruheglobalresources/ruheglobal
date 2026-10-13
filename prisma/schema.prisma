@@ -47,6 +47,9 @@ model User {
   // Submissions this user (as staff) has been assigned to counsel.
   counseledSubmissions  ApplicationSubmission[] @relation("CounseledSubmissions")
 
+  // The saved answers of this user's eligibility checks (one per kind: study abroad, visa...).
+  eligibilityProfiles   EligibilityProfile[]
+
   // Conversations where this user is the client (support/enquiry chats).
   clientConversations Conversation[] @relation("ConversationClient")
   // Conversations an admin/counselor has joined or picked up — a chat can
@@ -160,6 +163,7 @@ enum PortalKind {
   WORK_ABROAD
   HOUSING
   EVENT // events and fairs, collects visitor data
+  ELIGIBILITY // the eligibility check questions (/portal/eligibility-check), never listed as an application
 }
 
 model PortalTerminal {
@@ -207,6 +211,20 @@ enum FieldType {
   FILE // e.g. passport bio page, proof of funds, transcripts
 }
 
+// How a SELECT / MULTI_SELECT is drawn.
+enum FieldDisplay {
+  DEFAULT // a dropdown (what every existing field uses)
+  PILLS // every choice as a tap-able pill, like "Foundation / Undergraduate / Postgraduate"
+  SEARCH // a search box over a long list (majors, universities), with `suggestions` as chips
+}
+
+// Where the choices of a SELECT / MULTI_SELECT come from.
+enum OptionsSource {
+  STATIC // the list typed in `options`
+  COUNTRIES // the Country table
+  UNIVERSITIES // the University table, filtered by the country picked in `dependsOnKey`
+}
+
 model FieldDefinition {
   id          String    @id @default(uuid())
   key         String    @unique // "family_name", "passport_number", "property_budget"
@@ -216,6 +234,19 @@ model FieldDefinition {
   placeholder String?
   helpText    String?
   options     Json? // choices for SELECT/MULTI_SELECT, e.g. ["Mr","Mrs","Ms","Dr"]
+
+  // How a SELECT / MULTI_SELECT is drawn and where its choices come from. The defaults keep every
+  // existing field exactly as it is today (a dropdown with the choices typed in `options`).
+  display       FieldDisplay  @default(DEFAULT)
+  optionsSource OptionsSource @default(STATIC)
+  // Only for a source that depends on an earlier answer: the `key` of that field. Example: the
+  // university field has optionsSource UNIVERSITIES and dependsOnKey "education_country", so it
+  // lists the universities of the country picked there.
+  dependsOnKey  String?
+  // MULTI_SELECT only: how many choices may be picked ("pick up to 5 subjects"). Null = no limit.
+  maxSelections Int?
+  // Shown as quick-pick chips under a search box ("Popular searches"). Same shape as `options`.
+  suggestions   Json?
 
   // Optional validation, enforced server-side when a value is saved.
   minLength Int?
@@ -256,7 +287,10 @@ model Application {
   terminal    PortalTerminal          @relation(fields: [terminalId], references: [id], onDelete: Cascade)
   tags        ApplicationTag[]
   fields      ApplicationField[]
+  steps       ApplicationStep[]
   submissions ApplicationSubmission[]
+
+  eligibilityProfiles EligibilityProfile[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -292,6 +326,11 @@ model ApplicationField {
   stepNumber        Int     @default(1) // which step of the wizard this field appears on
   order             Int     @default(0) // position within that step
 
+  // Show this field only when an earlier answer matches. Null = always shown. Shape:
+  //   { "fieldKey": "study_level", "in": ["Postgraduate", "Doctorate"] }
+  // A step whose fields are all hidden is skipped. Hidden fields are never required.
+  showWhen          Json?
+
   application     Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   fieldDefinition FieldDefinition   @relation(fields: [fieldDefinitionId], references: [id], onDelete: Cascade)
   values          SubmissionValue[]
@@ -299,6 +338,21 @@ model ApplicationField {
   @@unique([applicationId, fieldDefinitionId])
   @@index([applicationId])
   @@index([fieldDefinitionId])
+}
+
+// The heading of one step of an application ("What do you wish to study?"). Optional: a step
+// without a row here keeps the old behaviour and is titled with the category of its first field.
+model ApplicationStep {
+  id            String  @id @default(uuid())
+  applicationId String
+  stepNumber    Int
+  title         String
+  emoji         String? // shown after the title, e.g. "📚"
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, stepNumber])
+  @@index([applicationId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -843,7 +897,6 @@ model SchoolScholarship {
   @@index([schoolId])
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────
 // USER PROFILE
 // One row per applicant (created on first save), plus their qualifications
@@ -915,4 +968,78 @@ model UserTest {
   updatedAt DateTime @updatedAt
 
   @@index([userId, kind])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// COUNTRIES AND UNIVERSITIES (where an applicant studied before)
+// Feeds the "country of education" and "university" questions of the eligibility check.
+// This is NOT the list of places to study at: those are Institution and School above.
+// Edited in the database at any time; prisma/seed-countries.ts only fills in what is missing.
+// ─────────────────────────────────────────────────────────────────────────
+
+enum UniversityOwnership {
+  PUBLIC
+  PRIVATE
+}
+
+model Country {
+  id        String  @id @default(uuid())
+  name      String  @unique // "Nigeria"
+  code      String  @unique // ISO alpha-2, "NG"
+  region    String? // "West Africa"
+  continent String  @default("Africa")
+  order     Int     @default(100) // lower first; 100 = alphabetical after the pinned countries
+  isActive  Boolean @default(true)
+
+  universities University[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([continent, order])
+}
+
+model University {
+  id        String              @id @default(uuid())
+  countryId String
+  name      String
+  shortName String? // "UNILAG"
+  city      String?
+  website   String?
+  ownership UniversityOwnership @default(PUBLIC)
+  order     Int                 @default(0) // lower first: most visited / best known at the top
+  isActive  Boolean             @default(true)
+
+  country Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([countryId, name])
+  @@index([countryId, order])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// ELIGIBILITY PROFILE
+// What a user answered in an eligibility check, kept as one flat { fieldKey: value } object so the
+// course search (and later the mobile app) can read it in one query without joining the
+// submission tables. The submission itself (ApplicationSubmission + SubmissionValue) stays the
+// source of truth; this row is rewritten from it every time the check is saved or finished.
+// ─────────────────────────────────────────────────────────────────────────
+
+model EligibilityProfile {
+  id            String    @id @default(uuid())
+  userId        String
+  applicationId String // the eligibility application answered (Study abroad, Visa...)
+  answers       Json // { "study_level": "Postgraduate", "subjects": ["Computer Science"], ... }
+  completedAt   DateTime? // null while the check is only partly answered
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, applicationId])
+  @@index([userId])
 }
