@@ -2,9 +2,11 @@
 
 import * as z from "zod";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/require-user";
+import { syncSubmissionToCrm } from "@/lib/zoho/sync-submission";
 import { SaveSubmissionStepSchema } from "@/schemas";
 import { isEditableStatus, isUnsubmittedStatus } from "@/constants/submission-status";
 import {
@@ -269,6 +271,13 @@ export async function submitApplication(applicationId: string, submissionId: str
       },
     }),
   ]);
+
+  // Push the applicant to Zoho CRM as a Lead. Only on the FIRST submit (a resubmit would
+  // create a duplicate lead), and after the response is sent so the applicant never waits
+  // on Zoho. A CRM failure is logged and never breaks the submit.
+  if (!submission.submittedAt) {
+    after(() => syncSubmissionToCrm(submission.id));
+  }
 
   const application = await db.application.findUnique({
     where: { id: applicationId },
