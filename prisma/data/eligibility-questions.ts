@@ -362,6 +362,13 @@ export const PILLS: PillSeed[] = [
         emoji: "📅",
         fields: [{ key: "study_start", required: true }],
       },
+      {
+        // The school search needs a country. "Other" gives none: the person picks it on the search page.
+        number: 7,
+        title: "Where would you like to study?",
+        emoji: "🌍",
+        fields: [{ key: "destination_country", required: true }],
+      },
     ],
   },
   {

@@ -3,14 +3,15 @@
 // src/actions/eligibility.ts
 // The server side of the eligibility check. Saving each step reuses saveSubmissionStep (the same
 // action the application wizard uses); what is specific to the eligibility check lives here:
-// loading a flow, the universities of a country, and finishing (which saves the profile the
-// course search reads).
+// loading a flow, the universities of a country, and finishing (which saves the profile and says
+// where the person goes next: the school search for Study abroad, the course list for the others).
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/require-user";
 import { isEditableStatus, isUnsubmittedStatus } from "@/constants/submission-status";
 import { getEligibilityFlow, type EligibilityFlowData } from "@/lib/eligibility-data";
 import { courseSearchQuery, findMissingRequired, getVisibleSteps, toProfileAnswers } from "@/lib/eligibility";
+import { STUDY_ABROAD_SLUG, studySearchUrl } from "@/lib/eligibility-search";
 
 export async function loadEligibilityFlow(applicationId: string): Promise<EligibilityFlowData | null> {
   const user = await requireUser();
@@ -32,7 +33,7 @@ export async function loadUniversities(countryName: string): Promise<string[]> {
 }
 
 type CompleteResult =
-  | { success: true; query: string }
+  | { success: true; redirect: string }
   | { success: false; error: string; stepNumber?: number };
 
 // Called on the last step. Everything is checked again here, from what is saved in the database:
@@ -59,7 +60,8 @@ export async function completeEligibility(applicationId: string, submissionId: s
     return { success: false, error: `"${missing.label}" is required.`, stepNumber: missing.stepNumber };
   }
 
-  const answers = toProfileAnswers(visible, flow.answers) as Prisma.InputJsonValue;
+  const profile = toProfileAnswers(visible, flow.answers);
+  const answers = profile as Prisma.InputJsonValue;
   const now = new Date();
 
   await db.$transaction([
@@ -77,5 +79,11 @@ export async function completeEligibility(applicationId: string, submissionId: s
     }),
   ]);
 
-  return { success: true, query: courseSearchQuery(toProfileAnswers(visible, flow.answers)) };
+  // Study abroad ends on the school search, with the answers filled in. The other checks keep going
+  // to the course list.
+  const application = await db.application.findUnique({ where: { id: applicationId }, select: { slug: true } });
+  if (application?.slug === STUDY_ABROAD_SLUG) return { success: true, redirect: studySearchUrl(profile) };
+
+  const query = courseSearchQuery(profile);
+  return { success: true, redirect: query ? `/courses?q=${encodeURIComponent(query)}` : "/courses" };
 }

@@ -6,7 +6,8 @@
 //      (Study abroad, Visa application, Accommodation, Work abroad...). Tapping one opens its questions.
 //   2. The questions of that application, one step at a time in the step modal. Steps and questions
 //      come from the database, so what is asked, in which order, and when, is edited without code.
-//   3. On the last step the answers are saved on the user and the course search opens with them.
+//   3. On the last step the answers are saved on the user and the person lands on the next page:
+//      Study abroad opens the school search (/search) with the answers filled in, the others the course list.
 // Each step is saved when the person presses Continue (the same save as the application wizard).
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -158,7 +159,7 @@ export function EligibilityFlow({ pills }: { pills: EligibilityPill[] }) {
       return;
     }
 
-    router.push(done.query ? `/courses?q=${encodeURIComponent(done.query)}` : "/courses");
+    router.push(done.redirect);
   }
 
   // ---- 1. what would you like to do today -----------------------------------

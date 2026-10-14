@@ -10,7 +10,9 @@
     "seed:fields": "tsx prisma/seed-fields.ts",
     "seed:institutions": "tsx prisma/seedInstitutions.ts",
     "seed:school": "tsx prisma/seed-school.ts",
-    "seed-eligibility": "tsx prisma/seed-eligibility.ts"
+    "seed-eligibility": "tsx prisma/seed-eligibility.ts",
+    "seed:destinations": "tsx prisma/seed-destinations.ts",
+    "seed:eligibility": "tsx prisma/seed-eligibility"
     
   },
   "dependencies": {

@@ -216,6 +216,7 @@ enum FieldDisplay {
   DEFAULT // a dropdown (what every existing field uses)
   PILLS // every choice as a tap-able pill, like "Foundation / Undergraduate / Postgraduate"
   SEARCH // a search box over a long list (majors, universities), with `suggestions` as chips
+  CARDS // every choice as a card with a short plain-words explanation under it (visa purposes, visa types)
 }
 
 // Where the choices of a SELECT / MULTI_SELECT come from.
@@ -223,6 +224,10 @@ enum OptionsSource {
   STATIC // the list typed in `options`
   COUNTRIES // the Country table
   UNIVERSITIES // the University table, filtered by the country picked in `dependsOnKey`
+  DESTINATIONS // the Destination table: the countries people move to
+  CITIES // the City table, filtered by the destination picked in `dependsOnKey`
+  VISA_PURPOSES // the VisaPurpose table: "What do you want to do abroad?"
+  VISA_TYPES // the VisaType table: destination in `dependsOnKey`, purpose in `alsoDependsOnKey`
 }
 
 model FieldDefinition {
@@ -243,6 +248,14 @@ model FieldDefinition {
   // university field has optionsSource UNIVERSITIES and dependsOnKey "education_country", so it
   // lists the universities of the country picked there.
   dependsOnKey  String?
+  // A second earlier answer the list depends on. Only VISA_TYPES uses it: the destination is in
+  // `dependsOnKey` and the purpose the person picked is here.
+  alsoDependsOnKey String?
+  // SELECT only: add an "Other" choice at the end of the list. Picking it opens a text box and what
+  // the person types is saved as the answer (a city that is not in the list). A list that comes back
+  // empty (a destination with no cities yet) shows the text box straight away.
+  allowOther    Boolean       @default(false)
+  otherLabel    String? // wording of that choice, "Other" when empty
   // MULTI_SELECT only: how many choices may be picked ("pick up to 5 subjects"). Null = no limit.
   maxSelections Int?
   // Shown as quick-pick chips under a search box ("Popular searches"). Same shape as `options`.
@@ -1042,4 +1055,90 @@ model EligibilityProfile {
 
   @@unique([userId, applicationId])
   @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// DESTINATIONS, CITIES AND VISA TYPES
+// The countries people move to, the major cities they settle in, and the visas that can take them
+// there. They feed the Accommodation and Visa Application checks of the eligibility flow:
+//   Accommodation: destination -> City (with an "Other" choice for a city that is not listed)
+//   Visa:          destination -> VisaPurpose ("What do you want to do abroad?") -> VisaType
+// The person never has to know visa names: they pick a goal in plain words, then pick from the
+// visas of that destination that serve it, each with a short explanation.
+// This is separate from Country (where people studied before) and from Institution / School.
+// A Destination `name` must match the choices of the "Destination country" question.
+// Edited in the database at any time; prisma/seed-destinations.ts only fills in what is missing.
+// ─────────────────────────────────────────────────────────────────────────
+
+model Destination {
+  id       String  @id @default(uuid())
+  name     String  @unique // "United Kingdom"
+  code     String  @unique // ISO alpha-2, "GB"
+  order    Int     @default(100) // lower first
+  isActive Boolean @default(true)
+
+  cities    City[]
+  visaTypes VisaType[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, order])
+}
+
+model City {
+  id            String  @id @default(uuid())
+  destinationId String
+  name          String // "Manchester"
+  region        String? // "England", "Ontario", "Bavaria"
+  order         Int     @default(100) // lower first: the city most people choose at the top
+  isActive      Boolean @default(true)
+
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([destinationId, name])
+  @@index([destinationId, isActive, order])
+}
+
+// The first question of the visa funnel, in the person's own words.
+model VisaPurpose {
+  id          String  @id @default(uuid())
+  slug        String  @unique // "study", "work", "visit", "family", "business", "not-sure"
+  name        String // "Study"
+  goalLabel   String // what the person taps: "I want to study abroad"
+  description String? // one plain line under it
+  emoji       String?
+  order       Int     @default(100)
+  isActive    Boolean @default(true)
+
+  visaTypes VisaType[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// One visa of one destination, filed under the purpose it serves. A purpose with no visa in a
+// destination is simply not offered there.
+model VisaType {
+  id            String  @id @default(uuid())
+  destinationId String
+  purposeId     String
+  slug          String // "student", "skilled-worker": unique inside the destination
+  name          String // "Student visa"
+  summary       String // who it is for, in plain words
+  serviceSlug   String? // the page under /services that explains it, "study-visa"
+  order         Int     @default(100) // lower first: the most common visa at the top
+  isActive      Boolean @default(true)
+
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  purpose     VisaPurpose @relation(fields: [purposeId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([destinationId, slug])
+  @@index([destinationId, purposeId, isActive, order])
 }

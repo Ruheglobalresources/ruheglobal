@@ -45,6 +45,19 @@ export function institutionToSchool(row: DbInstitution): School {
   };
 }
 
+/**
+ * Marks each school with whether the student's IELTS overall meets its requirement. A school whose
+ * requirement is unknown is left unmarked. Without a score nothing changes.
+ */
+export function markIeltsFit(schools: School[], score?: number): School[] {
+  if (score === undefined) return schools;
+  return schools.map((school): School => {
+    const required = school.ielts.overall;
+    if (required === null) return school;
+    return { ...school, ieltsFit: required <= score ? "meets" : "below" };
+  });
+}
+
 /** The institutions shown before the student searches at all. */
 export async function listFeaturedInstitutions(
   limit = FEATURED_LIMIT,
@@ -139,10 +152,12 @@ function matchesAny(haystack: string, keywords: string[]): boolean {
 function matchesFilters(row: DbInstitution, f: SearchFilters): boolean {
   const text = `${row.summary} ${row.programs.join(" ")}`.toLowerCase();
 
-  if (f.field !== "Any field") {
-    const keywords = FIELD_KEYWORDS[f.field];
-    if (keywords && !matchesAny(text, keywords)) return false;
-  }
+  // The field of study and the subjects the student picked in the eligibility check both count:
+  // a school matches when its programmes mention any of them.
+  const fieldKeywords = f.field !== "Any field" ? (FIELD_KEYWORDS[f.field] ?? []) : [];
+  const subjectKeywords = (f.subjects ?? []).map((s) => s.toLowerCase().trim()).filter(Boolean);
+  const keywords = [...fieldKeywords, ...subjectKeywords];
+  if (keywords.length > 0 && !matchesAny(text, keywords)) return false;
 
   const levelKeywords = LEVEL_KEYWORDS[f.level];
   if (levelKeywords && !matchesAny(text, levelKeywords)) return false;
@@ -162,7 +177,9 @@ function matchesFilters(row: DbInstitution, f: SearchFilters): boolean {
 /**
  * Broad ("Any institution") search against our own catalog. Country is
  * matched exactly at the database level; level/field/type are then
- * filtered in JS with the keyword heuristics above.
+ * filtered in JS with the keyword heuristics above. When the student's IELTS
+ * is known, the schools they qualify for come first, then the ones with no
+ * known requirement, then the ones above their score (kept, not hidden).
  */
 export async function searchInstitutionsInDb(
   filters: SearchFilters,
@@ -172,5 +189,14 @@ export async function searchInstitutionsInDb(
     orderBy: [{ order: "asc" }, { name: "asc" }],
   });
 
-  return inCountry.filter((row) => matchesFilters(row, filters)).slice(0, filters.count);
+  const matching = inCountry.filter((row) => matchesFilters(row, filters));
+
+  const score = filters.ieltsScore;
+  if (score !== undefined) {
+    const rank = (row: DbInstitution) => (row.ieltsOverall === null ? 1 : row.ieltsOverall <= score ? 0 : 2);
+    // Array.sort is stable, so the admin's own order is kept inside each group.
+    matching.sort((a, b) => rank(a) - rank(b));
+  }
+
+  return matching.slice(0, filters.count);
 }

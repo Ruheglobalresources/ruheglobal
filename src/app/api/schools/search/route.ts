@@ -8,8 +8,10 @@ import {
   findInstitutionByName,
   institutionToSchool,
   listFeaturedInstitutions,
+  markIeltsFit,
   searchInstitutionsInDb,
 } from "@/lib/school-search/db-search";
+import { ELIGIBILITY_SUBJECTS, MAX_SEARCH_SUBJECTS } from "@/lib/eligibility-search";
 import {
   REPORT_SCHOOLS_SCHEMA,
   type RawSchool,
@@ -74,6 +76,19 @@ function pick(value: unknown, allowed: readonly string[], fallback: string): str
   return allowed.includes(v) ? v : fallback;
 }
 
+/** The subjects from the eligibility check: only names from our own list, no repeats. */
+function pickSubjects(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const picked = value.map((v) => clean(v, 80)).filter((v) => ELIGIBILITY_SUBJECTS.includes(v));
+  return [...new Set(picked)].slice(0, MAX_SEARCH_SUBJECTS);
+}
+
+/** An IELTS overall band from 0 to 9, in halves. Anything else is ignored. */
+function pickIelts(value: unknown): number | undefined {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || value > 9) return undefined;
+  return Math.round(value * 2) / 2;
+}
+
 const BUDGET_LABELS: Record<string, string> = {
   any: "no strict budget limit",
   "under-10000-usd": "under about USD 10,000 per year",
@@ -122,6 +137,12 @@ function buildUserPrompt(f: SearchFilters): string {
       : [`Country: ${f.country}`, `Institution type: ${f.institutionType}`]),
     `Study level: ${f.level}`,
     `Field of study: ${f.field}`,
+    ...(f.subjects?.length ? [`Subjects of interest: ${f.subjects.join(", ")}`] : []),
+    ...(f.ieltsScore !== undefined
+      ? [
+          `The student's IELTS overall score is ${f.ieltsScore}. Prefer institutions whose requirement for this level is at or below it.`,
+        ]
+      : []),
     `Budget: ${BUDGET_LABELS[f.budget] ?? "no strict budget limit"}`,
     "",
     "For each one I need: the IELTS requirement for this level, the international tuition fee, 2-3 real programme names in this field, the official website, and the exact English Wikipedia article title so I can pull a campus photo.",
@@ -250,6 +271,8 @@ export async function POST(req: NextRequest) {
       BUDGETS.map((b) => b.value),
       "any",
     ),
+    subjects: pickSubjects(body.subjects),
+    ieltsScore: pickIelts(body.ieltsScore),
     // A specific institution is a single lookup, not a shortlist of N.
     count:
       institution !== "Any institution"
@@ -274,7 +297,7 @@ export async function POST(req: NextRequest) {
       const matches = await searchInstitutionsInDb(filters);
       if (matches.length > 0) {
         return NextResponse.json(
-          buildDbResponse(matches.map(institutionToSchool), startedAt),
+          buildDbResponse(markIeltsFit(matches.map(institutionToSchool), filters.ieltsScore), startedAt),
         );
       }
     }
@@ -429,6 +452,7 @@ export async function POST(req: NextRequest) {
       "ai",
       startedAt,
     );
+    payload.schools = markIeltsFit(payload.schools, filters.ieltsScore);
     console.log(
       `[schools/search] ${payload.schools.length} schools in ${payload.elapsedMs}ms (${filters.country} / ${filters.level})`,
     );
@@ -474,3 +498,6 @@ export async function GET() {
     );
   }
 }
+
+
+

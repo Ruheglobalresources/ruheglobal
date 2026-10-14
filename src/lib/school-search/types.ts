@@ -7,6 +7,10 @@ export type SearchFilters = {
   field: string;
   budget: string;
   count: number;
+  /** From the eligibility check: the subjects the student picked. Used to match programmes. */
+  subjects?: string[];
+  /** From the eligibility check: the student's IELTS overall. Used to put schools they qualify for first. */
+  ieltsScore?: number;
 };
 
 export type School = {
@@ -34,6 +38,8 @@ export type School = {
   website: string | null;
   imageUrl: string | null;
   logoUrl: string | null;
+  /** Only when the search carried the student's IELTS and the school's requirement is known. */
+  ieltsFit?: "meets" | "below";
 };
 
 export type SourceLink = { title: string; url: string };
