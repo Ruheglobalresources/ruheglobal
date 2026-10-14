@@ -15,7 +15,7 @@ export default function WhatsAppFloatingButton() {
   )}?text=${encodeURIComponent(message)}`
 
   return (
-    <div className="fixed bottom-[calc(1.25rem+var(--portal-bar-offset,0px))] right-5 z-50 lg:bottom-5">
+    <div className="fixed bottom-[calc(1.25rem+var(--portal-bar-offset,0px))] left-5 z-50 lg:bottom-5">
       <Link
         href={whatsappUrl}
         target="_blank"
