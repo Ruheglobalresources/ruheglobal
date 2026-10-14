@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { FieldChecklist } from "@/components/admin/field-checklist";
+import { getApplicationInputsView } from "@/lib/application-inputs-data";
+import { ApplicationInputs } from "@/components/admin/application-inputs";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ApplicationForm } from "@/app/(admin)/admin/applications/application-form";
 
@@ -10,14 +11,13 @@ export const dynamic = "force-dynamic";
 export default async function TerminalFieldsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const [terminal, applications, allFields] = await Promise.all([
+  const [terminal, applications] = await Promise.all([
     db.portalTerminal.findUnique({ where: { id } }),
     db.application.findMany({
       where: { terminalId: id },
       orderBy: { order: "asc" },
       include: { _count: { select: { fields: true } } },
     }),
-    db.fieldDefinition.findMany({ orderBy: [{ category: "asc" }, { label: "asc" }] }),
   ]);
 
   if (!terminal) notFound();
@@ -31,9 +31,8 @@ export default async function TerminalFieldsPage({ params }: { params: Promise<{
     </Link>
   );
 
-  // No application under this terminal yet — most terminals only need one
-  // (the application effectively *is* the form for that terminal), so this
-  // is the common first step rather than a dead end.
+  // No application under this terminal yet. Most terminals only need one (the application
+  // effectively is the form for that terminal), so this is the common first step, not a dead end.
   if (applications.length === 0) {
     return (
       <div>
@@ -41,7 +40,7 @@ export default async function TerminalFieldsPage({ params }: { params: Promise<{
         <div className="rounded-xl border border-dashed bg-white p-8 text-center">
           <p className="mb-1 font-medium">No application yet under &quot;{terminal.name}&quot;</p>
           <p className="mb-4 text-sm text-neutral-500">
-            Create one first, then come back here to pick its fields.
+            Create one first, then come back here to pick its inputs.
           </p>
           <div className="flex justify-center">
             <ApplicationForm terminals={[{ id: terminal.id, name: terminal.name }]} defaultTerminalId={terminal.id} />
@@ -51,32 +50,29 @@ export default async function TerminalFieldsPage({ params }: { params: Promise<{
     );
   }
 
-  // Exactly one application — the common case — manage its fields right here.
+  // Exactly one application (the common case): manage its inputs right here.
   if (applications.length === 1) {
-    const application = await db.application.findUnique({
-      where: { id: applications[0].id },
-      include: { fields: { include: { fieldDefinition: true } } },
-    });
-    if (!application) notFound();
+    const application = applications[0];
+    const inputs = await getApplicationInputsView(application.id);
+    if (!inputs) notFound();
 
     return (
       <div>
         <BackLink />
         <div className="mb-6">
           <h1 className="text-xl font-semibold">
-            {terminal.icon ? `${terminal.icon} ` : ""}Field library — {terminal.name}
+            {terminal.icon ? `${terminal.icon} ` : ""}Inputs: {terminal.name}
           </h1>
           <p className="text-sm text-neutral-500">
-            Toggle the inputs applicants fill out for &quot;{application.name}&quot;. Attached fields can be
-            fine-tuned (step, order, required) below.
+            The inputs applicants fill out for &quot;{application.name}&quot;.
           </p>
         </div>
-        <FieldChecklist applicationId={application.id} allFields={allFields} attached={application.fields} />
+        <ApplicationInputs view={inputs} />
       </div>
     );
   }
 
-  // Multiple applications under this terminal — let the admin pick which one.
+  // Several applications under this terminal: pick which one.
   return (
     <div>
       <BackLink />
@@ -84,7 +80,7 @@ export default async function TerminalFieldsPage({ params }: { params: Promise<{
         <h1 className="text-xl font-semibold">
           {terminal.name} has {applications.length} applications
         </h1>
-        <p className="text-sm text-neutral-500">Pick one to manage its field library.</p>
+        <p className="text-sm text-neutral-500">Pick one to manage its inputs.</p>
       </div>
       <div className="space-y-2">
         {applications.map((a) => (
@@ -98,7 +94,7 @@ export default async function TerminalFieldsPage({ params }: { params: Promise<{
                 {a.icon ? `${a.icon} ` : ""}
                 {a.name}
               </p>
-              <p className="text-xs text-neutral-500">{a._count.fields} field(s) attached</p>
+              <p className="text-xs text-neutral-500">{a._count.fields} input(s)</p>
             </div>
             <ArrowRight size={14} className="text-neutral-400" />
           </Link>
