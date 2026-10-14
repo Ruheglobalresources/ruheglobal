@@ -5,6 +5,7 @@ import "./globals.css";
 import ClientBody from "./ClientBody";
 import { SessionProvider } from "next-auth/react";
 import { Analytics } from "@vercel/analytics/next"
+import Script from "next/script";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -113,7 +114,17 @@ export default function RootLayout({
           {children}
           </SessionProvider>
         </ClientBody>
-      </body>
+
+         <Script id="zoho-salesiq-init" strategy="afterInteractive">
+    {`window.$zoho = window.$zoho || {};
+      window.$zoho.salesiq = window.$zoho.salesiq || { ready: function () {} };`}
+  </Script>
+  <Script
+    id="zsiqscript"
+    src="https://salesiq.zohopublic.com/widget?wc=siq09483b2282096ad7c228747ab6ecb25ffb0390c48707ac235a999ebf7c06b8f5"
+    strategy="afterInteractive"
+  />
+   </body>
     </html>
   );
 }
