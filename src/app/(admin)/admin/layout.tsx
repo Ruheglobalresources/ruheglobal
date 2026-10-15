@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Toaster } from "sonner";
 import { auth } from "@/auth";
+import { db } from "@/lib/db";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { AdminTabs } from "@/components/admin/admin-tabs";
 import { LogOut } from "lucide-react";
@@ -10,6 +11,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   if (!session?.user) redirect("/auth/login?callbackUrl=/admin");
   if (session.user.role !== "ADMIN" && session.user.role !== "COUNSELOR") redirect("/");
+
+  // the Front desk tab is only for a counselor who is on the front desk
+  const userId = session.user.id;
+  const isFrontDesk =
+    session.user.role === "COUNSELOR" &&
+    !!userId &&
+    !!(await db.user.findFirst({ where: { id: userId, role: "COUNSELOR", isFrontDesk: true }, select: { id: true } }));
 
   return (
     <div className="min-h-screen bg-neutral-50">
@@ -26,7 +34,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </span>
           </LogoutButton>
         </div>
-        <AdminTabs role={session.user.role}/>
+        <AdminTabs role={session.user.role} isFrontDesk={isFrontDesk} />
       </header>
 
       <main className="mx-auto max-w-6xl px-3 py-6 sm:px-6 sm:py-8">{children}</main>

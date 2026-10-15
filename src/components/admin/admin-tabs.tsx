@@ -15,6 +15,7 @@ import {
   Newspaper,
   Building2,
   GraduationCap,
+  ConciergeBell,
   type LucideIcon,
 } from "lucide-react";
 
@@ -22,25 +23,39 @@ type Tab = {
   href: string;
   label: string;
   icon: LucideIcon;
+  // admin only, unless `frontDesk` is also set
   adminOnly?: boolean;
+  // also shown to a counselor who is on the front desk (an admin always sees every tab)
+  frontDesk?: boolean;
 };
 
 const TABS: Tab[] = [
   { href: "/admin/terminals", label: "Terminals", icon: LayoutGrid, adminOnly: true },
   { href: "/admin/applications", label: "Applications", icon: FolderKanban, adminOnly: true },
   { href: "/admin/fields", label: "Field Library", icon: ListChecks, adminOnly: true },
-  { href: "/admin/institutions", label: "Institutions", icon: Building2, adminOnly: true },
-  { href: "/admin/schools", label: "Schools", icon: GraduationCap, adminOnly: true },
-  { href: "/admin/submissions", label: "Submissions", icon: Inbox, adminOnly: true },
+  { href: "/admin/institutions", label: "Institutions", icon: Building2, adminOnly: true, frontDesk: true },
+  { href: "/admin/schools", label: "Schools", icon: GraduationCap, adminOnly: true, frontDesk: true },
+  { href: "/admin/submissions", label: "Submissions", icon: Inbox, adminOnly: true, frontDesk: true },
+  { href: "/admin/front-desk", label: "Front desk", icon: ConciergeBell, adminOnly: true, frontDesk: true },
   { href: "/admin/blog", label: "Blog", icon: Newspaper },
-  { href: "/admin/counselors", label: "Counselors", icon: UsersRound, adminOnly: true },
-  { href: "/admin/users", label: "Users", icon: Users, adminOnly: true },
-  { href: "/admin/conversations", label: "Conversations", icon: MessageSquare, adminOnly: true },
+  { href: "/admin/counselors", label: "Counselors", icon: UsersRound, adminOnly: true, frontDesk: true },
+  { href: "/admin/users", label: "Users", icon: Users, adminOnly: true, frontDesk: true },
+  { href: "/admin/conversations", label: "Conversations", icon: MessageSquare, adminOnly: true, frontDesk: true },
 ];
 
-export function AdminTabs({ role }: { role: UserRole }) {
+export function AdminTabs({
+  role,
+  isFrontDesk = false,
+}: {
+  role: UserRole;
+  isFrontDesk?: boolean;
+}) {
   const pathname = usePathname();
-  const tabs = TABS.filter((tab) => !tab.adminOnly || role === "ADMIN");
+  const tabs = TABS.filter((tab) => {
+    if (role === "ADMIN") return true; // admin sees everything
+    if (!tab.adminOnly) return true; // open to every staff member
+    return isFrontDesk && !!tab.frontDesk; // front desk counselor
+  });
 
   return (
     <div className="border-b bg-white">

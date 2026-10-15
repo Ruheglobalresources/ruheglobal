@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { db } from "@/lib/db";
+import { requireAdminOrFrontDeskPage } from "@/lib/require-admin-page";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { UserCounselorSelect } from "../user-counselor-select";
@@ -12,9 +13,31 @@ export const dynamic = "force-dynamic";
 
 const ROLE_LABELS = { USER: "Applicant", COUNSELOR: "Counselor", ADMIN: "Admin" } as const;
 const PROVIDER_LABELS: Record<string, string> = { google: "Google" };
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const formatDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 const formatDateTime = (d: Date) => d.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+
+// a date stored without a time (date of birth, test date) is shown as it was typed
+const formatDay = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+
+const show = (value: string | number | null | undefined) =>
+  value === null || value === undefined || value === "" ? <span className="text-neutral-300">Not given</span> : value;
+
+// The saved answers of an eligibility check, as readable text by key
+function asAnswers(json: unknown): Record<string, string> {
+  if (!json || typeof json !== "object" || Array.isArray(json)) return {};
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(json)) {
+    const text = Array.isArray(value)
+      ? value.filter((v): v is string => typeof v === "string").join(", ")
+      : typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+        ? String(value)
+        : "";
+    if (text) out[key] = text;
+  }
+  return out;
+}
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -26,11 +49,14 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const viewer = await requireAdminOrFrontDeskPage();
+  const deskId = viewer.role === "COUNSELOR" ? viewer.id : null; // a front desk counselor sees only their own applicants
+  const isAdmin = viewer.role === "ADMIN";
   const { id } = await params;
 
   const [user, conversations, counselorRows] = await Promise.all([
-    db.user.findUnique({
-      where: { id },
+    db.user.findFirst({
+      where: { id, ...(deskId ? { role: "USER" as const, counselorId: deskId } : {}) },
       include: {
         counselor: { select: { id: true, name: true, email: true } },
         accounts: { select: { provider: true } },
@@ -42,6 +68,10 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
           },
         },
         clients: { orderBy: { name: "asc" }, select: { id: true, name: true, email: true }, take: 50 },
+        profile: true,
+        qualifications: { orderBy: [{ endYear: "desc" }, { createdAt: "desc" }] },
+        tests: { orderBy: { createdAt: "desc" } },
+        eligibilityProfiles: { orderBy: { updatedAt: "desc" }, include: { application: { select: { name: true } } } },
         _count: { select: { clients: true, counseledSubmissions: true } },
       },
     }),
@@ -50,12 +80,25 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
       orderBy: { lastMessageAt: "desc" },
       select: { id: true, subject: true, status: true, lastMessageAt: true, _count: { select: { messages: true } } },
     }),
-    db.user.findMany({ where: { role: "COUNSELOR" }, orderBy: { name: "asc" }, select: { id: true, name: true, email: true } }),
+    db.user.findMany({ where: { role: "COUNSELOR" }, orderBy: { name: "asc" }, select: { id: true, name: true, email: true, isActive: true, isFrontDesk: true, bio: true, _count: { select: { clients: true } } } }),
   ]);
 
   if (!user) notFound();
 
-  const counselors = counselorRows.map((c) => ({ id: c.id, name: c.name ?? c.email ?? "Unnamed" }));
+  // a front desk counselor passes applicants on to active counselors who are not on the front desk
+  const choosable = counselorRows.filter((c) => !deskId || c.id === deskId || (c.isActive && !c.isFrontDesk));
+  const counselors = choosable.map((c) => ({ id: c.id, name: c.name ?? c.email ?? "Unnamed", isActive: c.isActive }));
+  const activeCounselors = choosable.filter((c) => c.isActive && c.id !== deskId);
+
+  // readable names for the keys of the eligibility answers
+  const answerKeys = Array.from(new Set(user.eligibilityProfiles.flatMap((p) => Object.keys(asAnswers(p.answers)))));
+  const fieldRows =
+    answerKeys.length > 0
+      ? await db.fieldDefinition.findMany({ where: { key: { in: answerKeys } }, select: { key: true, label: true } })
+      : [];
+  const labelOf = new Map(fieldRows.map((f) => [f.key, f.label]));
+  const profile = user.profile;
+  const hasProfile = !!profile || user.qualifications.length > 0 || user.tests.length > 0 || user.eligibilityProfiles.length > 0;
   const isApplicant = user.role === "USER";
   const isStaff = user.role === "COUNSELOR";
 
@@ -108,10 +151,11 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             {isApplicant && (
               <div>
                 <p className="mb-1 text-xs font-medium text-neutral-400">Looking after this applicant</p>
-                <UserCounselorSelect userId={user.id} counselorId={user.counselorId} counselors={counselors} />
+                <UserCounselorSelect userId={user.id} counselorId={user.counselorId} counselors={counselors} allowNone={isAdmin} />
                 {user.counselor?.email && <p className="mt-1 text-xs text-neutral-400">{user.counselor.email}</p>}
               </div>
             )}
+            {isAdmin && (
             <div>
               <p className="mb-1 text-xs font-medium text-neutral-400">Role</p>
               <UserRoleControl userId={user.id} role={user.role} />
@@ -119,6 +163,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                 <p className="mt-1 text-xs text-neutral-400">Set someone to Counselor and they can be assigned to applicants.</p>
               )}
             </div>
+            )}
           </div>
         </section>
 
@@ -140,6 +185,141 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
           {isStaff && user.bio && <p className="mt-3 border-t pt-3 text-sm text-neutral-600">{user.bio}</p>}
         </section>
       </div>
+
+      {isApplicant && (
+        <section>
+          <h2 className="mb-1 text-sm font-semibold text-neutral-700">Profile</h2>
+          <p className="mb-3 text-sm text-neutral-500">
+            What this applicant told us. Read it, then give them the counselor whose background fits best.
+          </p>
+
+          {!hasProfile ? (
+            <div className="rounded-xl border border-dashed bg-white p-6 text-sm text-neutral-500">
+              This applicant has not filled in a profile yet.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div className="rounded-xl border bg-white p-4">
+                  <h3 className="mb-3 text-xs font-semibold tracking-wide text-neutral-400 uppercase">About</h3>
+                  <dl className="grid grid-cols-2 gap-3">
+                    <Field label="Phone">{show(profile?.phone)}</Field>
+                    <Field label="Nationality">{show(profile?.nationality)}</Field>
+                    <Field label="Lives in">
+                      {show([profile?.residenceCity, profile?.residenceCountry].filter(Boolean).join(", "))}
+                    </Field>
+                    <Field label="Date of birth">{profile?.dateOfBirth ? formatDay(profile.dateOfBirth) : show(null)}</Field>
+                    <Field label="Onboarding">
+                      {profile?.onboardingCompletedAt ? `Finished ${formatDate(profile.onboardingCompletedAt)}` : "Not finished"}
+                    </Field>
+                  </dl>
+                </div>
+
+                <div className="rounded-xl border bg-white p-4">
+                  <h3 className="mb-3 text-xs font-semibold tracking-wide text-neutral-400 uppercase">Wants to study</h3>
+                  <dl className="grid grid-cols-2 gap-3">
+                    <Field label="Destination">{show(profile?.preferredDestination)}</Field>
+                    <Field label="Level">{show(profile?.preferredStudyLevel)}</Field>
+                    <Field label="Starting">
+                      {profile?.preferredStartYear
+                        ? `${profile.preferredStartMonth ? `${MONTHS[profile.preferredStartMonth - 1] ?? ""} ` : ""}${profile.preferredStartYear}`
+                        : show(null)}
+                    </Field>
+                    <Field label="Subjects">{show(profile?.subjects.join(", "))}</Field>
+                  </dl>
+                </div>
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-2">
+                <div className="rounded-xl border bg-white p-4">
+                  <h3 className="mb-3 text-xs font-semibold tracking-wide text-neutral-400 uppercase">Qualifications</h3>
+                  <ul className="space-y-3 text-sm">
+                    {user.qualifications.map((q) => (
+                      <li key={q.id}>
+                        <p className="font-medium">
+                          {q.level}
+                          {q.programme ? `, ${q.programme}` : ""}
+                        </p>
+                        <p className="text-xs text-neutral-500">
+                          {[q.institution, q.country, q.startYear || q.endYear ? `${q.startYear ?? ""} to ${q.endYear ?? ""}` : null, q.grade ? `Grade ${q.grade}` : null]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </p>
+                      </li>
+                    ))}
+                    {user.qualifications.length === 0 && <li className="text-neutral-300">None added</li>}
+                  </ul>
+                </div>
+
+                <div className="rounded-xl border bg-white p-4">
+                  <h3 className="mb-3 text-xs font-semibold tracking-wide text-neutral-400 uppercase">Tests</h3>
+                  <ul className="space-y-3 text-sm">
+                    {user.tests.map((t) => (
+                      <li key={t.id}>
+                        <p className="font-medium">
+                          {t.name}: {t.score}
+                        </p>
+                        {t.testDate && <p className="text-xs text-neutral-500">Taken {formatDay(t.testDate)}</p>}
+                      </li>
+                    ))}
+                    {user.tests.length === 0 && <li className="text-neutral-300">None added</li>}
+                  </ul>
+                </div>
+              </div>
+
+              {user.eligibilityProfiles.map((p) => {
+                const answers = Object.entries(asAnswers(p.answers));
+                return (
+                  <div key={p.id} className="rounded-xl border bg-white p-4">
+                    <h3 className="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold tracking-wide text-neutral-400 uppercase">
+                      Eligibility check: {p.application.name}
+                      <span className="font-normal tracking-normal normal-case">
+                        {p.completedAt ? `completed ${formatDate(p.completedAt)}` : "partly answered"}
+                      </span>
+                    </h3>
+                    {answers.length > 0 ? (
+                      <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {answers.map(([key, value]) => (
+                          <Field key={key} label={labelOf.get(key) ?? key.replace(/_/g, " ")}>
+                            {value}
+                          </Field>
+                        ))}
+                      </dl>
+                    ) : (
+                      <p className="text-sm text-neutral-300">No answers saved</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
+
+      {isApplicant && (
+        <section>
+          <h2 className="mb-1 text-sm font-semibold text-neutral-700">Counselors you can assign</h2>
+          <p className="mb-3 text-sm text-neutral-500">
+            Active counselors with their bio and how many applicants each one looks after. Choose one in the Counselor box above.
+          </p>
+          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {activeCounselors.map((c) => (
+              <div key={c.id} className="rounded-xl border bg-white p-4">
+                <p className="flex items-center text-sm font-medium">
+                  <span role="img" aria-label="Active" className="mr-2 inline-block size-2.5 shrink-0 rounded-full bg-emerald-500" />
+                  {c.name ?? c.email ?? "Unnamed"}
+                  {c.id === user.counselorId && <Badge variant="secondary" className="ml-2">Current</Badge>}
+                </p>
+                <p className="mt-0.5 text-xs text-neutral-400">{c._count.clients} applicant(s)</p>
+                <p className="mt-2 text-sm text-neutral-600">{c.bio ?? <span className="text-neutral-300">No bio yet</span>}</p>
+              </div>
+            ))}
+            {activeCounselors.length === 0 && (
+              <p className="text-sm text-neutral-400">No active counselor. Make someone an active counselor under Counselors.</p>
+            )}
+          </div>
+        </section>
+      )}
 
       <section>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">

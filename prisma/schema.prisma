@@ -29,7 +29,12 @@ model User {
 
   // Counselors only: a short introduction shown to the applicants they look after
   bio String?
-
+    // Counselors only: a front desk counselor is given every new account first. They read the profile
+  // and pass the applicant on to the right counselor. Front desk counselors take turns.
+  isFrontDesk Boolean @default(false)
+  // Counselors only: false while disabled or on leave. The rota skips them, and an admin cannot
+  // pick them for an applicant. Applicants they already look after stay with them.
+  isActive Boolean @default(true)
   // Applicants: the counselor looking after this user. Set automatically when the account
   // is created (the counselor on duty that week) and changeable by an admin at any time.
   counselorId String?
@@ -85,6 +90,14 @@ model CounselorDuty {
   updatedAt DateTime @updatedAt
 
   @@index([counselorId])
+}
+
+// Where the counselor rota has reached. One row, id "main". counselorId is the counselor whose
+// turn it is: the next new account goes to them, or to the next active one if they are disabled.
+model CounselorRotation {
+  id          String   @id
+  counselorId String?
+  updatedAt   DateTime @updatedAt
 }
 
 model Account {
@@ -1141,4 +1154,18 @@ model VisaType {
 
   @@unique([destinationId, slug])
   @@index([destinationId, purposeId, isActive, order])
+}
+// ─────────────────────────────────────────────────────────────────────────
+// INTEGRATION TOKENS
+// Already exists in the database (created outside Prisma, holds the Zoho CRM
+// refresh token). Declared here only so `prisma db push` does not drop it.
+// @@map / @map point the model at the existing table and column names.
+// ──────────
+model IntegrationToken {
+  name      String    @id
+  token     String
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime? @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("integration_tokens")
 }
