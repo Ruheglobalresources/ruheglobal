@@ -1,3 +1,5 @@
+//src/components/portal/terminal-card.tsx
+
 import Link from "next/link";
 import {
   GraduationCap,
@@ -13,6 +15,7 @@ import {
 } from "lucide-react";
 import { elevation1, elevation2Hover } from "@/components/dashboard/styles";
 import { cn } from "@/lib/utils";
+import { terminalHref } from "@/lib/portal-paths";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   GraduationCap,
@@ -72,7 +75,7 @@ interface TerminalCardProps {
 export function TerminalCard({ slug, name, icon, applicationCount }: TerminalCardProps) {
   return (
     <Link
-      href={`/portal/${slug}`}
+      href={terminalHref(slug)}
       className={cn(
         "group flex items-center gap-4 rounded-3xl border border-neutral-200 bg-white p-4 transition hover:border-ruby-200 hover:bg-ruby-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ruby-500/50",
         elevation1,
@@ -95,3 +98,7 @@ export function TerminalCard({ slug, name, icon, applicationCount }: TerminalCar
     </Link>
   );
 }
+
+
+
+

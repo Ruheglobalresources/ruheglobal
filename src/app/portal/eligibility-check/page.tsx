@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ELIGIBILITY_PAGE } from "@/lib/portal-paths";
+import { authHref } from "@/lib/callback-url";
 import { getEligibilityPills } from "@/lib/eligibility-data";
 import { EligibilityFlow } from "@/components/eligibility/eligibility-flow";
 
@@ -16,10 +17,22 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function EligibilityCheckPage() {
+export default async function EligibilityCheckPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ check?: string }>;
+}) {
+  // ?check=study-abroad (or visa-application) opens that check straight away, skipping the picker
+  const { check } = await searchParams;
+  const slug = check?.trim() || null;
+
   const session = await auth();
-  if (!session?.user?.id) redirect(`/auth/login?callbackUrl=${ELIGIBILITY_PAGE}`);
+  if (!session?.user?.id) {
+    const back = slug ? `${ELIGIBILITY_PAGE}?check=${encodeURIComponent(slug)}` : ELIGIBILITY_PAGE;
+    redirect(authHref("login", back));
+  }
 
   const pills = await getEligibilityPills();
-  return <EligibilityFlow pills={pills} />;
+  const initialSlug = slug && pills.some((p) => p.slug === slug) ? slug : null;
+  return <EligibilityFlow pills={pills} initialSlug={initialSlug} />;
 }

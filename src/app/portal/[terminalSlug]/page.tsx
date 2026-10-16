@@ -1,8 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { ELIGIBILITY_TERMINAL_SLUGS, terminalHref } from "@/lib/portal-paths";
 import { ApplicationCard } from "@/components/portal/application-card";
 import { computeOverallProgress, groupFieldsByStep, mapApplicationFields } from "@/components/portal/types";
 
@@ -10,6 +11,10 @@ export const dynamic = "force-dynamic";
 
 export default async function TerminalPage({ params }: { params: Promise<{ terminalSlug: string }> }) {
   const { terminalSlug } = await params;
+
+  // Study Abroad and Visa Application open their eligibility check instead of a list of applications
+  if (ELIGIBILITY_TERMINAL_SLUGS.includes(terminalSlug)) redirect(terminalHref(terminalSlug));
+
   const session = await auth();
   const userId = session!.user.id;
 
