@@ -29,7 +29,12 @@ model User {
 
   // Counselors only: a short introduction shown to the applicants they look after
   bio String?
-
+    // Counselors only: a front desk counselor is given every new account first. They read the profile
+  // and pass the applicant on to the right counselor. Front desk counselors take turns.
+  isFrontDesk Boolean @default(false)
+  // Counselors only: false while disabled or on leave. The rota skips them, and an admin cannot
+  // pick them for an applicant. Applicants they already look after stay with them.
+  isActive Boolean @default(true)
   // Applicants: the counselor looking after this user. Set automatically when the account
   // is created (the counselor on duty that week) and changeable by an admin at any time.
   counselorId String?
@@ -46,6 +51,9 @@ model User {
   submissions           ApplicationSubmission[] @relation("UserSubmissions")
   // Submissions this user (as staff) has been assigned to counsel.
   counseledSubmissions  ApplicationSubmission[] @relation("CounseledSubmissions")
+
+  // The saved answers of this user's eligibility checks (one per kind: study abroad, visa...).
+  eligibilityProfiles   EligibilityProfile[]
 
   // Conversations where this user is the client (support/enquiry chats).
   clientConversations Conversation[] @relation("ConversationClient")
@@ -82,6 +90,14 @@ model CounselorDuty {
   updatedAt DateTime @updatedAt
 
   @@index([counselorId])
+}
+
+// Where the counselor rota has reached. One row, id "main". counselorId is the counselor whose
+// turn it is: the next new account goes to them, or to the next active one if they are disabled.
+model CounselorRotation {
+  id          String   @id
+  counselorId String?
+  updatedAt   DateTime @updatedAt
 }
 
 model Account {
@@ -160,6 +176,7 @@ enum PortalKind {
   WORK_ABROAD
   HOUSING
   EVENT // events and fairs, collects visitor data
+  ELIGIBILITY // the eligibility check questions (/portal/eligibility-check), never listed as an application
 }
 
 model PortalTerminal {
@@ -207,6 +224,25 @@ enum FieldType {
   FILE // e.g. passport bio page, proof of funds, transcripts
 }
 
+// How a SELECT / MULTI_SELECT is drawn.
+enum FieldDisplay {
+  DEFAULT // a dropdown (what every existing field uses)
+  PILLS // every choice as a tap-able pill, like "Foundation / Undergraduate / Postgraduate"
+  SEARCH // a search box over a long list (majors, universities), with `suggestions` as chips
+  CARDS // every choice as a card with a short plain-words explanation under it (visa purposes, visa types)
+}
+
+// Where the choices of a SELECT / MULTI_SELECT come from.
+enum OptionsSource {
+  STATIC // the list typed in `options`
+  COUNTRIES // the Country table
+  UNIVERSITIES // the University table, filtered by the country picked in `dependsOnKey`
+  DESTINATIONS // the Destination table: the countries people move to
+  CITIES // the City table, filtered by the destination picked in `dependsOnKey`
+  VISA_PURPOSES // the VisaPurpose table: "What do you want to do abroad?"
+  VISA_TYPES // the VisaType table: destination in `dependsOnKey`, purpose in `alsoDependsOnKey`
+}
+
 model FieldDefinition {
   id          String    @id @default(uuid())
   key         String    @unique // "family_name", "passport_number", "property_budget"
@@ -216,6 +252,27 @@ model FieldDefinition {
   placeholder String?
   helpText    String?
   options     Json? // choices for SELECT/MULTI_SELECT, e.g. ["Mr","Mrs","Ms","Dr"]
+
+  // How a SELECT / MULTI_SELECT is drawn and where its choices come from. The defaults keep every
+  // existing field exactly as it is today (a dropdown with the choices typed in `options`).
+  display       FieldDisplay  @default(DEFAULT)
+  optionsSource OptionsSource @default(STATIC)
+  // Only for a source that depends on an earlier answer: the `key` of that field. Example: the
+  // university field has optionsSource UNIVERSITIES and dependsOnKey "education_country", so it
+  // lists the universities of the country picked there.
+  dependsOnKey  String?
+  // A second earlier answer the list depends on. Only VISA_TYPES uses it: the destination is in
+  // `dependsOnKey` and the purpose the person picked is here.
+  alsoDependsOnKey String?
+  // SELECT only: add an "Other" choice at the end of the list. Picking it opens a text box and what
+  // the person types is saved as the answer (a city that is not in the list). A list that comes back
+  // empty (a destination with no cities yet) shows the text box straight away.
+  allowOther    Boolean       @default(false)
+  otherLabel    String? // wording of that choice, "Other" when empty
+  // MULTI_SELECT only: how many choices may be picked ("pick up to 5 subjects"). Null = no limit.
+  maxSelections Int?
+  // Shown as quick-pick chips under a search box ("Popular searches"). Same shape as `options`.
+  suggestions   Json?
 
   // Optional validation, enforced server-side when a value is saved.
   minLength Int?
@@ -256,7 +313,10 @@ model Application {
   terminal    PortalTerminal          @relation(fields: [terminalId], references: [id], onDelete: Cascade)
   tags        ApplicationTag[]
   fields      ApplicationField[]
+  steps       ApplicationStep[]
   submissions ApplicationSubmission[]
+
+  eligibilityProfiles EligibilityProfile[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -292,6 +352,11 @@ model ApplicationField {
   stepNumber        Int     @default(1) // which step of the wizard this field appears on
   order             Int     @default(0) // position within that step
 
+  // Show this field only when an earlier answer matches. Null = always shown. Shape:
+  //   { "fieldKey": "study_level", "in": ["Postgraduate", "Doctorate"] }
+  // A step whose fields are all hidden is skipped. Hidden fields are never required.
+  showWhen          Json?
+
   application     Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   fieldDefinition FieldDefinition   @relation(fields: [fieldDefinitionId], references: [id], onDelete: Cascade)
   values          SubmissionValue[]
@@ -299,6 +364,21 @@ model ApplicationField {
   @@unique([applicationId, fieldDefinitionId])
   @@index([applicationId])
   @@index([fieldDefinitionId])
+}
+
+// The heading of one step of an application ("What do you wish to study?"). Optional: a step
+// without a row here keeps the old behaviour and is titled with the category of its first field.
+model ApplicationStep {
+  id            String  @id @default(uuid())
+  applicationId String
+  stepNumber    Int
+  title         String
+  emoji         String? // shown after the title, e.g. "📚"
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, stepNumber])
+  @@index([applicationId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -843,7 +923,6 @@ model SchoolScholarship {
   @@index([schoolId])
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────
 // USER PROFILE
 // One row per applicant (created on first save), plus their qualifications
@@ -915,4 +994,178 @@ model UserTest {
   updatedAt DateTime @updatedAt
 
   @@index([userId, kind])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// COUNTRIES AND UNIVERSITIES (where an applicant studied before)
+// Feeds the "country of education" and "university" questions of the eligibility check.
+// This is NOT the list of places to study at: those are Institution and School above.
+// Edited in the database at any time; prisma/seed-countries.ts only fills in what is missing.
+// ─────────────────────────────────────────────────────────────────────────
+
+enum UniversityOwnership {
+  PUBLIC
+  PRIVATE
+}
+
+model Country {
+  id        String  @id @default(uuid())
+  name      String  @unique // "Nigeria"
+  code      String  @unique // ISO alpha-2, "NG"
+  region    String? // "West Africa"
+  continent String  @default("Africa")
+  order     Int     @default(100) // lower first; 100 = alphabetical after the pinned countries
+  isActive  Boolean @default(true)
+
+  universities University[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([continent, order])
+}
+
+model University {
+  id        String              @id @default(uuid())
+  countryId String
+  name      String
+  shortName String? // "UNILAG"
+  city      String?
+  website   String?
+  ownership UniversityOwnership @default(PUBLIC)
+  order     Int                 @default(0) // lower first: most visited / best known at the top
+  isActive  Boolean             @default(true)
+
+  country Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([countryId, name])
+  @@index([countryId, order])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// ELIGIBILITY PROFILE
+// What a user answered in an eligibility check, kept as one flat { fieldKey: value } object so the
+// course search (and later the mobile app) can read it in one query without joining the
+// submission tables. The submission itself (ApplicationSubmission + SubmissionValue) stays the
+// source of truth; this row is rewritten from it every time the check is saved or finished.
+// ─────────────────────────────────────────────────────────────────────────
+
+model EligibilityProfile {
+  id            String    @id @default(uuid())
+  userId        String
+  applicationId String // the eligibility application answered (Study abroad, Visa...)
+  answers       Json // { "study_level": "Postgraduate", "subjects": ["Computer Science"], ... }
+  completedAt   DateTime? // null while the check is only partly answered
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, applicationId])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// DESTINATIONS, CITIES AND VISA TYPES
+// The countries people move to, the major cities they settle in, and the visas that can take them
+// there. They feed the Accommodation and Visa Application checks of the eligibility flow:
+//   Accommodation: destination -> City (with an "Other" choice for a city that is not listed)
+//   Visa:          destination -> VisaPurpose ("What do you want to do abroad?") -> VisaType
+// The person never has to know visa names: they pick a goal in plain words, then pick from the
+// visas of that destination that serve it, each with a short explanation.
+// This is separate from Country (where people studied before) and from Institution / School.
+// A Destination `name` must match the choices of the "Destination country" question.
+// Edited in the database at any time; prisma/seed-destinations.ts only fills in what is missing.
+// ─────────────────────────────────────────────────────────────────────────
+
+model Destination {
+  id       String  @id @default(uuid())
+  name     String  @unique // "United Kingdom"
+  code     String  @unique // ISO alpha-2, "GB"
+  order    Int     @default(100) // lower first
+  isActive Boolean @default(true)
+
+  cities    City[]
+  visaTypes VisaType[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive, order])
+}
+
+model City {
+  id            String  @id @default(uuid())
+  destinationId String
+  name          String // "Manchester"
+  region        String? // "England", "Ontario", "Bavaria"
+  order         Int     @default(100) // lower first: the city most people choose at the top
+  isActive      Boolean @default(true)
+
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([destinationId, name])
+  @@index([destinationId, isActive, order])
+}
+
+// The first question of the visa funnel, in the person's own words.
+model VisaPurpose {
+  id          String  @id @default(uuid())
+  slug        String  @unique // "study", "work", "visit", "family", "business", "not-sure"
+  name        String // "Study"
+  goalLabel   String // what the person taps: "I want to study abroad"
+  description String? // one plain line under it
+  emoji       String?
+  order       Int     @default(100)
+  isActive    Boolean @default(true)
+
+  visaTypes VisaType[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// One visa of one destination, filed under the purpose it serves. A purpose with no visa in a
+// destination is simply not offered there.
+model VisaType {
+  id            String  @id @default(uuid())
+  destinationId String
+  purposeId     String
+  slug          String // "student", "skilled-worker": unique inside the destination
+  name          String // "Student visa"
+  summary       String // who it is for, in plain words
+  serviceSlug   String? // the page under /services that explains it, "study-visa"
+  order         Int     @default(100) // lower first: the most common visa at the top
+  isActive      Boolean @default(true)
+
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  purpose     VisaPurpose @relation(fields: [purposeId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([destinationId, slug])
+  @@index([destinationId, purposeId, isActive, order])
+}
+// ─────────────────────────────────────────────────────────────────────────
+// INTEGRATION TOKENS
+// Already exists in the database (created outside Prisma, holds the Zoho CRM
+// refresh token). Declared here only so `prisma db push` does not drop it.
+// @@map / @map point the model at the existing table and column names.
+// ──────────
+model IntegrationToken {
+  name      String    @id
+  token     String
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime? @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("integration_tokens")
 }

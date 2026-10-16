@@ -12,7 +12,8 @@
     "seed:school": "tsx prisma/seed-school.ts",
     "seed-eligibility": "tsx prisma/seed-eligibility.ts",
     "seed:destinations": "tsx prisma/seed-destinations.ts",
-    "seed:eligibility": "tsx prisma/seed-eligibility"
+    "seed:eligibility": "tsx prisma/seed-eligibility",
+    "seed:journey": "tsx prisma/seed-journey.ts"
     
   },
   "dependencies": {

@@ -10,6 +10,7 @@ import { CounsellorCard } from "@/components/portal/counsellor-card";
 import { HeroBanner } from "@/components/portal/hero-banner";
 import { computeOverallProgress, groupFieldsByStep, mapApplicationFields } from "@/components/portal/types";
 import { CoursesPreview, InstitutionsPreview } from "@/components/dashboard/catalog-lists";
+import { getJourneyPercents } from "@/lib/journey/progress";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,9 @@ export default async function PortalDashboardPage() {
       take: 5,
       include: {
         values: true,
+        // the level of the course decides which documents a timeline application asks for
+        institutionCourse: { select: { level: true } },
+        schoolCourse: { select: { level: true } },
         application: {
           include: {
             terminal: { select: { slug: true, name: true } },
@@ -52,12 +56,24 @@ export default async function PortalDashboardPage() {
     getPortalCounsellor(userId),
   ]);
 
+  // timeline applications count stages and tasks; the others count answered required inputs
+  const journeyPercents = await getJourneyPercents(
+    userId,
+    inProgressSubmissions.map((s) => ({
+      id: s.id,
+      applicationId: s.applicationId,
+      courseLevel: s.institutionCourse?.level ?? s.schoolCourse?.level ?? null,
+    }))
+  );
+
   const continueItems = inProgressSubmissions.map((submission) => {
     const steps = groupFieldsByStep(mapApplicationFields(submission.application.fields));
-    const percent = computeOverallProgress(
-      steps,
-      submission.values.map((v) => ({ applicationFieldId: v.applicationFieldId, value: v.value, fileUrl: v.fileUrl }))
-    );
+    const percent =
+      journeyPercents.get(submission.id) ??
+      computeOverallProgress(
+        steps,
+        submission.values.map((v) => ({ applicationFieldId: v.applicationFieldId, value: v.value, fileUrl: v.fileUrl }))
+      );
 
     return {
       submissionId: submission.id,

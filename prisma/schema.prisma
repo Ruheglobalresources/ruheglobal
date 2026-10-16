@@ -64,6 +64,10 @@ model User {
   messagesSent        Message[]      @relation("MessageSender")
   blogPosts           BlogPost[]     @relation("BlogPostAuthor")
 
+  // Journey: the document checks and stage sign offs this user (as staff) has made.
+  reviewedTasks   SubmissionTask[]  @relation("TaskReviewer")
+  completedStages SubmissionStage[] @relation("StageCompleter")
+
   // Profile details collected during onboarding and edited on the profile page
   profile        UserProfile?
   qualifications AcademicQualification[]
@@ -280,6 +284,8 @@ model FieldDefinition {
   pattern   String? // regex, e.g. for passport number formats
 
   applicationFields ApplicationField[]
+  // Journey: the details inputs of document tasks that use this field.
+  taskFields        ApplicationTaskField[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -314,6 +320,9 @@ model Application {
   tags        ApplicationTag[]
   fields      ApplicationField[]
   steps       ApplicationStep[]
+  // Journey (the timeline engine): empty = the application is the classic step form.
+  stages      ApplicationStage[]
+  tasks       ApplicationTask[]
   submissions ApplicationSubmission[]
 
   eligibilityProfiles EligibilityProfile[]
@@ -437,6 +446,9 @@ model ApplicationSubmission {
 
   values   SubmissionValue[]
   versions SubmissionVersion[]
+  // Journey: this applicant's progress on the timeline.
+  taskEntries  SubmissionTask[]
+  stageEntries SubmissionStage[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -490,6 +502,181 @@ model SubmissionValue {
   updatedAt DateTime @updatedAt
 
   @@unique([submissionId, applicationFieldId])
+  @@index([submissionId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// JOURNEY (the application engine)
+// An application with stages is shown to the applicant as a timeline instead of a step form:
+//   Submit Documents > Apply > Offer > Confirm enrolment > Visa > Enroll
+// A stage is a list of tasks. A task is something the applicant uploads (DOCUMENT: files plus the
+// details of the document), fills in (FORM: details only) or something staff tick off (MILESTONE).
+// A stage stays locked until the stage before it is complete. A stage is complete either as soon
+// as the applicant has done every required task (AUTO) or when a counsellor signs it off (STAFF),
+// which is how "consultation first" is enforced.
+// All of it is rows, so the same engine runs school applications, visas, accommodation and any
+// terminal added later: new stages and tasks are seed data (prisma/seed-journey.ts), never code.
+// The details inputs reuse the field library (FieldDefinition), exactly like the eligibility check.
+// An application with no stages keeps using the classic wizard, so nothing existing changes.
+// ─────────────────────────────────────────────────────────────────────────
+
+enum TaskKind {
+  DOCUMENT // files plus the details of the document (passport: scan + passport number)
+  FORM // details only, no file (personal statement typed in, a question)
+  MILESTONE // done by staff, the applicant only watches (application sent to the school, offer received)
+}
+
+enum StageCompletion {
+  AUTO // complete once every required task is submitted
+  STAFF // complete only when a counsellor signs it off
+}
+
+enum TaskStatus {
+  DRAFT // saved, not yet sent
+  SUBMITTED // sent, waiting for a counsellor
+  VERIFIED // checked by a counsellor (locks the task)
+  CHANGES_REQUESTED // sent back with a note
+}
+
+model ApplicationStage {
+  id            String          @id @default(uuid())
+  applicationId String
+  stageNumber   Int // 1, 2, 3 ... the order on the timeline
+  slug          String // "submit-documents"
+  title         String // "Submit Documents"
+  description   String? // one line shown under the stage heading
+  completion    StageCompletion @default(AUTO)
+
+  application      Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  tasks            ApplicationTask[]
+  submissionStages SubmissionStage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([applicationId, stageNumber])
+  @@unique([applicationId, slug])
+  @@index([applicationId])
+}
+
+model ApplicationTask {
+  id            String   @id @default(uuid())
+  applicationId String // copy of the stage's application, so a task link only needs the application
+  stageId       String
+  slug          String // "passport": unique inside the application, used in the task address
+  groupTitle    String? // heading on the stage page: "Identity", "Academic Certificates"
+  subgroupTitle String? // smaller heading under it: "Senior high school", "Undergraduate"
+  title         String // "Passport"
+  description   String? // shown on the task page
+  kind          TaskKind @default(DOCUMENT)
+  isRequired    Boolean  @default(true)
+  order         Int      @default(0)
+  maxFiles      Int      @default(10) // pages of a document (one passport, several marksheet pages)
+  accept        String? // file picker filter, "image/*,application/pdf". Empty = images and PDF
+  // Show the task only when an earlier answer matches (the same rule shape as ApplicationField.showWhen):
+  //   { "fieldKey": "study_level", "in": ["Postgraduate", "Doctorate"] }
+  // The answers it reads are the applicant's eligibility check answers and the chosen course.
+  showWhen      Json?
+  // Prefill of the details: which qualification of the applicant's profile this document belongs to
+  // ("Bachelor's degree" for the undergraduate certificate).
+  qualificationLevel String?
+
+  application     Application           @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  stage           ApplicationStage      @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  fields          ApplicationTaskField[]
+  submissionTasks SubmissionTask[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([applicationId, slug])
+  @@index([stageId])
+  @@index([applicationId])
+}
+
+// The details inputs of one task ("Fill in your details" beside the document).
+model ApplicationTaskField {
+  id                String  @id @default(uuid())
+  taskId            String
+  fieldDefinitionId String
+  isRequired        Boolean @default(false)
+  order             Int     @default(0)
+  showWhen          Json? // same shape as ApplicationField.showWhen, reads answers of this task
+
+  task            ApplicationTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  fieldDefinition FieldDefinition @relation(fields: [fieldDefinitionId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, fieldDefinitionId])
+  @@index([taskId])
+  @@index([fieldDefinitionId])
+}
+
+// One applicant's work on one task. Created the first time they save it.
+model SubmissionTask {
+  id           String     @id @default(uuid())
+  submissionId String
+  taskId       String
+  status       TaskStatus @default(DRAFT)
+
+  // The details, one flat { fieldKey: value } object (a multi-select is joined with commas).
+  answers      Json       @default("{}")
+
+  // Written by staff: why changes are needed, and a short line the applicant sees on the task card
+  // ("Scores meet criteria").
+  reviewNote   String?    @db.Text
+  badge        String?
+  submittedAt  DateTime?
+  reviewedAt   DateTime?
+  reviewedById String?
+
+  submission ApplicationSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  task       ApplicationTask       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  reviewedBy User?                 @relation("TaskReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  files      SubmissionTaskFile[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([submissionId, taskId])
+  @@index([submissionId])
+  @@index([status])
+}
+
+// One page of an uploaded document.
+model SubmissionTaskFile {
+  id               String  @id @default(uuid())
+  submissionTaskId String
+  url              String
+  name             String
+  mimeType         String?
+  size             Int?
+  order            Int     @default(0)
+
+  submissionTask SubmissionTask @relation(fields: [submissionTaskId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([submissionTaskId])
+}
+
+// A staff sign off of one stage of one submission. Only STAFF stages need a row; an AUTO stage is
+// complete by what the applicant has done. Removing completedAt reopens the stage.
+model SubmissionStage {
+  id            String    @id @default(uuid())
+  submissionId  String
+  stageId       String
+  completedAt   DateTime?
+  completedById String?
+  note          String?   @db.Text
+
+  submission  ApplicationSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  stage       ApplicationStage      @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  completedBy User?                 @relation("StageCompleter", fields: [completedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([submissionId, stageId])
   @@index([submissionId])
 }
 

@@ -15,10 +15,12 @@ import {
   type ApplyTargetInput,
 } from "@/lib/application-target";
 import { isEditableStatus } from "@/constants/submission-status";
+import { loadJourneyRoute } from "@/lib/journey/route-data";
+import { JourneyPage } from "@/components/journey/journey-page";
 
 export const dynamic = "force-dynamic";
 
-type SearchParams = { type?: string; target?: string; course?: string; submission?: string };
+type SearchParams = { type?: string; target?: string; course?: string; submission?: string; stage?: string };
 
 // A submission together with what is needed to rebuild its school or institution
 const submissionInclude = {
@@ -38,6 +40,33 @@ export default async function ApplicationPage({
   const sp = await searchParams;
   const session = await auth();
   const userId = session!.user.id;
+
+  // An application with stages is the timeline (the application engine). One without stages keeps
+  // the classic step form below, exactly as before.
+  const route = await loadJourneyRoute({ userId: userId!, terminalSlug, applicationSlug, search: sp });
+  if (route.state === "redirect") redirect(route.to);
+  if (route.state === "missing") notFound();
+  if (route.state === "ok") {
+    const { view } = route.journey;
+    const asked = Number(sp.stage);
+    const selectedStageNumber = view.stages.some((s) => s.def.stageNumber === asked)
+      ? asked
+      : (view.currentStageNumber ?? view.stages[view.stages.length - 1].def.stageNumber);
+
+    return (
+      <JourneyPage
+        header={route.header}
+        view={view}
+        selectedStageNumber={selectedStageNumber}
+        path={{
+          terminalSlug,
+          applicationSlug,
+          submissionId: route.submission?.id ?? null,
+          target: route.pendingTarget,
+        }}
+      />
+    );
+  }
 
   const application = await db.application.findFirst({
     where: { slug: applicationSlug, isActive: true, terminal: { slug: terminalSlug, isActive: true } },

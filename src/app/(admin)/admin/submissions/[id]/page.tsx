@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { StatusControl, CounselorControl } from "./status-control";
+import { JourneyReviewSection } from "@/components/admin/journey-review-section";
 import { ArrowLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -58,6 +59,9 @@ export default async function AdminSubmissionDetailPage({ params }: { params: Pr
   ]);
 
   if (!submission) notFound();
+
+  // an application that runs on the timeline is reviewed in the timeline panel
+  const hasJourney = (await db.applicationStage.count({ where: { applicationId: submission.applicationId } })) > 0;
 
   const versions = submission.versions.map((v) => ({
     version: v.version,
@@ -199,6 +203,9 @@ export default async function AdminSubmissionDetailPage({ params }: { params: Pr
         </div>
       </div>
 
+      {hasJourney && <JourneyReviewSection submissionId={submission.id} />}
+
+      {(!hasJourney || sortedRows.length > 0) && (
       <section>
         <h2 className="mb-3 text-sm font-semibold text-neutral-700">Answers</h2>
         <div className="overflow-hidden rounded-xl border bg-white">
@@ -251,6 +258,7 @@ export default async function AdminSubmissionDetailPage({ params }: { params: Pr
           </table>
         </div>
       </section>
+      )}
 
       {versions.length > 0 && (
         <section className="mt-8">

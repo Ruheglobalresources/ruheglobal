@@ -4,6 +4,7 @@
 // Eligibility checks are not applications (they are the questions that start one), so they are left out.
 import { db } from "@/lib/db";
 import { computeOverallProgress, groupFieldsByStep, mapApplicationFields } from "@/components/portal/types";
+import { getJourneyPercents } from "@/lib/journey/progress";
 
 export type PortalApplicationItem = {
   id: string;
@@ -22,6 +23,9 @@ export async function getPortalApplications(userId: string): Promise<PortalAppli
     orderBy: { updatedAt: "desc" },
     include: {
       values: true,
+      // the level of the course decides which documents a timeline application asks for
+      institutionCourse: { select: { level: true } },
+      schoolCourse: { select: { level: true } },
       application: {
         include: {
           terminal: { select: { slug: true, name: true } },
@@ -31,12 +35,24 @@ export async function getPortalApplications(userId: string): Promise<PortalAppli
     },
   });
 
+  // timeline applications count stages and tasks; the others count answered required inputs
+  const journeyPercents = await getJourneyPercents(
+    userId,
+    submissions.map((s) => ({
+      id: s.id,
+      applicationId: s.applicationId,
+      courseLevel: s.institutionCourse?.level ?? s.schoolCourse?.level ?? null,
+    }))
+  );
+
   return submissions.map((s) => {
     const steps = groupFieldsByStep(mapApplicationFields(s.application.fields));
-    const percent = computeOverallProgress(
-      steps,
-      s.values.map((v) => ({ applicationFieldId: v.applicationFieldId, value: v.value, fileUrl: v.fileUrl }))
-    );
+    const percent =
+      journeyPercents.get(s.id) ??
+      computeOverallProgress(
+        steps,
+        s.values.map((v) => ({ applicationFieldId: v.applicationFieldId, value: v.value, fileUrl: v.fileUrl }))
+      );
 
     return {
       id: s.id,
